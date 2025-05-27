@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Bars, UserPlus } from 'lucide-react';
+import { ArrowRight, Menu, UserPlus } from 'lucide-react';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -43,7 +43,7 @@ const Header = () => {
               className="md:hidden text-slate-400 hover:text-slate-200"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              <Bars className="w-5 h-5" />
+              <Menu className="w-5 h-5" />
             </Button>
           </div>
         </div>

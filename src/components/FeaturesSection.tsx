@@ -1,6 +1,5 @@
-
 import { Card } from '@/components/ui/card';
-import { ArrowRight, BarChart3, Share2, Users, TrendingUp, UserGroup } from 'lucide-react';
+import { ArrowRight, BarChart3, Share2, Users, TrendingUp, Smartphone } from 'lucide-react';
 
 const features = [
   {
@@ -28,13 +27,13 @@ const features = [
     color: 'text-pink-500'
   },
   {
-    icon: UserGroup,
+    icon: Users,
     title: 'Follow Players',
     description: 'Connect with like-minded players. Follow experts and friends to see their shared hands and learn from their approach.',
     color: 'text-emerald-500'
   },
   {
-    icon: ArrowRight,
+    icon: Smartphone,
     title: 'Mobile Access',
     description: 'Access your stats and the community from anywhere. Share hands and get feedback right from the poker table.',
     color: 'text-blue-500'
