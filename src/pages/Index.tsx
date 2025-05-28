@@ -8,7 +8,8 @@ import HeroSection from '@/components/HeroSection';
 import FeaturesSection from '@/components/FeaturesSection';
 import TestimonialsSection from '@/components/TestimonialsSection';
 import StatsSection from '@/components/StatsSection';
-import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/AppSidebar';
 import {
   Sheet,
   SheetContent,
@@ -19,40 +20,33 @@ const MobileSidebar = () => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="lg:hidden fixed top-4 left-4 z-50 bg-slate-950/80 backdrop-blur-xl border border-slate-800/50">
+        <Button variant="ghost" size="icon" className="lg:hidden fixed top-4 left-4 z-50 bg-slate-950/80 backdrop-blur-xl border border-slate-800/50 text-slate-200 hover:bg-slate-800/60">
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="p-0 w-64">
-        <div className="h-full bg-slate-950">
-          <GlobalSidebar />
-        </div>
+      <SheetContent side="left" className="p-0 w-64 bg-slate-950 border-slate-800">
+        <AppSidebar />
       </SheetContent>
     </Sheet>
-  );
-};
-
-const IndexContent = () => {
-  const { isCollapsed } = useSidebar();
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
-      <MobileSidebar />
-      <Header />
-      <main className="pt-16 sm:pt-20">
-        <HeroSection />
-        <FeaturesSection />
-        <TestimonialsSection />
-        <StatsSection />
-      </main>
-    </div>
   );
 };
 
 const Index = () => {
   return (
     <SidebarProvider>
-      <IndexContent />
+      <div className="min-h-screen flex w-full bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+        <AppSidebar />
+        <SidebarInset className="flex-1">
+          <MobileSidebar />
+          <Header />
+          <main className="pt-16 sm:pt-20">
+            <HeroSection />
+            <FeaturesSection />
+            <TestimonialsSection />
+            <StatsSection />
+          </main>
+        </SidebarInset>
+      </div>
     </SidebarProvider>
   );
 };
