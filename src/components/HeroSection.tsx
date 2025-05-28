@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Play, UserPlus } from 'lucide-react';
 
@@ -12,7 +11,9 @@ const HeroSection = () => {
               <span className="bg-gradient-to-r from-emerald-500 via-blue-500 to-pink-500 bg-clip-text text-transparent">
                 Connect, Share & Improve
               </span>{' '}
-              Your Poker Game
+              <span className="text-white font-extrabold drop-shadow-lg">
+                Your Poker Game
+              </span>
             </h1>
             <p className="text-xl text-slate-400 mb-10 leading-relaxed">
               Join the ultimate social platform built exclusively for poker players. Share hands, track stats, and learn from the community.
