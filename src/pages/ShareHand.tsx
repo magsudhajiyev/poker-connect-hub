@@ -11,7 +11,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
-import { ArrowLeft, ArrowRight, Share2, Upload, Camera, Plus, X } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { ArrowLeft, ArrowRight, Share2, Upload, Camera, Plus, X, Check } from 'lucide-react';
+
+interface ActionStep {
+  playerId: string;
+  playerName: string;
+  isHero: boolean;
+  action?: string;
+  betAmount?: string;
+  completed: boolean;
+}
 
 const ShareHandContent = () => {
   const { isCollapsed } = useSidebar();
@@ -26,20 +36,17 @@ const ShareHandContent = () => {
     villainPosition: '',
     heroStackSize: [100], // Array for slider value
     villainStackSize: [100], // Array for slider value
-    preflopAction: '',
-    preflopBet: '',
+    heroCards: { card1: '', card2: '' },
+    preflopActions: [] as ActionStep[],
     preflopDescription: '',
     flopCards: '',
-    flopAction: '',
-    flopBet: '',
+    flopActions: [] as ActionStep[],
     flopDescription: '',
     turnCard: '',
-    turnAction: '',
-    turnBet: '',
+    turnActions: [] as ActionStep[],
     turnDescription: '',
     riverCard: '',
-    riverAction: '',
-    riverBet: '',
+    riverActions: [] as ActionStep[],
     title: '',
     description: ''
   });
@@ -112,83 +119,221 @@ const ShareHandContent = () => {
     return names[position] || position;
   };
 
-  const getActionOrder = () => {
+  const initializeActions = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions') => {
     if (!formData.heroPosition || !formData.villainPosition) return [];
     
     const heroIndex = positionOrder.indexOf(formData.heroPosition);
     const villainIndex = positionOrder.indexOf(formData.villainPosition);
     
+    const actionOrder: ActionStep[] = [];
+    
     if (heroIndex < villainIndex) {
-      return [
-        { position: formData.heroPosition, isHero: true },
-        { position: formData.villainPosition, isHero: false }
-      ];
+      actionOrder.push({
+        playerId: 'hero',
+        playerName: 'Hero',
+        isHero: true,
+        completed: false
+      });
+      actionOrder.push({
+        playerId: 'villain',
+        playerName: 'Villain',
+        isHero: false,
+        completed: false
+      });
     } else {
-      return [
-        { position: formData.villainPosition, isHero: false },
-        { position: formData.heroPosition, isHero: true }
-      ];
+      actionOrder.push({
+        playerId: 'villain',
+        playerName: 'Villain',
+        isHero: false,
+        completed: false
+      });
+      actionOrder.push({
+        playerId: 'hero',
+        playerName: 'Hero',
+        isHero: true,
+        completed: false
+      });
     }
+    
+    return actionOrder;
   };
 
-  const renderActionFlow = (street: 'preflop' | 'flop' | 'turn' | 'river') => {
-    const actionOrder = getActionOrder();
-    const actionKey = `${street}Action` as keyof typeof formData;
-    const betKey = `${street}Bet` as keyof typeof formData;
+  const updateAction = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', playerIndex: number, action: string, betAmount?: string) => {
+    const actions = [...formData[street]];
+    if (actions.length === 0) {
+      const newActions = initializeActions(street);
+      setFormData({...formData, [street]: newActions});
+      return;
+    }
+    
+    actions[playerIndex] = {
+      ...actions[playerIndex],
+      action,
+      betAmount,
+      completed: true
+    };
+    
+    // If this was a bet or raise, add another action for the opponent
+    if ((action === 'bet' || action === 'raise') && actions.length === playerIndex + 1) {
+      const currentPlayer = actions[playerIndex];
+      const opponentIsHero = !currentPlayer.isHero;
+      
+      actions.push({
+        playerId: opponentIsHero ? 'hero' : 'villain',
+        playerName: opponentIsHero ? 'Hero' : 'Villain',
+        isHero: opponentIsHero,
+        completed: false
+      });
+    }
+    
+    setFormData({...formData, [street]: actions});
+  };
+
+  const cards = ['A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
+  const suits = ['♠', '♥', '♦', '♣'];
+
+  const renderCardSelector = (cardPosition: 'card1' | 'card2') => {
+    const currentCard = formData.heroCards[cardPosition];
+    const [rank, suit] = currentCard ? [currentCard.slice(0, -1), currentCard.slice(-1)] : ['', ''];
+
+    return (
+      <div className="space-y-3">
+        <Label className="text-slate-300">{cardPosition === 'card1' ? 'First Card' : 'Second Card'}</Label>
+        
+        {/* Rank Selection */}
+        <div>
+          <div className="text-sm text-slate-400 mb-2">Rank</div>
+          <div className="grid grid-cols-7 gap-2">
+            {cards.map((card) => (
+              <Button
+                key={card}
+                variant={rank === card ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  const newCard = card + (suit || '♠');
+                  setFormData({
+                    ...formData,
+                    heroCards: {
+                      ...formData.heroCards,
+                      [cardPosition]: newCard
+                    }
+                  });
+                }}
+                className={`aspect-square ${
+                  rank === card 
+                    ? 'bg-emerald-500 text-slate-900' 
+                    : 'border-slate-700/50 text-slate-300'
+                }`}
+              >
+                {card}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Suit Selection */}
+        <div>
+          <div className="text-sm text-slate-400 mb-2">Suit</div>
+          <div className="grid grid-cols-4 gap-2">
+            {suits.map((suitSymbol) => (
+              <Button
+                key={suitSymbol}
+                variant={suit === suitSymbol ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  const newCard = (rank || 'A') + suitSymbol;
+                  setFormData({
+                    ...formData,
+                    heroCards: {
+                      ...formData.heroCards,
+                      [cardPosition]: newCard
+                    }
+                  });
+                }}
+                className={`aspect-square ${
+                  suit === suitSymbol 
+                    ? 'bg-emerald-500 text-slate-900' 
+                    : 'border-slate-700/50 text-slate-300'
+                } ${
+                  suitSymbol === '♥' || suitSymbol === '♦' ? 'text-red-400' : ''
+                }`}
+              >
+                {suitSymbol}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Selected Card Display */}
+        {currentCard && (
+          <div className="mt-3">
+            <div className={`inline-flex items-center justify-center w-16 h-20 bg-slate-800 border-2 border-slate-600 rounded-lg text-lg font-bold ${
+              suit === '♥' || suit === '♦' ? 'text-red-400' : 'text-slate-200'
+            }`}>
+              {currentCard}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderActionFlow = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions') => {
+    let actions = formData[street];
+    
+    if (actions.length === 0) {
+      actions = initializeActions(street);
+      setFormData({...formData, [street]: actions});
+    }
     
     return (
       <div className="space-y-4">
         <h4 className="text-md font-medium text-slate-300">Action Flow</h4>
-        {actionOrder.map((player, index) => (
-          <div key={index} className="border border-slate-700/50 rounded-lg p-4">
+        {actions.map((actionStep, index) => (
+          <div key={`${actionStep.playerId}-${index}`} className="border border-slate-700/50 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
-              <span className={`font-medium ${player.isHero ? 'text-emerald-400' : 'text-violet-400'}`}>
-                {player.isHero ? 'Hero' : 'Villain'} ({getPositionName(player.position)})
+              <span className={`font-medium ${actionStep.isHero ? 'text-emerald-400' : 'text-violet-400'}`}>
+                {actionStep.playerName} ({getPositionName(actionStep.isHero ? formData.heroPosition : formData.villainPosition)})
               </span>
+              {actionStep.completed && (
+                <Check className="w-5 h-5 text-emerald-400" />
+              )}
             </div>
             
-            {player.isHero && (
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-slate-300">Your Action</Label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
-                    {['fold', 'call', 'bet', 'raise'].map((action) => (
-                      <Button
-                        key={action}
-                        variant={formData[actionKey] === action ? 'default' : 'outline'}
-                        size="sm"
-                        onClick={() => setFormData({...formData, [actionKey]: action})}
-                        className={`${
-                          formData[actionKey] === action 
-                            ? 'bg-emerald-500 text-slate-900' 
-                            : 'border-slate-700/50 text-slate-300'
-                        }`}
-                      >
-                        {action.charAt(0).toUpperCase() + action.slice(1)}
-                      </Button>
-                    ))}
-                  </div>
+            <div className="space-y-3">
+              <div>
+                <Label className="text-slate-300">Action</Label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                  {['fold', 'call', 'bet', 'raise'].map((action) => (
+                    <Button
+                      key={action}
+                      variant={actionStep.action === action ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => updateAction(street, index, action)}
+                      className={`${
+                        actionStep.action === action 
+                          ? 'bg-emerald-500 text-slate-900' 
+                          : 'border-slate-700/50 text-slate-300'
+                      }`}
+                    >
+                      {action.charAt(0).toUpperCase() + action.slice(1)}
+                    </Button>
+                  ))}
                 </div>
-                
-                {(formData[actionKey] === 'bet' || formData[actionKey] === 'raise' || formData[actionKey] === 'call') && (
-                  <div>
-                    <Label className="text-slate-300">{getBetSizeLabel()}</Label>
-                    <Input
-                      value={formData[betKey] as string}
-                      onChange={(e) => setFormData({...formData, [betKey]: e.target.value})}
-                      placeholder="2.5"
-                      className="bg-slate-900/50 border-slate-700/50 text-slate-200"
-                    />
-                  </div>
-                )}
               </div>
-            )}
-            
-            {!player.isHero && (
-              <div className="text-slate-400 text-sm">
-                Villain's action will be recorded based on the situation
-              </div>
-            )}
+              
+              {(actionStep.action === 'bet' || actionStep.action === 'raise' || actionStep.action === 'call') && (
+                <div>
+                  <Label className="text-slate-300">{getBetSizeLabel()}</Label>
+                  <Input
+                    value={actionStep.betAmount || ''}
+                    onChange={(e) => updateAction(street, index, actionStep.action!, e.target.value)}
+                    placeholder="2.5"
+                    className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+                  />
+                </div>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -202,18 +347,42 @@ const ShareHandContent = () => {
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-slate-200 mb-4">Game Setup</h3>
             
-            {/* Game Format Selection */}
+            {/* Game Format Selection with Toggle Buttons */}
             <div>
-              <Label htmlFor="game-format" className="text-slate-300">Game Format</Label>
-              <Select value={formData.gameFormat} onValueChange={(value) => setFormData({...formData, gameFormat: value})}>
-                <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200">
-                  <SelectValue placeholder="Select game format" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
-                  <SelectItem value="mtt">MTT (Multi-Table Tournament)</SelectItem>
-                  <SelectItem value="cash">Cash Game</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label className="text-slate-300 mb-3 block">Game Format</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  variant={formData.gameFormat === 'mtt' ? 'default' : 'outline'}
+                  onClick={() => setFormData({...formData, gameFormat: 'mtt'})}
+                  className={`h-16 flex flex-col items-center justify-center relative ${
+                    formData.gameFormat === 'mtt' 
+                      ? 'bg-emerald-500 text-slate-900 border-emerald-500' 
+                      : 'border-slate-700/50 text-slate-300 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {formData.gameFormat === 'mtt' && (
+                    <Check className="absolute top-2 right-2 w-4 h-4" />
+                  )}
+                  <span className="font-medium">MTT</span>
+                  <span className="text-xs opacity-75">Multi-Table Tournament</span>
+                </Button>
+                
+                <Button
+                  variant={formData.gameFormat === 'cash' ? 'default' : 'outline'}
+                  onClick={() => setFormData({...formData, gameFormat: 'cash'})}
+                  className={`h-16 flex flex-col items-center justify-center relative ${
+                    formData.gameFormat === 'cash' 
+                      ? 'bg-emerald-500 text-slate-900 border-emerald-500' 
+                      : 'border-slate-700/50 text-slate-300 hover:bg-slate-800/50'
+                  }`}
+                >
+                  {formData.gameFormat === 'cash' && (
+                    <Check className="absolute top-2 right-2 w-4 h-4" />
+                  )}
+                  <span className="font-medium">Cash Game</span>
+                  <span className="text-xs opacity-75">Real Money Cash</span>
+                </Button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -329,7 +498,35 @@ const ShareHandContent = () => {
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-slate-200 mb-4">Preflop Action</h3>
             
-            {renderActionFlow('preflop')}
+            {/* Hole Cards Selection */}
+            <div className="space-y-4">
+              <h4 className="text-md font-medium text-slate-300">Your Hole Cards</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {renderCardSelector('card1')}
+                {renderCardSelector('card2')}
+              </div>
+              
+              {/* Cards Preview */}
+              {formData.heroCards.card1 && formData.heroCards.card2 && (
+                <div className="flex items-center space-x-3 pt-4">
+                  <span className="text-slate-300 font-medium">Your Hand:</span>
+                  <div className="flex space-x-2">
+                    <div className={`w-12 h-16 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-sm ${
+                      formData.heroCards.card1.includes('♥') || formData.heroCards.card1.includes('♦') ? 'text-red-400' : 'text-slate-200'
+                    }`}>
+                      {formData.heroCards.card1}
+                    </div>
+                    <div className={`w-12 h-16 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-sm ${
+                      formData.heroCards.card2.includes('♥') || formData.heroCards.card2.includes('♦') ? 'text-red-400' : 'text-slate-200'
+                    }`}>
+                      {formData.heroCards.card2}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {renderActionFlow('preflopActions')}
 
             <div>
               <Label htmlFor="preflop-description" className="text-slate-300">Preflop Insights (Optional)</Label>
@@ -361,7 +558,7 @@ const ShareHandContent = () => {
               />
             </div>
 
-            {renderActionFlow('flop')}
+            {renderActionFlow('flopActions')}
 
             <div>
               <Label htmlFor="flop-description" className="text-slate-300">Flop Insights (Optional)</Label>
@@ -393,7 +590,7 @@ const ShareHandContent = () => {
               />
             </div>
 
-            {renderActionFlow('turn')}
+            {renderActionFlow('turnActions')}
 
             <div>
               <Label htmlFor="turn-description" className="text-slate-300">Turn Insights (Optional)</Label>
@@ -425,7 +622,7 @@ const ShareHandContent = () => {
               />
             </div>
 
-            {renderActionFlow('river')}
+            {renderActionFlow('riverActions')}
 
             <div>
               <Label htmlFor="title" className="text-slate-300">Hand Title</Label>
