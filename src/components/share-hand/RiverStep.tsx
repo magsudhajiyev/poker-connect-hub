@@ -1,3 +1,4 @@
+
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -78,6 +79,18 @@ const RiverStep = ({
         getActionButtonClass={getActionButtonClass}
         handleBetSizeSelect={handleBetSizeSelect}
       />
+
+      <div>
+        <Label htmlFor="riverDescription" className="text-slate-300">River Analysis</Label>
+        <Textarea
+          id="riverDescription"
+          value={formData.riverDescription}
+          onChange={(e) => setFormData({...formData, riverDescription: e.target.value})}
+          placeholder="Analysis of river play, thoughts on the spot..."
+          rows={3}
+          className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+        />
+      </div>
 
       <div>
         <Label htmlFor="title" className="text-slate-300">Hand Title</Label>

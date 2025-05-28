@@ -34,6 +34,7 @@ export const useShareHandLogic = () => {
     turnActions: [] as ActionStep[],
     turnDescription: '',
     riverActions: [] as ActionStep[],
+    riverDescription: '',
     title: '',
     description: ''
   });

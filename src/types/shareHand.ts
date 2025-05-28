@@ -27,6 +27,7 @@ export interface ShareHandFormData {
   turnActions: ActionStep[];
   turnDescription: string;
   riverActions: ActionStep[];
+  riverDescription: string;
   title: string;
   description: string;
 }
