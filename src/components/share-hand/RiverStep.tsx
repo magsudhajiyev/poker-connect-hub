@@ -1,4 +1,3 @@
-
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -24,6 +23,7 @@ interface RiverStepProps {
   updateAction: (street: any, index: number, action: string, betAmount?: string) => void;
   getActionButtonClass: (action: string, isSelected: boolean) => string;
   handleBetSizeSelect: (street: any, index: number, amount: string) => void;
+  getAllSelectedCards: () => string[];
 }
 
 const RiverStep = ({ 
@@ -39,7 +39,8 @@ const RiverStep = ({
   getAvailableActions, 
   updateAction, 
   getActionButtonClass, 
-  handleBetSizeSelect 
+  handleBetSizeSelect,
+  getAllSelectedCards
 }: RiverStepProps) => {
   const potSize = calculatePotSize();
 
@@ -62,6 +63,7 @@ const RiverStep = ({
           onCardsChange={(cards) => setFormData({...formData, riverCard: cards})}
           maxCards={1}
           placeholder="Type river card (e.g., As)"
+          excludeCards={getAllSelectedCards().filter(card => !formData.riverCard.includes(card))}
         />
       </div>
 

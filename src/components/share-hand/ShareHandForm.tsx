@@ -23,7 +23,8 @@ const ShareHandForm = () => {
     getAvailableActions,
     updateAction,
     getActionButtonClass,
-    handleBetSizeSelect
+    handleBetSizeSelect,
+    getAllSelectedCards
   } = useShareHandContext();
 
   const renderStepContent = () => {
@@ -38,7 +39,8 @@ const ShareHandForm = () => {
       getAvailableActions,
       updateAction,
       getActionButtonClass,
-      handleBetSizeSelect
+      handleBetSizeSelect,
+      getAllSelectedCards
     };
 
     switch (currentStep) {

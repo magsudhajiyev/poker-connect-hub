@@ -16,6 +16,7 @@ interface PreflopStepProps {
   updateAction: (street: any, index: number, action: string, betAmount?: string) => void;
   getActionButtonClass: (action: string, isSelected: boolean) => string;
   handleBetSizeSelect: (street: any, index: number, amount: string) => void;
+  getAllSelectedCards: () => string[];
 }
 
 const PreflopStep = ({ 
@@ -28,7 +29,8 @@ const PreflopStep = ({
   getAvailableActions, 
   updateAction, 
   getActionButtonClass, 
-  handleBetSizeSelect 
+  handleBetSizeSelect,
+  getAllSelectedCards
 }: PreflopStepProps) => {
   const potSize = calculatePotSize();
 
@@ -46,6 +48,7 @@ const PreflopStep = ({
         onCardsChange={(cards) => setFormData({...formData, holeCards: cards})}
         maxCards={2}
         placeholder="Type your hole cards (e.g., Ah, 7d)"
+        excludeCards={getAllSelectedCards().filter(card => !formData.holeCards.includes(card))}
       />
       
       <ActionFlow

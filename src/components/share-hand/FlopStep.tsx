@@ -17,6 +17,7 @@ interface FlopStepProps {
   updateAction: (street: any, index: number, action: string, betAmount?: string) => void;
   getActionButtonClass: (action: string, isSelected: boolean) => string;
   handleBetSizeSelect: (street: any, index: number, amount: string) => void;
+  getAllSelectedCards: () => string[];
 }
 
 const FlopStep = ({ 
@@ -29,7 +30,8 @@ const FlopStep = ({
   getAvailableActions, 
   updateAction, 
   getActionButtonClass, 
-  handleBetSizeSelect 
+  handleBetSizeSelect,
+  getAllSelectedCards
 }: FlopStepProps) => {
   const potSize = calculatePotSize();
 
@@ -50,7 +52,7 @@ const FlopStep = ({
           onCardsChange={(cards) => setFormData({...formData, flopCards: cards})}
           maxCards={3}
           placeholder="Type flop cards (e.g., Kh, 9s, 4d)"
-          excludeCards={formData.holeCards}
+          excludeCards={getAllSelectedCards().filter(card => !formData.flopCards.includes(card))}
         />
       </div>
 

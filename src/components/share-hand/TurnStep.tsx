@@ -17,6 +17,7 @@ interface TurnStepProps {
   updateAction: (street: any, index: number, action: string, betAmount?: string) => void;
   getActionButtonClass: (action: string, isSelected: boolean) => string;
   handleBetSizeSelect: (street: any, index: number, amount: string) => void;
+  getAllSelectedCards: () => string[];
 }
 
 const TurnStep = ({ 
@@ -29,10 +30,10 @@ const TurnStep = ({
   getAvailableActions, 
   updateAction, 
   getActionButtonClass, 
-  handleBetSizeSelect 
+  handleBetSizeSelect,
+  getAllSelectedCards
 }: TurnStepProps) => {
   const potSize = calculatePotSize();
-  const previousCards = [...formData.holeCards, ...formData.flopCards];
 
   return (
     <div className="space-y-6">
@@ -52,7 +53,7 @@ const TurnStep = ({
           onCardsChange={(cards) => setFormData({...formData, turnCard: cards})}
           maxCards={1}
           placeholder="Type turn card (e.g., 2h)"
-          excludeCards={previousCards}
+          excludeCards={getAllSelectedCards().filter(card => !formData.turnCard.includes(card))}
         />
       </div>
 
