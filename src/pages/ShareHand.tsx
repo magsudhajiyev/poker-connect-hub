@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { ProfileTopBar } from '@/components/profile/ProfileTopBar';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
@@ -39,7 +38,7 @@ const ShareHandContent = () => {
     heroCards: { card1: '', card2: '' },
     preflopActions: [] as ActionStep[],
     preflopDescription: '',
-    flopCards: '',
+    flopCards: { card1: '', card2: '', card3: '' },
     flopActions: [] as ActionStep[],
     flopDescription: '',
     turnCard: '',
@@ -104,6 +103,34 @@ const ShareHandContent = () => {
     return formData.gameFormat === 'cash' ? 'Bet Size ($)' : 'Bet Size (BB)';
   };
 
+  // Calculate pot size
+  const calculatePotSize = () => {
+    let potSize = 0;
+    
+    // Add blinds for preflop
+    if (formData.gameFormat === 'cash') {
+      potSize += 1.5; // Assume $0.5 SB + $1 BB for cash
+    } else {
+      potSize += 1.5; // Assume 0.5 SB + 1 BB for tournament
+    }
+    
+    // Add all bets from all streets
+    const allActions = [
+      ...formData.preflopActions,
+      ...formData.flopActions,
+      ...formData.turnActions,
+      ...formData.riverActions
+    ];
+    
+    allActions.forEach(action => {
+      if (action.betAmount && (action.action === 'bet' || action.action === 'raise' || action.action === 'call')) {
+        potSize += parseFloat(action.betAmount) || 0;
+      }
+    });
+    
+    return potSize;
+  };
+
   // Position order for action flow
   const positionOrder = ['utg', 'mp', 'co', 'btn', 'sb', 'bb'];
   
@@ -158,6 +185,33 @@ const ShareHandContent = () => {
     return actionOrder;
   };
 
+  const getAvailableActions = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', playerIndex: number) => {
+    const actions = formData[street];
+    const currentPlayerAction = actions[playerIndex];
+    
+    // Check if there's a bet or raise before this action
+    const previousActions = actions.slice(0, playerIndex);
+    const lastAction = previousActions[previousActions.length - 1];
+    
+    let availableActions = ['fold'];
+    
+    if (!lastAction || !lastAction.action) {
+      // First to act or no previous action
+      availableActions = ['fold', 'check', 'bet'];
+    } else if (lastAction.action === 'check') {
+      // Previous player checked
+      availableActions = ['fold', 'check', 'bet'];
+    } else if (lastAction.action === 'bet' || lastAction.action === 'raise') {
+      // Previous player bet or raised
+      availableActions = ['fold', 'call', 'raise'];
+    } else if (lastAction.action === 'call') {
+      // Previous player called
+      availableActions = ['fold', 'check', 'bet'];
+    }
+    
+    return availableActions;
+  };
+
   const updateAction = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', playerIndex: number, action: string, betAmount?: string) => {
     const actions = [...formData[street]];
     if (actions.length === 0) {
@@ -166,10 +220,18 @@ const ShareHandContent = () => {
       return;
     }
     
+    // For call action, get the bet amount from previous action
+    let finalBetAmount = betAmount;
+    if (action === 'call') {
+      const previousActions = actions.slice(0, playerIndex);
+      const lastBetAction = previousActions.reverse().find(a => a.action === 'bet' || a.action === 'raise');
+      finalBetAmount = lastBetAction?.betAmount || '0';
+    }
+    
     actions[playerIndex] = {
       ...actions[playerIndex],
       action,
-      betAmount,
+      betAmount: finalBetAmount,
       completed: true
     };
     
@@ -192,13 +254,13 @@ const ShareHandContent = () => {
   const cards = ['A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
   const suits = ['♠', '♥', '♦', '♣'];
 
-  const renderCardSelector = (cardPosition: 'card1' | 'card2') => {
-    const currentCard = formData.heroCards[cardPosition];
+  const renderCardSelector = (cardPosition: 'card1' | 'card2' | 'card3', cardValue?: string, onChange?: (card: string) => void) => {
+    const currentCard = cardValue || '';
     const [rank, suit] = currentCard ? [currentCard.slice(0, -1), currentCard.slice(-1)] : ['', ''];
 
     return (
       <div className="space-y-3">
-        <Label className="text-slate-300">{cardPosition === 'card1' ? 'First Card' : 'Second Card'}</Label>
+        <Label className="text-slate-300">{cardPosition === 'card1' ? 'First Card' : cardPosition === 'card2' ? 'Second Card' : 'Third Card'}</Label>
         
         {/* Rank Selection */}
         <div>
@@ -211,13 +273,9 @@ const ShareHandContent = () => {
                 size="sm"
                 onClick={() => {
                   const newCard = card + (suit || '♠');
-                  setFormData({
-                    ...formData,
-                    heroCards: {
-                      ...formData.heroCards,
-                      [cardPosition]: newCard
-                    }
-                  });
+                  if (onChange) {
+                    onChange(newCard);
+                  }
                 }}
                 className={`aspect-square ${
                   rank === card 
@@ -242,13 +300,9 @@ const ShareHandContent = () => {
                 size="sm"
                 onClick={() => {
                   const newCard = (rank || 'A') + suitSymbol;
-                  setFormData({
-                    ...formData,
-                    heroCards: {
-                      ...formData.heroCards,
-                      [cardPosition]: newCard
-                    }
-                  });
+                  if (onChange) {
+                    onChange(newCard);
+                  }
                 }}
                 className={`aspect-square ${
                   suit === suitSymbol 
@@ -278,6 +332,22 @@ const ShareHandContent = () => {
     );
   };
 
+  const renderHoleCardSelector = (cardPosition: 'card1' | 'card2') => {
+    return renderCardSelector(
+      cardPosition,
+      formData.heroCards[cardPosition],
+      (newCard) => {
+        setFormData({
+          ...formData,
+          heroCards: {
+            ...formData.heroCards,
+            [cardPosition]: newCard
+          }
+        });
+      }
+    );
+  };
+
   const renderActionFlow = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions') => {
     let actions = formData[street];
     
@@ -289,58 +359,74 @@ const ShareHandContent = () => {
     return (
       <div className="space-y-4">
         <h4 className="text-md font-medium text-slate-300">Action Flow</h4>
-        {actions.map((actionStep, index) => (
-          <div key={`${actionStep.playerId}-${index}`} className="border border-slate-700/50 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className={`font-medium ${actionStep.isHero ? 'text-emerald-400' : 'text-violet-400'}`}>
-                {actionStep.playerName} ({getPositionName(actionStep.isHero ? formData.heroPosition : formData.villainPosition)})
-              </span>
-              {actionStep.completed && (
-                <Check className="w-5 h-5 text-emerald-400" />
-              )}
-            </div>
-            
-            <div className="space-y-3">
-              <div>
-                <Label className="text-slate-300">Action</Label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
-                  {['fold', 'call', 'bet', 'raise'].map((action) => (
-                    <Button
-                      key={action}
-                      variant={actionStep.action === action ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => updateAction(street, index, action)}
-                      className={`${
-                        actionStep.action === action 
-                          ? 'bg-emerald-500 text-slate-900' 
-                          : 'border-slate-700/50 text-slate-300'
-                      }`}
-                    >
-                      {action.charAt(0).toUpperCase() + action.slice(1)}
-                    </Button>
-                  ))}
-                </div>
+        {actions.map((actionStep, index) => {
+          const availableActions = getAvailableActions(street, index);
+          
+          return (
+            <div key={`${actionStep.playerId}-${index}`} className="border border-slate-700/50 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className={`font-medium ${actionStep.isHero ? 'text-emerald-400' : 'text-violet-400'}`}>
+                  {actionStep.playerName} ({getPositionName(actionStep.isHero ? formData.heroPosition : formData.villainPosition)})
+                </span>
+                {actionStep.completed && (
+                  <Check className="w-5 h-5 text-emerald-400" />
+                )}
               </div>
               
-              {(actionStep.action === 'bet' || actionStep.action === 'raise' || actionStep.action === 'call') && (
+              <div className="space-y-3">
                 <div>
-                  <Label className="text-slate-300">{getBetSizeLabel()}</Label>
-                  <Input
-                    value={actionStep.betAmount || ''}
-                    onChange={(e) => updateAction(street, index, actionStep.action!, e.target.value)}
-                    placeholder="2.5"
-                    className="bg-slate-900/50 border-slate-700/50 text-slate-200"
-                  />
+                  <Label className="text-slate-300">Action</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                    {availableActions.map((action) => (
+                      <Button
+                        key={action}
+                        variant={actionStep.action === action ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => updateAction(street, index, action)}
+                        className={`${
+                          actionStep.action === action 
+                            ? 'bg-emerald-500 text-slate-900' 
+                            : 'border-slate-700/50 text-slate-300'
+                        }`}
+                      >
+                        {action.charAt(0).toUpperCase() + action.slice(1)}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-              )}
+                
+                {(actionStep.action === 'bet' || actionStep.action === 'raise') && (
+                  <div>
+                    <Label className="text-slate-300">{getBetSizeLabel()}</Label>
+                    <Input
+                      value={actionStep.betAmount || ''}
+                      onChange={(e) => updateAction(street, index, actionStep.action!, e.target.value)}
+                      placeholder="2.5"
+                      className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+                    />
+                  </div>
+                )}
+
+                {actionStep.action === 'call' && actionStep.betAmount && (
+                  <div>
+                    <Label className="text-slate-300">Call Amount</Label>
+                    <div className="text-emerald-400 font-medium">
+                      {getCurrencySymbol()}{actionStep.betAmount}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   };
 
   const renderStepContent = () => {
+    const potSize = calculatePotSize();
+    const showPot = currentStep > 0; // Show pot on all screens except Game Setup
+
     switch (currentStep) {
       case 0: // Game Setup
         return (
@@ -496,14 +582,25 @@ const ShareHandContent = () => {
       case 1: // Preflop
         return (
           <div className="space-y-6">
+            {showPot && (
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4">
+                <div className="text-center">
+                  <span className="text-slate-300">Current Pot: </span>
+                  <span className="text-emerald-400 font-bold text-lg">
+                    {getCurrencySymbol()}{potSize.toFixed(1)}
+                  </span>
+                </div>
+              </div>
+            )}
+
             <h3 className="text-lg font-medium text-slate-200 mb-4">Preflop Action</h3>
             
             {/* Hole Cards Selection */}
             <div className="space-y-4">
               <h4 className="text-md font-medium text-slate-300">Your Hole Cards</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {renderCardSelector('card1')}
-                {renderCardSelector('card2')}
+                {renderHoleCardSelector('card1')}
+                {renderHoleCardSelector('card2')}
               </div>
               
               {/* Cards Preview */}
@@ -545,17 +642,49 @@ const ShareHandContent = () => {
       case 2: // Flop
         return (
           <div className="space-y-6">
+            {showPot && (
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4">
+                <div className="text-center">
+                  <span className="text-slate-300">Current Pot: </span>
+                  <span className="text-emerald-400 font-bold text-lg">
+                    {getCurrencySymbol()}{potSize.toFixed(1)}
+                  </span>
+                </div>
+              </div>
+            )}
+
             <h3 className="text-lg font-medium text-slate-200 mb-4">Flop</h3>
             
-            <div>
-              <Label htmlFor="flop-cards" className="text-slate-300">Flop Cards</Label>
-              <Input
-                id="flop-cards"
-                value={formData.flopCards}
-                onChange={(e) => setFormData({...formData, flopCards: e.target.value})}
-                placeholder="A♠ K♥ 7♣"
-                className="bg-slate-900/50 border-slate-700/50 text-slate-200"
-              />
+            {/* Flop Cards Selection */}
+            <div className="space-y-4">
+              <h4 className="text-md font-medium text-slate-300">Flop Cards</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {renderCardSelector('card1', formData.flopCards.card1, (card) => 
+                  setFormData({...formData, flopCards: {...formData.flopCards, card1: card}})
+                )}
+                {renderCardSelector('card2', formData.flopCards.card2, (card) => 
+                  setFormData({...formData, flopCards: {...formData.flopCards, card2: card}})
+                )}
+                {renderCardSelector('card3', formData.flopCards.card3, (card) => 
+                  setFormData({...formData, flopCards: {...formData.flopCards, card3: card}})
+                )}
+              </div>
+
+              {/* Board Preview */}
+              {formData.flopCards.card1 && formData.flopCards.card2 && formData.flopCards.card3 && (
+                <div className="flex items-center space-x-3 pt-4">
+                  <span className="text-slate-300 font-medium">Board:</span>
+                  <div className="flex space-x-2">
+                    {[formData.flopCards.card1, formData.flopCards.card2, formData.flopCards.card3].map((card, index) => (
+                      <div key={index} className={`w-12 h-16 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-sm ${
+                        card.includes('♥') || card.includes('♦') ? 'text-red-400' : 'text-slate-200'
+                      }`}>
+                        {card}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {renderActionFlow('flopActions')}
@@ -577,17 +706,43 @@ const ShareHandContent = () => {
       case 3: // Turn
         return (
           <div className="space-y-6">
+            {showPot && (
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4">
+                <div className="text-center">
+                  <span className="text-slate-300">Current Pot: </span>
+                  <span className="text-emerald-400 font-bold text-lg">
+                    {getCurrencySymbol()}{potSize.toFixed(1)}
+                  </span>
+                </div>
+              </div>
+            )}
+
             <h3 className="text-lg font-medium text-slate-200 mb-4">Turn</h3>
             
-            <div>
-              <Label htmlFor="turn-card" className="text-slate-300">Turn Card</Label>
-              <Input
-                id="turn-card"
-                value={formData.turnCard}
-                onChange={(e) => setFormData({...formData, turnCard: e.target.value})}
-                placeholder="Q♠"
-                className="bg-slate-900/50 border-slate-700/50 text-slate-200"
-              />
+            {/* Turn Card Selection */}
+            <div className="space-y-4">
+              <h4 className="text-md font-medium text-slate-300">Turn Card</h4>
+              <div className="max-w-sm">
+                {renderCardSelector('card1', formData.turnCard, (card) => 
+                  setFormData({...formData, turnCard: card})
+                )}
+              </div>
+
+              {/* Board Preview with Turn */}
+              {formData.flopCards.card1 && formData.flopCards.card2 && formData.flopCards.card3 && formData.turnCard && (
+                <div className="flex items-center space-x-3 pt-4">
+                  <span className="text-slate-300 font-medium">Board:</span>
+                  <div className="flex space-x-2">
+                    {[formData.flopCards.card1, formData.flopCards.card2, formData.flopCards.card3, formData.turnCard].map((card, index) => (
+                      <div key={index} className={`w-12 h-16 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-sm ${
+                        card.includes('♥') || card.includes('♦') ? 'text-red-400' : 'text-slate-200'
+                      }`}>
+                        {card}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {renderActionFlow('turnActions')}
@@ -609,17 +764,43 @@ const ShareHandContent = () => {
       case 4: // River
         return (
           <div className="space-y-6">
+            {showPot && (
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4">
+                <div className="text-center">
+                  <span className="text-slate-300">Final Pot: </span>
+                  <span className="text-emerald-400 font-bold text-lg">
+                    {getCurrencySymbol()}{potSize.toFixed(1)}
+                  </span>
+                </div>
+              </div>
+            )}
+
             <h3 className="text-lg font-medium text-slate-200 mb-4">River & Summary</h3>
             
-            <div>
-              <Label htmlFor="river-card" className="text-slate-300">River Card</Label>
-              <Input
-                id="river-card"
-                value={formData.riverCard}
-                onChange={(e) => setFormData({...formData, riverCard: e.target.value})}
-                placeholder="2♦"
-                className="bg-slate-900/50 border-slate-700/50 text-slate-200"
-              />
+            {/* River Card Selection */}
+            <div className="space-y-4">
+              <h4 className="text-md font-medium text-slate-300">River Card</h4>
+              <div className="max-w-sm">
+                {renderCardSelector('card1', formData.riverCard, (card) => 
+                  setFormData({...formData, riverCard: card})
+                )}
+              </div>
+
+              {/* Final Board Preview */}
+              {formData.flopCards.card1 && formData.flopCards.card2 && formData.flopCards.card3 && formData.turnCard && formData.riverCard && (
+                <div className="flex items-center space-x-3 pt-4">
+                  <span className="text-slate-300 font-medium">Final Board:</span>
+                  <div className="flex space-x-2">
+                    {[formData.flopCards.card1, formData.flopCards.card2, formData.flopCards.card3, formData.turnCard, formData.riverCard].map((card, index) => (
+                      <div key={index} className={`w-12 h-16 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-sm ${
+                        card.includes('♥') || card.includes('♦') ? 'text-red-400' : 'text-slate-200'
+                      }`}>
+                        {card}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {renderActionFlow('riverActions')}
