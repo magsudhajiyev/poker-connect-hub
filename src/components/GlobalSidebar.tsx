@@ -1,0 +1,103 @@
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { 
+  Rss, Flame, ChartLine, User, Users, HelpCircle, ChevronLeft, ChevronRight
+} from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+
+export const GlobalSidebar = () => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const location = useLocation();
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  const isActive = (path: string) => {
+    if (path === '/feed' && location.pathname === '/feed') return true;
+    if (path === '/profile' && location.pathname === '/profile') return true;
+    return false;
+  };
+
+  return (
+    <aside className={`hidden lg:block fixed h-[calc(100vh-4rem)] overflow-y-auto border-r border-zinc-700/20 pt-6 transition-all duration-300 ${
+      isCollapsed ? 'w-16' : 'w-64'
+    }`}>
+      {/* Toggle Button */}
+      <div className="absolute top-4 right-2 z-10">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleSidebar}
+          className="h-8 w-8 p-0 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
+        >
+          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+        </Button>
+      </div>
+
+      <nav className="px-4 space-y-1">
+        <div className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
+          isActive('/feed') 
+            ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
+            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+        }`}>
+          <Rss className={`w-5 h-5 mr-3 ${isActive('/feed') ? 'text-emerald-500' : ''}`} />
+          {!isCollapsed && <span>Feed</span>}
+        </div>
+        
+        <div className="flex items-center px-4 py-2.5 text-zinc-400 hover:text-zinc-200 rounded-xl hover:bg-zinc-800/40 cursor-pointer">
+          <Flame className="w-5 h-5 mr-3" />
+          {!isCollapsed && <span>Trending Hands</span>}
+        </div>
+        
+        <div className="flex items-center px-4 py-2.5 text-zinc-400 hover:text-zinc-200 rounded-xl hover:bg-zinc-800/40 cursor-pointer">
+          <ChartLine className="w-5 h-5 mr-3" />
+          {!isCollapsed && <span>My Stats</span>}
+        </div>
+        
+        <div className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
+          isActive('/profile') 
+            ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
+            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+        }`}>
+          <User className={`w-5 h-5 mr-3 ${isActive('/profile') ? 'text-emerald-500' : ''}`} />
+          {!isCollapsed && <span>My Profile</span>}
+        </div>
+        
+        <div className="flex items-center px-4 py-2.5 text-zinc-400 hover:text-zinc-200 rounded-xl hover:bg-zinc-800/40 cursor-pointer">
+          <Users className="w-5 h-5 mr-3" />
+          {!isCollapsed && <span>Following</span>}
+        </div>
+        
+        <div className="flex items-center px-4 py-2.5 text-zinc-400 hover:text-zinc-200 rounded-xl hover:bg-zinc-800/40 cursor-pointer">
+          <HelpCircle className="w-5 h-5 mr-3" />
+          {!isCollapsed && <span>Help & Support</span>}
+        </div>
+      </nav>
+      
+      {!isCollapsed && (
+        <div className="mt-8 px-4">
+          <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider px-4 mb-2">My Stats Overview</h3>
+          <div className="bg-zinc-900/60 rounded-xl border border-zinc-700/20 p-4 space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-zinc-400 text-sm">Hands Played</span>
+              <span className="text-emerald-500 font-medium">1,280</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-zinc-400 text-sm">Win Rate</span>
+              <span className="text-emerald-500 font-medium">+5.2 BB/100</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-zinc-400 text-sm">Top Hand</span>
+              <span className="text-zinc-200 font-medium">A♠A♥</span>
+            </div>
+            <Button className="w-full mt-2 py-2 bg-zinc-800/40 rounded-xl border border-zinc-700/30 text-zinc-200 text-sm hover:bg-zinc-800/60">
+              View Full Stats
+            </Button>
+          </div>
+        </div>
+      )}
+    </aside>
+  );
+};
