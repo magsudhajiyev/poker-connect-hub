@@ -110,7 +110,7 @@ const CardSelectionModal = ({
             </div>
           </div>
 
-          {/* Selected Cards Display - Made more compact */}
+          {/* Selected Cards Display - Only show actually selected cards, not disabled ones */}
           {selectedCards.length > 0 && (
             <div className="space-y-2">
               <Label className="text-slate-300">Selected Cards:</Label>
