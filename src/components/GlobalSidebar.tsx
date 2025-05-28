@@ -52,7 +52,7 @@ export const GlobalSidebar = () => {
   };
 
   return (
-    <aside className={`hidden lg:block fixed h-[calc(100vh-4rem)] overflow-y-auto border-r border-zinc-700/20 pt-6 transition-all duration-300 ${
+    <aside className={`hidden lg:block fixed h-[calc(100vh-4rem)] overflow-hidden border-r border-zinc-700/20 pt-6 transition-all duration-300 ${
       isCollapsed ? 'w-16' : 'w-64'
     }`}>
       {/* Toggle Button */}
@@ -61,7 +61,7 @@ export const GlobalSidebar = () => {
           variant="ghost"
           size="sm"
           onClick={toggleSidebar}
-          className="h-8 w-8 p-0 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
+          className="h-8 w-8 p-0 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40 transition-colors"
         >
           {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </Button>
@@ -70,76 +70,94 @@ export const GlobalSidebar = () => {
       <nav className="px-4 space-y-1">
         <div 
           onClick={() => handleNavigation('/feed')}
-          className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
+          className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-300 ${
             isActive('/feed') 
               ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
               : isCollapsed 
-                ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+                ? 'text-zinc-400 hover:bg-zinc-800/40'
                 : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
-          }`}
+          } ${isCollapsed ? 'justify-center' : ''}`}
         >
-          <Rss className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isActive('/feed') ? 'text-emerald-500' : ''}`} />
-          {!isCollapsed && <span>Feed</span>}
+          <Rss className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${
+            isCollapsed ? '' : 'mr-3'
+          } ${isActive('/feed') ? 'text-emerald-500' : ''}`} />
+          <span className={`transition-all duration-300 ${
+            isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
+          }`}>Feed</span>
         </div>
         
-        <div className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
+        <div className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-300 ${
           isCollapsed 
-            ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+            ? 'text-zinc-400 hover:bg-zinc-800/40 justify-center'
             : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
         }`}>
-          <Flame className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'}`} />
-          {!isCollapsed && <span>Trending Hands</span>}
+          <Flame className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${isCollapsed ? '' : 'mr-3'}`} />
+          <span className={`transition-all duration-300 ${
+            isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
+          }`}>Trending Hands</span>
         </div>
         
         <div 
           onClick={() => handleNavigation('/share-hand')}
-          className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
+          className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-300 ${
             isActive('/share-hand') 
               ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
               : isCollapsed 
-                ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+                ? 'text-zinc-400 hover:bg-zinc-800/40'
                 : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
-          }`}
+          } ${isCollapsed ? 'justify-center' : ''}`}
         >
-          <Share2 className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isActive('/share-hand') ? 'text-emerald-500' : ''}`} />
-          {!isCollapsed && <span>Share Hand</span>}
+          <Share2 className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${
+            isCollapsed ? '' : 'mr-3'
+          } ${isActive('/share-hand') ? 'text-emerald-500' : ''}`} />
+          <span className={`transition-all duration-300 ${
+            isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
+          }`}>Share Hand</span>
         </div>
         
         <div 
           onClick={() => handleNavigation('/profile')}
-          className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
+          className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-300 ${
             isActive('/profile') 
               ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
               : isCollapsed 
-                ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+                ? 'text-zinc-400 hover:bg-zinc-800/40'
                 : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
-          }`}
+          } ${isCollapsed ? 'justify-center' : ''}`}
         >
-          <User className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isActive('/profile') ? 'text-emerald-500' : ''}`} />
-          {!isCollapsed && <span>My Profile</span>}
+          <User className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${
+            isCollapsed ? '' : 'mr-3'
+          } ${isActive('/profile') ? 'text-emerald-500' : ''}`} />
+          <span className={`transition-all duration-300 ${
+            isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
+          }`}>My Profile</span>
         </div>
         
-        <div className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
+        <div className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-300 ${
           isCollapsed 
-            ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+            ? 'text-zinc-400 hover:bg-zinc-800/40 justify-center'
             : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
         }`}>
-          <Users className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'}`} />
-          {!isCollapsed && <span>Following</span>}
+          <Users className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${isCollapsed ? '' : 'mr-3'}`} />
+          <span className={`transition-all duration-300 ${
+            isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
+          }`}>Following</span>
         </div>
         
-        <div className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
+        <div className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-300 ${
           isCollapsed 
-            ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+            ? 'text-zinc-400 hover:bg-zinc-800/40 justify-center'
             : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
         }`}>
-          <HelpCircle className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'}`} />
-          {!isCollapsed && <span>Help & Support</span>}
+          <HelpCircle className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${isCollapsed ? '' : 'mr-3'}`} />
+          <span className={`transition-all duration-300 ${
+            isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
+          }`}>Help & Support</span>
         </div>
       </nav>
       
       {!isCollapsed && (
-        <div className="mt-8 px-4">
+        <div className="mt-8 px-4 transition-all duration-300">
           <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider px-4 mb-2">My Stats Overview</h3>
           <div className="bg-zinc-900/60 rounded-xl border border-zinc-700/20 p-4 space-y-3">
             <div className="flex justify-between items-center">
