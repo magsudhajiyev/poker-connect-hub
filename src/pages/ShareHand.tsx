@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { ProfileTopBar } from '@/components/profile/ProfileTopBar';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
@@ -167,19 +168,19 @@ const ShareHandContent = () => {
         return {
           title: 'Select Flop Cards',
           maxCards: 3,
-          currentSelection: formData.flopCards
+          currentSelection: [] // Start with empty selection for flop
         };
       case 'turn':
         return {
           title: 'Select Turn Card',
           maxCards: 1,
-          currentSelection: formData.turnCard
+          currentSelection: [] // Start with empty selection for turn
         };
       case 'river':
         return {
           title: 'Select River Card',
           maxCards: 1,
-          currentSelection: formData.riverCard
+          currentSelection: [] // Start with empty selection for river
         };
       default:
         return {
