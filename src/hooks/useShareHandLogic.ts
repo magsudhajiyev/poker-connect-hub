@@ -110,6 +110,15 @@ export const useShareHandLogic = () => {
     return `${baseClass} border-slate-700/50 text-slate-300 hover:bg-slate-800/50`;
   };
 
+  const removeSubsequentActions = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', fromIndex: number) => {
+    const actions = formData[street];
+    const updatedActions = actions.slice(0, fromIndex + 1);
+    
+    console.log(`Removing subsequent actions after index ${fromIndex} on ${street}`, updatedActions);
+    
+    setFormData({ ...formData, [street]: updatedActions });
+  };
+
   const addNextActionStep = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', currentIndex: number) => {
     const actions = formData[street];
     const currentAction = actions[currentIndex];
@@ -175,6 +184,8 @@ export const useShareHandLogic = () => {
     console.log(`Updating action at index ${index} on ${street}:`, action, betAmount);
     
     const updatedActions = [...formData[street]];
+    const previousAction = updatedActions[index].action;
+    
     updatedActions[index] = {
       ...updatedActions[index],
       action,
@@ -182,18 +193,61 @@ export const useShareHandLogic = () => {
       completed: true
     };
     
+    // If action changed from bet/raise to fold/check, remove subsequent actions
+    if ((previousAction === 'bet' || previousAction === 'raise') && 
+        (action === 'fold' || action === 'check')) {
+      console.log(`Action changed from ${previousAction} to ${action}, removing subsequent actions`);
+      const actionsToKeep = updatedActions.slice(0, index + 1);
+      setFormData({ ...formData, [street]: actionsToKeep });
+      return;
+    }
+    
+    // If changing from any action to bet/raise, also remove subsequent actions first
+    if (action === 'bet' || action === 'raise') {
+      removeSubsequentActions(street, index);
+      // Update with the new action
+      const cleanedActions = [...formData[street]];
+      cleanedActions[index] = {
+        ...cleanedActions[index],
+        action,
+        betAmount: betAmount || cleanedActions[index].betAmount,
+        completed: true
+      };
+      setFormData({ ...formData, [street]: cleanedActions });
+      
+      // Add next action step after state update
+      setTimeout(() => {
+        addNextActionStep(street, index);
+      }, 0);
+      return;
+    }
+    
     setFormData({ ...formData, [street]: updatedActions });
     
-    addNextActionStep(street, index);
+    // Only add next action for bet/raise
+    if (action === 'bet' || action === 'raise') {
+      addNextActionStep(street, index);
+    }
   };
 
   const handleBetSizeSelect = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', index: number, amount: string) => {
+    console.log(`Bet size selected: ${amount} for index ${index} on ${street}`);
+    
     const updatedActions = [...formData[street]];
+    const currentAction = updatedActions[index];
+    
     updatedActions[index] = {
       ...updatedActions[index],
-      betAmount: amount
+      betAmount: amount,
+      completed: true // Mark as completed when bet size is selected
     };
+    
     setFormData({ ...formData, [street]: updatedActions });
+    
+    // Trigger next action step if current action is bet or raise
+    if (currentAction.action === 'bet' || currentAction.action === 'raise') {
+      addNextActionStep(street, index);
+    }
   };
 
   const calculatePotSize = () => {
