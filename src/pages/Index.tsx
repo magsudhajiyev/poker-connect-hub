@@ -8,8 +8,7 @@ import HeroSection from '@/components/HeroSection';
 import FeaturesSection from '@/components/FeaturesSection';
 import TestimonialsSection from '@/components/TestimonialsSection';
 import StatsSection from '@/components/StatsSection';
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
-import { AppSidebar } from '@/components/AppSidebar';
+import { GlobalSidebar, SidebarProvider } from '@/components/GlobalSidebar';
 import {
   Sheet,
   SheetContent,
@@ -25,7 +24,7 @@ const MobileSidebar = () => {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="p-0 w-64 bg-slate-950 border-slate-800">
-        <AppSidebar />
+        <GlobalSidebar />
       </SheetContent>
     </Sheet>
   );
@@ -35,17 +34,17 @@ const Index = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
-        <AppSidebar />
-        <SidebarInset className="flex-1">
+        <GlobalSidebar />
+        <main className="flex-1 lg:ml-64">
           <MobileSidebar />
           <Header />
-          <main className="pt-16 sm:pt-20">
+          <div className="pt-16 sm:pt-20">
             <HeroSection />
             <FeaturesSection />
             <TestimonialsSection />
             <StatsSection />
-          </main>
-        </SidebarInset>
+          </div>
+        </main>
       </div>
     </SidebarProvider>
   );
