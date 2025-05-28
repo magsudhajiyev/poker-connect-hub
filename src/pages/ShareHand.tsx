@@ -1,20 +1,17 @@
-
 import { useState, useEffect } from 'react';
 import { ProfileTopBar } from '@/components/profile/ProfileTopBar';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ArrowLeft, ArrowRight, Share2, Upload, Camera, Plus, X, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Share2, Plus, X, Check } from 'lucide-react';
 import BetSizingButtons from '@/components/BetSizingButtons';
-import CardSelectionModal from '@/components/CardSelectionModal';
+import CardInput from '@/components/CardInput';
 
 interface ActionStep {
   playerId: string;
@@ -29,8 +26,6 @@ const ShareHandContent = () => {
   const { isCollapsed } = useSidebar();
   const [currentStep, setCurrentStep] = useState(0);
   const [tags, setTags] = useState<string[]>(['bluff', 'tournament']);
-  const [showCardModal, setShowCardModal] = useState(false);
-  const [currentCardType, setCurrentCardType] = useState<'hole' | 'flop' | 'turn' | 'river'>('hole');
   
   const [formData, setFormData] = useState({
     gameType: '',
@@ -65,7 +60,6 @@ const ShareHandContent = () => {
 
   const progress = ((currentStep + 1) / steps.length) * 100;
 
-  // Position order for action flow
   const positionOrder = ['utg', 'mp', 'co', 'btn', 'sb', 'bb'];
   
   const getPositionName = (position: string) => {
@@ -119,7 +113,6 @@ const ShareHandContent = () => {
     return actionOrder;
   };
 
-  // Initialize actions when positions change
   useEffect(() => {
     if (formData.heroPosition && formData.villainPosition) {
       const streets: Array<'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions'> = [
@@ -152,86 +145,9 @@ const ShareHandContent = () => {
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
-  const getAllSelectedCards = () => {
-    return [...formData.holeCards, ...formData.flopCards, ...formData.turnCard, ...formData.riverCard];
-  };
-
-  const getCardModalConfig = () => {
-    switch (currentCardType) {
-      case 'hole':
-        return {
-          title: 'Select Hole Cards',
-          maxCards: 2,
-          currentSelection: formData.holeCards
-        };
-      case 'flop':
-        return {
-          title: 'Select Flop Cards',
-          maxCards: 3,
-          currentSelection: [] // Start with empty selection for flop
-        };
-      case 'turn':
-        return {
-          title: 'Select Turn Card',
-          maxCards: 1,
-          currentSelection: [] // Start with empty selection for turn
-        };
-      case 'river':
-        return {
-          title: 'Select River Card',
-          maxCards: 1,
-          currentSelection: [] // Start with empty selection for river
-        };
-      default:
-        return {
-          title: 'Select Cards',
-          maxCards: 2,
-          currentSelection: []
-        };
-    }
-  };
-
-  const handleCardSelection = (cards: string[]) => {
-    switch (currentCardType) {
-      case 'hole':
-        setFormData({...formData, holeCards: cards});
-        break;
-      case 'flop':
-        setFormData({...formData, flopCards: cards});
-        break;
-      case 'turn':
-        setFormData({...formData, turnCard: cards});
-        break;
-      case 'river':
-        setFormData({...formData, riverCard: cards});
-        break;
-    }
-  };
-
-  const openCardModal = (type: 'hole' | 'flop' | 'turn' | 'river') => {
-    setCurrentCardType(type);
-    setShowCardModal(true);
-  };
-
   const nextStep = () => {
-    if (currentStep === 0) {
-      // Moving from game setup to preflop - show hole cards modal
-      setCurrentCardType('hole');
-      setShowCardModal(true);
-    } else if (currentStep < steps.length - 1) {
+    if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
-      
-      // Show appropriate card modal for the new step
-      if (currentStep + 1 === 2) { // Moving to flop
-        setCurrentCardType('flop');
-        setShowCardModal(true);
-      } else if (currentStep + 1 === 3) { // Moving to turn
-        setCurrentCardType('turn');
-        setShowCardModal(true);
-      } else if (currentStep + 1 === 4) { // Moving to river
-        setCurrentCardType('river');
-        setShowCardModal(true);
-      }
     }
   };
 
@@ -262,18 +178,15 @@ const ShareHandContent = () => {
     return formData.gameFormat === 'cash' ? 'Bet Size ($)' : 'Bet Size (BB)';
   };
 
-  // Calculate pot size
   const calculatePotSize = () => {
     let potSize = 0;
     
-    // Add blinds for preflop
     if (formData.gameFormat === 'cash') {
       potSize += 1.5; // Assume $0.5 SB + $1 BB for cash
     } else {
       potSize += 1.5; // Assume 0.5 SB + 1 BB for tournament
     }
     
-    // Add all bets from all streets
     const allActions = [
       ...formData.preflopActions,
       ...formData.flopActions,
@@ -288,92 +201,6 @@ const ShareHandContent = () => {
     });
     
     return potSize;
-  };
-
-  const getAvailableActions = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', playerIndex: number) => {
-    const actions = formData[street];
-    const currentPlayerAction = actions[playerIndex];
-    
-    // Check if there's a bet or raise before this action
-    const previousActions = actions.slice(0, playerIndex);
-    const lastAction = previousActions[previousActions.length - 1];
-    
-    let availableActions = ['fold'];
-    
-    if (!lastAction || !lastAction.action) {
-      // First to act or no previous action
-      availableActions = ['fold', 'check', 'bet'];
-    } else if (lastAction.action === 'check') {
-      // Previous player checked
-      availableActions = ['fold', 'check', 'bet'];
-    } else if (lastAction.action === 'bet' || lastAction.action === 'raise') {
-      // Previous player bet or raised
-      availableActions = ['fold', 'call', 'raise'];
-    } else if (lastAction.action === 'call') {
-      // Previous player called
-      availableActions = ['fold', 'check', 'bet'];
-    }
-    
-    return availableActions;
-  };
-
-  const updateAction = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', playerIndex: number, action: string, betAmount?: string) => {
-    const actions = [...formData[street]];
-    
-    // For call action, get the bet amount from previous action
-    let finalBetAmount = betAmount;
-    if (action === 'call') {
-      const previousActions = actions.slice(0, playerIndex);
-      const lastBetAction = previousActions.reverse().find(a => a.action === 'bet' || a.action === 'raise');
-      finalBetAmount = lastBetAction?.betAmount || '0';
-    }
-    
-    actions[playerIndex] = {
-      ...actions[playerIndex],
-      action,
-      betAmount: finalBetAmount,
-      completed: true
-    };
-    
-    // If this was a bet or raise, add another action for the opponent
-    if ((action === 'bet' || action === 'raise') && actions.length === playerIndex + 1) {
-      const currentPlayer = actions[playerIndex];
-      const opponentIsHero = !currentPlayer.isHero;
-      
-      actions.push({
-        playerId: opponentIsHero ? 'hero' : 'villain',
-        playerName: opponentIsHero ? 'Hero' : 'Villain',
-        isHero: opponentIsHero,
-        completed: false
-      });
-    }
-    
-    setFormData({...formData, [street]: actions});
-  };
-
-  const handleBetSizeSelect = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', playerIndex: number, amount: string) => {
-    const actions = [...formData[street]];
-    actions[playerIndex] = {
-      ...actions[playerIndex],
-      betAmount: amount
-    };
-    setFormData({...formData, [street]: actions});
-  };
-
-  const getActionButtonClass = (action: string, isSelected: boolean) => {
-    const baseClass = "transition-colors";
-    
-    if (action === 'fold') {
-      return `${baseClass} ${isSelected ? 'bg-red-700 text-white border-red-700' : 'bg-red-500 text-white border-red-500 hover:bg-red-600'}`;
-    } else if (action === 'check') {
-      return `${baseClass} ${isSelected ? 'bg-yellow-700 text-slate-900 border-yellow-700' : 'bg-yellow-500 text-slate-900 border-yellow-500 hover:bg-yellow-600'}`;
-    } else if (action === 'bet' || action === 'raise') {
-      return `${baseClass} ${isSelected ? 'bg-green-700 text-white border-green-700' : 'bg-green-500 text-white border-green-500 hover:bg-green-600'}`;
-    } else if (action === 'call') {
-      return `${baseClass} ${isSelected ? 'bg-blue-700 text-white border-blue-700' : 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600'}`;
-    }
-    
-    return `${baseClass} ${isSelected ? 'bg-slate-700 text-white border-slate-700' : 'border-slate-700/50 text-slate-300 hover:bg-slate-800/50'}`;
   };
 
   const renderSelectedCards = (cards: string[], label: string) => {
@@ -645,20 +472,14 @@ const ShareHandContent = () => {
 
             <h3 className="text-lg font-medium text-slate-200 mb-4">Preflop Action</h3>
             
-            {/* Card Selection Button and Display */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-slate-300">Hole Cards</Label>
-                <Button
-                  variant="outline"
-                  onClick={() => openCardModal('hole')}
-                  className="border-slate-700/50 text-slate-300 hover:bg-slate-800/50"
-                >
-                  {formData.holeCards.length > 0 ? 'Change Cards' : 'Select Cards'}
-                </Button>
-              </div>
-              {renderSelectedCards(formData.holeCards, 'Your Hole Cards')}
-            </div>
+            {/* Card Input */}
+            <CardInput
+              label="Hole Cards"
+              cards={formData.holeCards}
+              onCardsChange={(cards) => setFormData({...formData, holeCards: cards})}
+              maxCards={2}
+              placeholder="Type your hole cards (e.g., Ah, 7d)"
+            />
             
             {renderActionFlow('preflopActions')}
 
@@ -692,20 +513,17 @@ const ShareHandContent = () => {
 
             <h3 className="text-lg font-medium text-slate-200 mb-4">Flop</h3>
             
-            {/* Card Selection Button and Display */}
+            {/* Card Inputs */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-slate-300">Flop Cards</Label>
-                <Button
-                  variant="outline"
-                  onClick={() => openCardModal('flop')}
-                  className="border-slate-700/50 text-slate-300 hover:bg-slate-800/50"
-                >
-                  {formData.flopCards.length > 0 ? 'Change Cards' : 'Select Cards'}
-                </Button>
-              </div>
               {renderSelectedCards(formData.holeCards, 'Your Hole Cards')}
-              {renderSelectedCards(formData.flopCards, 'Flop')}
+              
+              <CardInput
+                label="Flop Cards"
+                cards={formData.flopCards}
+                onCardsChange={(cards) => setFormData({...formData, flopCards: cards})}
+                maxCards={3}
+                placeholder="Type flop cards (e.g., Kh, 9s, 4d)"
+              />
             </div>
 
             {renderActionFlow('flopActions')}
@@ -740,21 +558,18 @@ const ShareHandContent = () => {
 
             <h3 className="text-lg font-medium text-slate-200 mb-4">Turn</h3>
             
-            {/* Card Selection Button and Display */}
+            {/* Card Inputs */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-slate-300">Turn Card</Label>
-                <Button
-                  variant="outline"
-                  onClick={() => openCardModal('turn')}
-                  className="border-slate-700/50 text-slate-300 hover:bg-slate-800/50"
-                >
-                  {formData.turnCard.length > 0 ? 'Change Card' : 'Select Card'}
-                </Button>
-              </div>
               {renderSelectedCards(formData.holeCards, 'Your Hole Cards')}
               {renderSelectedCards(formData.flopCards, 'Flop')}
-              {renderSelectedCards(formData.turnCard, 'Turn')}
+              
+              <CardInput
+                label="Turn Card"
+                cards={formData.turnCard}
+                onCardsChange={(cards) => setFormData({...formData, turnCard: cards})}
+                maxCards={1}
+                placeholder="Type turn card (e.g., 2h)"
+              />
             </div>
 
             {renderActionFlow('turnActions')}
@@ -789,22 +604,19 @@ const ShareHandContent = () => {
 
             <h3 className="text-lg font-medium text-slate-200 mb-4">River & Summary</h3>
             
-            {/* Card Selection Button and Display */}
+            {/* Card Inputs */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-slate-300">River Card</Label>
-                <Button
-                  variant="outline"
-                  onClick={() => openCardModal('river')}
-                  className="border-slate-700/50 text-slate-300 hover:bg-slate-800/50"
-                >
-                  {formData.riverCard.length > 0 ? 'Change Card' : 'Select Card'}
-                </Button>
-              </div>
               {renderSelectedCards(formData.holeCards, 'Your Hole Cards')}
               {renderSelectedCards(formData.flopCards, 'Flop')}
               {renderSelectedCards(formData.turnCard, 'Turn')}
-              {renderSelectedCards(formData.riverCard, 'River')}
+              
+              <CardInput
+                label="River Card"
+                cards={formData.riverCard}
+                onCardsChange={(cards) => setFormData({...formData, riverCard: cards})}
+                maxCards={1}
+                placeholder="Type river card (e.g., As)"
+              />
             </div>
 
             {renderActionFlow('riverActions')}
@@ -870,16 +682,6 @@ const ShareHandContent = () => {
         return null;
     }
   };
-
-  const handleCardModalClose = () => {
-    setShowCardModal(false);
-    // If we just selected hole cards and coming from game setup, move to preflop
-    if (currentCardType === 'hole' && currentStep === 0) {
-      setCurrentStep(1);
-    }
-  };
-
-  const modalConfig = getCardModalConfig();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
@@ -977,17 +779,6 @@ const ShareHandContent = () => {
           </div>
         </main>
       </div>
-
-      {/* Card Selection Modal */}
-      <CardSelectionModal
-        isOpen={showCardModal}
-        onClose={handleCardModalClose}
-        onConfirm={handleCardSelection}
-        title={modalConfig.title}
-        maxCards={modalConfig.maxCards}
-        disabledCards={getAllSelectedCards().filter(card => !modalConfig.currentSelection.includes(card))}
-        currentSelection={modalConfig.currentSelection}
-      />
     </div>
   );
 };
