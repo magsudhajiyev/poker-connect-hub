@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 
 interface ActionStep {
@@ -189,7 +190,7 @@ export const useShareHandLogic = () => {
       ...updatedActions[index],
       action,
       betAmount: betAmount || updatedActions[index].betAmount,
-      completed: action !== 'bet' && action !== 'raise' // Don't mark bet/raise as completed until bet size is set
+      completed: true
     };
     
     // If action changed from bet/raise to fold/check, remove subsequent actions
@@ -210,11 +211,11 @@ export const useShareHandLogic = () => {
         ...cleanedActions[index],
         action,
         betAmount: betAmount || cleanedActions[index].betAmount,
-        completed: false // Don't mark as completed until bet size is set
+        completed: true
       };
       setFormData({ ...formData, [street]: cleanedActions });
       
-      // Immediately add next action step for bet/raise
+      // Add next action step after state update
       setTimeout(() => {
         addNextActionStep(street, index);
       }, 0);
@@ -222,12 +223,18 @@ export const useShareHandLogic = () => {
     }
     
     setFormData({ ...formData, [street]: updatedActions });
+    
+    // Only add next action for bet/raise
+    if (action === 'bet' || action === 'raise') {
+      addNextActionStep(street, index);
+    }
   };
 
   const handleBetSizeSelect = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', index: number, amount: string) => {
     console.log(`Bet size selected: ${amount} for index ${index} on ${street}`);
     
     const updatedActions = [...formData[street]];
+    const currentAction = updatedActions[index];
     
     updatedActions[index] = {
       ...updatedActions[index],
@@ -236,28 +243,11 @@ export const useShareHandLogic = () => {
     };
     
     setFormData({ ...formData, [street]: updatedActions });
-  };
-
-  const validateCurrentStep = () => {
-    if (currentStep === 0) return { isValid: true, message: '' };
     
-    const streetName = ['preflopActions', 'flopActions', 'turnActions', 'riverActions'][currentStep - 1] as 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions';
-    const actions = formData[streetName];
-    
-    // Check if any bet/raise action is missing bet amount
-    const incompleteBetAction = actions.find(action => 
-      (action.action === 'bet' || action.action === 'raise') && 
-      (!action.betAmount || action.betAmount.trim() === '')
-    );
-    
-    if (incompleteBetAction) {
-      return {
-        isValid: false,
-        message: `Please specify the bet size for ${incompleteBetAction.playerName}'s ${incompleteBetAction.action} before proceeding.`
-      };
+    // Trigger next action step if current action is bet or raise
+    if (currentAction.action === 'bet' || currentAction.action === 'raise') {
+      addNextActionStep(street, index);
     }
-    
-    return { isValid: true, message: '' };
   };
 
   const calculatePotSize = () => {
@@ -322,12 +312,6 @@ export const useShareHandLogic = () => {
   };
 
   const nextStep = () => {
-    const validation = validateCurrentStep();
-    if (!validation.isValid) {
-      alert(validation.message); // Simple alert for now, could be replaced with toast
-      return;
-    }
-    
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -340,12 +324,6 @@ export const useShareHandLogic = () => {
   };
 
   const handleSubmit = () => {
-    const validation = validateCurrentStep();
-    if (!validation.isValid) {
-      alert(validation.message);
-      return;
-    }
-    
     console.log('Submitting hand:', formData, tags);
   };
 
