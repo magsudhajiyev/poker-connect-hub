@@ -7,10 +7,11 @@ import {
   MessageCircle, Share, Image, Table, ChartLine
 } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { GlobalSidebar } from '@/components/GlobalSidebar';
+import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
 
-const Feed = () => {
+const FeedContent = () => {
   const [postContent, setPostContent] = useState('');
+  const { isCollapsed } = useSidebar();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
@@ -67,7 +68,9 @@ const Feed = () => {
         <GlobalSidebar />
 
         {/* Main Content */}
-        <main className="flex-1 lg:ml-64 lg:mr-64 px-4 py-6">
+        <main className={`flex-1 px-4 py-6 transition-all duration-300 ${
+          isCollapsed ? 'lg:ml-16 lg:mr-64' : 'lg:ml-64 lg:mr-64'
+        }`}>
           {/* Post Composer */}
           <div className="bg-zinc-900/60 rounded-xl border border-zinc-700/20 p-4 mb-6">
             <div className="flex space-x-3">
@@ -241,6 +244,14 @@ const Feed = () => {
         </aside>
       </div>
     </div>
+  );
+};
+
+const Feed = () => {
+  return (
+    <SidebarProvider>
+      <FeedContent />
+    </SidebarProvider>
   );
 };
 

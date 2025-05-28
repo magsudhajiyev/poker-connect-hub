@@ -1,18 +1,43 @@
 
-import { useState } from 'react';
+import { useState, createContext, useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
   Rss, Flame, ChartLine, User, Users, HelpCircle, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
-export const GlobalSidebar = () => {
+interface SidebarContextType {
+  isCollapsed: boolean;
+  toggleSidebar: () => void;
+}
+
+const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
+
+export const useSidebar = () => {
+  const context = useContext(SidebarContext);
+  if (!context) {
+    throw new Error('useSidebar must be used within a SidebarProvider');
+  }
+  return context;
+};
+
+export const SidebarProvider = ({ children }: { children: React.ReactNode }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const location = useLocation();
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
   };
+
+  return (
+    <SidebarContext.Provider value={{ isCollapsed, toggleSidebar }}>
+      {children}
+    </SidebarContext.Provider>
+  );
+};
+
+export const GlobalSidebar = () => {
+  const { isCollapsed, toggleSidebar } = useSidebar();
+  const location = useLocation();
 
   const isActive = (path: string) => {
     if (path === '/feed' && location.pathname === '/feed') return true;
