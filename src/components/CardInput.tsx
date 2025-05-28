@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
+
+import { useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { X } from 'lucide-react';
+import CardDisplay from './card-input/CardDisplay';
+import CardSuggestions from './card-input/CardSuggestions';
+import { useCardInput } from './card-input/useCardInput';
 
 interface CardInputProps {
   label: string;
@@ -14,72 +16,19 @@ interface CardInputProps {
 }
 
 const CardInput = ({ label, cards, onCardsChange, maxCards, placeholder, excludeCards = [] }: CardInputProps) => {
-  const [inputValue, setInputValue] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
-  const suits = ['♠', '♥', '♦', '♣'];
-  const suitMap: { [key: string]: string } = {
-    's': '♠', 'spades': '♠',
-    'h': '♥', 'hearts': '♥',
-    'd': '♦', 'diamonds': '♦',
-    'c': '♣', 'clubs': '♣'
-  };
-
-  // Generate all possible cards
-  const allCards = ranks.flatMap(rank => suits.map(suit => rank + suit));
-
-  // Filter suggestions based on input and exclude already selected cards
-  const getSuggestions = (input: string) => {
-    if (!input.trim()) return [];
-    
-    const normalizedInput = input.toLowerCase().replace(/[,\s]+/g, '');
-    const allExcludedCards = [...cards, ...excludeCards];
-    
-    return allCards.filter(card => {
-      if (allExcludedCards.includes(card)) return false;
-      
-      const normalizedCard = card.toLowerCase();
-      const cardWithTextSuit = card.replace(/[♠♥♦♣]/g, (suit) => {
-        const suitName = { '♠': 's', '♥': 'h', '♦': 'd', '♣': 'c' }[suit];
-        return suitName || suit;
-      }).toLowerCase();
-      
-      return normalizedCard.includes(normalizedInput) || 
-             cardWithTextSuit.includes(normalizedInput) ||
-             card.toLowerCase().startsWith(normalizedInput);
-    }).slice(0, 10);
-  };
+  const {
+    inputValue,
+    setInputValue,
+    showSuggestions,
+    setShowSuggestions,
+    selectedSuggestionIndex,
+    setSelectedSuggestionIndex,
+    inputRef,
+    getSuggestions,
+    parseCardInput
+  } = useCardInput(cards, excludeCards);
 
   const suggestions = getSuggestions(inputValue);
-
-  const parseCardInput = (input: string): string[] => {
-    const parts = input.split(/[,\s]+/).filter(part => part.trim());
-    const parsedCards: string[] = [];
-    const allExcludedCards = [...cards, ...excludeCards];
-
-    for (const part of parts) {
-      const trimmed = part.trim();
-      if (trimmed.length >= 2) {
-        const rank = trimmed[0].toUpperCase();
-        const suitChar = trimmed.slice(1).toLowerCase();
-        
-        if (ranks.includes(rank)) {
-          const suit = suitMap[suitChar] || suits.find(s => s === trimmed[1]);
-          if (suit) {
-            const card = rank + suit;
-            if (!parsedCards.includes(card) && !allExcludedCards.includes(card)) {
-              parsedCards.push(card);
-            }
-          }
-        }
-      }
-    }
-
-    return parsedCards;
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -87,10 +36,21 @@ const CardInput = ({ label, cards, onCardsChange, maxCards, placeholder, exclude
     setShowSuggestions(value.length > 0);
     setSelectedSuggestionIndex(-1);
 
-    // Auto-parse cards as user types
-    const parsedCards = parseCardInput(value);
-    if (parsedCards.length > 0 && parsedCards.length <= maxCards) {
-      onCardsChange(parsedCards);
+    if (cards.length < maxCards && value.trim()) {
+      const parsedCards = parseCardInput(value);
+      if (parsedCards.length > 0) {
+        const combinedCards = [...cards];
+        for (const newCard of parsedCards) {
+          if (combinedCards.length < maxCards && !combinedCards.includes(newCard)) {
+            combinedCards.push(newCard);
+          }
+        }
+        if (combinedCards.length !== cards.length) {
+          onCardsChange(combinedCards);
+          setInputValue('');
+          setShowSuggestions(false);
+        }
+      }
     }
   };
 
@@ -129,7 +89,6 @@ const CardInput = ({ label, cards, onCardsChange, maxCards, placeholder, exclude
       const newCards = [...cards, card];
       onCardsChange(newCards);
       
-      // Clear input and hide suggestions
       setInputValue('');
       setShowSuggestions(false);
       setSelectedSuggestionIndex(-1);
@@ -147,14 +106,12 @@ const CardInput = ({ label, cards, onCardsChange, maxCards, placeholder, exclude
   };
 
   const handleInputBlur = () => {
-    // Delay hiding suggestions to allow clicking on them
     setTimeout(() => {
       setShowSuggestions(false);
       setSelectedSuggestionIndex(-1);
     }, 200);
   };
 
-  // Reset input when cards are cleared externally
   useEffect(() => {
     if (cards.length === 0) {
       setInputValue('');
@@ -165,28 +122,8 @@ const CardInput = ({ label, cards, onCardsChange, maxCards, placeholder, exclude
     <div className="space-y-3">
       <Label className="text-slate-300">{label}</Label>
       
-      {/* Selected Cards Display */}
-      {cards.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {cards.map((card, index) => (
-            <div key={index} className="relative group">
-              <div className={`w-10 h-12 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-xs ${
-                card.includes('♥') || card.includes('♦') ? 'text-red-400' : 'text-slate-200'
-              }`}>
-                {card}
-              </div>
-              <button
-                onClick={() => removeCard(card)}
-                className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <X className="w-2 h-2 text-white" />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+      <CardDisplay cards={cards} onRemoveCard={removeCard} />
 
-      {/* Input Field */}
       {cards.length < maxCards && (
         <div className="relative">
           <Input
@@ -200,28 +137,15 @@ const CardInput = ({ label, cards, onCardsChange, maxCards, placeholder, exclude
             className="bg-slate-900/50 border-slate-700/50 text-slate-200"
           />
           
-          {/* Suggestions Dropdown */}
-          {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-              {suggestions.map((card, index) => (
-                <button
-                  key={card}
-                  onClick={() => selectSuggestion(card)}
-                  className={`w-full px-3 py-2 text-left hover:bg-slate-700 transition-colors ${
-                    index === selectedSuggestionIndex ? 'bg-slate-700' : ''
-                  } ${
-                    card.includes('♥') || card.includes('♦') ? 'text-red-400' : 'text-slate-200'
-                  }`}
-                >
-                  <span className="font-mono font-bold">{card}</span>
-                </button>
-              ))}
-            </div>
-          )}
+          <CardSuggestions
+            suggestions={suggestions}
+            selectedIndex={selectedSuggestionIndex}
+            onSelectSuggestion={selectSuggestion}
+            show={showSuggestions}
+          />
         </div>
       )}
 
-      {/* Card Counter */}
       <div className="text-xs text-slate-400">
         {cards.length}/{maxCards} card{maxCards > 1 ? 's' : ''} selected
       </div>
