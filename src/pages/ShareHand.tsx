@@ -15,10 +15,10 @@ const ShareHandContent = () => {
       <div className="flex pt-16">
         <GlobalSidebar />
 
-        <main className={`flex-1 px-4 py-6 transition-all duration-300 ${
-          isCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+        <main className={`flex-1 px-3 sm:px-4 py-4 sm:py-6 transition-all duration-300 ${
+          isCollapsed ? 'lg:ml-12 xl:ml-16' : 'lg:ml-48 xl:ml-64'
         }`}>
-          <div className="max-w-4xl mx-auto space-y-6">
+          <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
             <ShareHandProvider>
               <ShareHandHeader />
               <ShareHandForm />

@@ -36,14 +36,14 @@ const FlopStep = ({
   const potSize = calculatePotSize();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {showPot && (
         <PotDisplay potSize={potSize} getCurrencySymbol={getCurrencySymbol} />
       )}
 
-      <h3 className="text-lg font-medium text-slate-200 mb-4">Flop</h3>
+      <h3 className="text-base sm:text-lg font-medium text-slate-200 mb-3 sm:mb-4">Flop</h3>
       
-      <div className="flex flex-wrap items-start gap-6">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap items-start gap-4 sm:gap-6">
         <SelectedCardsDisplay cards={formData.holeCards} label="Your Hole Cards" />
         
         <CardInput
@@ -69,14 +69,14 @@ const FlopStep = ({
       />
 
       <div>
-        <Label htmlFor="flop-description" className="text-slate-300">Flop Insights (Optional)</Label>
+        <Label htmlFor="flop-description" className="text-slate-300 text-sm sm:text-base">Flop Insights (Optional)</Label>
         <Textarea
           id="flop-description"
           value={formData.flopDescription}
           onChange={(e) => setFormData({...formData, flopDescription: e.target.value})}
           placeholder="Describe your thoughts about this flop texture, your hand strength, reads..."
           rows={3}
-          className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+          className="bg-slate-900/50 border-slate-700/50 text-slate-200 text-sm sm:text-base mt-1 sm:mt-2"
         />
       </div>
     </div>

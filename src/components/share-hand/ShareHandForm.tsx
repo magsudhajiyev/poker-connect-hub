@@ -61,14 +61,14 @@ const ShareHandForm = () => {
 
   return (
     <Card className="bg-slate-800/40 border-slate-700/30">
-      <CardHeader>
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-slate-200">Hand Details</h2>
+      <CardHeader className="pb-4 sm:pb-6">
+        <div className="space-y-3 sm:space-y-4">
+          <h2 className="text-lg sm:text-xl font-semibold text-slate-200">Hand Details</h2>
           <ShareHandProgress />
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6">
         {renderStepContent()}
         <ShareHandNavigation />
       </CardContent>

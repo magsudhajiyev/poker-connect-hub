@@ -18,10 +18,10 @@ const ProfileContent_Internal = () => {
         <GlobalSidebar />
 
         {/* Main Content */}
-        <main className={`flex-1 px-4 py-6 transition-all duration-300 ${
-          isCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+        <main className={`flex-1 px-3 sm:px-4 py-4 sm:py-6 transition-all duration-300 ${
+          isCollapsed ? 'lg:ml-12 xl:ml-16' : 'lg:ml-48 xl:ml-64'
         }`}>
-          <div className="max-w-7xl mx-auto space-y-6">
+          <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
             <ProfileHeader />
             <ProfileNav activeTab={activeTab} onTabChange={setActiveTab} />
             <ProfileContent activeTab={activeTab} />
