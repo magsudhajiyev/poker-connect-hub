@@ -9,7 +9,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(2);
+  const [currentStep, setCurrentStep] = useState(1);
   const [selectedExperience, setSelectedExperience] = useState('Advanced');
   const [selectedGameTypes, setSelectedGameTypes] = useState(['Texas Hold\'em']);
   const [selectedStakes, setSelectedStakes] = useState('$1/$2 - $2/$5');
@@ -38,7 +38,7 @@ const Onboarding = () => {
   };
 
   const handleNextStep = () => {
-    if (currentStep < 4) {
+    if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
     } else {
       // Complete onboarding and redirect to feed
@@ -55,7 +55,7 @@ const Onboarding = () => {
   };
 
   const handlePreviousStep = () => {
-    if (currentStep > 2) {
+    if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
   };
@@ -72,6 +72,43 @@ const Onboarding = () => {
   };
 
   const renderStepContent = () => {
+    if (currentStep === 1) {
+      return (
+        <>
+          <div className="text-center mb-6">
+            <div className="inline-block p-3 bg-gradient-to-r from-emerald-500/20 to-violet-500/20 rounded-xl mb-4">
+              <UserPlus className="w-8 h-8 text-emerald-500" />
+            </div>
+            <h2 className="text-xl font-medium text-zinc-200">Welcome to PokerConnect</h2>
+            <p className="text-zinc-400 text-sm mt-1">Let's set up your poker profile</p>
+          </div>
+
+          <div className="text-center space-y-4">
+            <p className="text-zinc-300">
+              Join the ultimate poker community where you can share hands, track your progress, and connect with fellow players.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+              <div className="bg-zinc-800/40 rounded-xl p-4 border border-zinc-700/30">
+                <Users className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                <h3 className="text-zinc-200 font-medium">Connect</h3>
+                <p className="text-zinc-400 text-sm">Find players at your level</p>
+              </div>
+              <div className="bg-zinc-800/40 rounded-xl p-4 border border-zinc-700/30">
+                <TrendingUp className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                <h3 className="text-zinc-200 font-medium">Track</h3>
+                <p className="text-zinc-400 text-sm">Monitor your progress</p>
+              </div>
+              <div className="bg-zinc-800/40 rounded-xl p-4 border border-zinc-700/30">
+                <Lightbulb className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                <h3 className="text-zinc-200 font-medium">Learn</h3>
+                <p className="text-zinc-400 text-sm">Share and discuss hands</p>
+              </div>
+            </div>
+          </div>
+        </>
+      );
+    }
+
     if (currentStep === 2) {
       return (
         <>
@@ -223,12 +260,14 @@ const Onboarding = () => {
   };
 
   const getStepTitle = () => {
+    if (currentStep === 1) return "Welcome";
     if (currentStep === 2) return "Complete Your Profile";
     if (currentStep === 3) return "Almost Done!";
     return "Welcome";
   };
 
   const getStepDescription = () => {
+    if (currentStep === 1) return "Join the ultimate poker community";
     if (currentStep === 2) return "Let's get to know you better so we can personalize your experience";
     if (currentStep === 3) return "Just a few more details and you'll be ready to join the community";
     return "";
@@ -265,25 +304,21 @@ const Onboarding = () => {
           {/* Progress Indicator */}
           <div className="mb-8 flex justify-center">
             <div className="flex items-center space-x-2">
-              <div className="w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center text-gray-800 font-medium">1</div>
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center font-medium ${
+                currentStep >= 1 ? 'bg-emerald-500 text-gray-800' : 'bg-zinc-800/60 text-zinc-400 border border-zinc-700/30'
+              }`}>1</div>
               <div className="w-16 h-0.5 bg-zinc-700/30">
-                <div className="w-full h-full bg-emerald-500"></div>
+                <div className={`h-full ${currentStep >= 2 ? 'bg-emerald-500' : 'bg-zinc-700/30'} ${currentStep >= 2 ? 'w-full' : 'w-0'}`}></div>
               </div>
               <div className={`w-7 h-7 rounded-full flex items-center justify-center font-medium ${
                 currentStep >= 2 ? 'bg-emerald-500 text-gray-800' : 'bg-zinc-800/60 text-zinc-400 border border-zinc-700/30'
               }`}>2</div>
               <div className="w-16 h-0.5 bg-zinc-700/30">
-                <div className={`h-full ${currentStep >= 3 ? 'bg-emerald-500' : 'bg-zinc-700/30'} w-${currentStep >= 3 ? 'full' : '0'}`}></div>
+                <div className={`h-full ${currentStep >= 3 ? 'bg-emerald-500' : 'bg-zinc-700/30'} ${currentStep >= 3 ? 'w-full' : 'w-0'}`}></div>
               </div>
               <div className={`w-7 h-7 rounded-full flex items-center justify-center font-medium ${
                 currentStep >= 3 ? 'bg-emerald-500 text-gray-800' : 'bg-zinc-800/60 text-zinc-400 border border-zinc-700/30'
               }`}>3</div>
-              <div className="w-16 h-0.5 bg-zinc-700/30">
-                <div className={`h-full ${currentStep >= 4 ? 'bg-emerald-500' : 'bg-zinc-700/30'} w-${currentStep >= 4 ? 'full' : '0'}`}></div>
-              </div>
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center font-medium ${
-                currentStep >= 4 ? 'bg-emerald-500 text-gray-800' : 'bg-zinc-800/60 text-zinc-400 border border-zinc-700/30'
-              }`}>4</div>
             </div>
           </div>
 
@@ -305,7 +340,7 @@ const Onboarding = () => {
               <div className="flex justify-between pt-4">
                 <Button 
                   onClick={handlePreviousStep}
-                  disabled={currentStep === 2}
+                  disabled={currentStep === 1}
                   variant="outline" 
                   className="bg-zinc-800/40 border-zinc-700/30 text-zinc-200 hover:bg-zinc-800/60 disabled:opacity-50"
                 >
@@ -325,10 +360,9 @@ const Onboarding = () => {
             {/* Step Indicators */}
             <div className="flex justify-center mt-8">
               <div className="flex space-x-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                <div className={`w-2 h-2 rounded-full ${currentStep >= 1 ? 'bg-emerald-500' : 'bg-zinc-700/30'}`}></div>
                 <div className={`w-2 h-2 rounded-full ${currentStep >= 2 ? 'bg-emerald-500' : 'bg-zinc-700/30'}`}></div>
                 <div className={`w-2 h-2 rounded-full ${currentStep >= 3 ? 'bg-emerald-500' : 'bg-zinc-700/30'}`}></div>
-                <div className={`w-2 h-2 rounded-full ${currentStep >= 4 ? 'bg-emerald-500' : 'bg-zinc-700/30'}`}></div>
               </div>
             </div>
           </div>
