@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { ProfileTopBar } from '@/components/profile/ProfileTopBar';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
@@ -27,12 +28,18 @@ const ShareHandContent = () => {
     villainStackSize: [100], // Array for slider value
     preflopAction: '',
     preflopBet: '',
+    preflopDescription: '',
     flopCards: '',
     flopAction: '',
+    flopBet: '',
+    flopDescription: '',
     turnCard: '',
     turnAction: '',
+    turnBet: '',
+    turnDescription: '',
     riverCard: '',
     riverAction: '',
+    riverBet: '',
     title: '',
     description: ''
   });
@@ -80,6 +87,112 @@ const ShareHandContent = () => {
 
   const getStackSizePlaceholder = () => {
     return formData.gameFormat === 'cash' ? '200' : '100';
+  };
+
+  const getCurrencySymbol = () => {
+    return formData.gameFormat === 'cash' ? '$' : 'BB';
+  };
+
+  const getBetSizeLabel = () => {
+    return formData.gameFormat === 'cash' ? 'Bet Size ($)' : 'Bet Size (BB)';
+  };
+
+  // Position order for action flow
+  const positionOrder = ['utg', 'mp', 'co', 'btn', 'sb', 'bb'];
+  
+  const getPositionName = (position: string) => {
+    const names: { [key: string]: string } = {
+      'utg': 'UTG',
+      'mp': 'Middle Position',
+      'co': 'Cut Off',
+      'btn': 'Button',
+      'sb': 'Small Blind',
+      'bb': 'Big Blind'
+    };
+    return names[position] || position;
+  };
+
+  const getActionOrder = () => {
+    if (!formData.heroPosition || !formData.villainPosition) return [];
+    
+    const heroIndex = positionOrder.indexOf(formData.heroPosition);
+    const villainIndex = positionOrder.indexOf(formData.villainPosition);
+    
+    if (heroIndex < villainIndex) {
+      return [
+        { position: formData.heroPosition, isHero: true },
+        { position: formData.villainPosition, isHero: false }
+      ];
+    } else {
+      return [
+        { position: formData.villainPosition, isHero: false },
+        { position: formData.heroPosition, isHero: true }
+      ];
+    }
+  };
+
+  const renderActionFlow = (street: 'preflop' | 'flop' | 'turn' | 'river') => {
+    const actionOrder = getActionOrder();
+    const actionKey = `${street}Action` as keyof typeof formData;
+    const betKey = `${street}Bet` as keyof typeof formData;
+    
+    return (
+      <div className="space-y-4">
+        <h4 className="text-md font-medium text-slate-300">Action Flow</h4>
+        {actionOrder.map((player, index) => (
+          <div key={index} className="border border-slate-700/50 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className={`font-medium ${player.isHero ? 'text-emerald-400' : 'text-violet-400'}`}>
+                {player.isHero ? 'Hero' : 'Villain'} ({getPositionName(player.position)})
+              </span>
+            </div>
+            
+            {player.isHero && (
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-slate-300">Your Action</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                    {['fold', 'call', 'bet', 'raise'].map((action) => (
+                      <Button
+                        key={action}
+                        variant={formData[actionKey] === action ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setFormData({...formData, [actionKey]: action})}
+                        className={`${
+                          formData[actionKey] === action 
+                            ? 'bg-emerald-500 text-slate-900' 
+                            : 'border-slate-700/50 text-slate-300'
+                        }`}
+                      >
+                        {action.charAt(0).toUpperCase() + action.slice(1)}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                
+                {(formData[actionKey] === 'bet' || formData[actionKey] === 'raise' || formData[actionKey] === 'call') && (
+                  <div>
+                    <Label className="text-slate-300">{getBetSizeLabel()}</Label>
+                    <Input
+                      value={formData[betKey] as string}
+                      onChange={(e) => setFormData({...formData, [betKey]: e.target.value})}
+                      placeholder="2.5"
+                      className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {!player.isHero && (
+              <div className="text-slate-400 text-sm">
+                Villain's action will be recorded based on the situation
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
   };
 
   const renderStepContent = () => {
@@ -215,33 +328,19 @@ const ShareHandContent = () => {
         return (
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-slate-200 mb-4">Preflop Action</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="preflop-action" className="text-slate-300">Your Action</Label>
-                <Select value={formData.preflopAction} onValueChange={(value) => setFormData({...formData, preflopAction: value})}>
-                  <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200">
-                    <SelectValue placeholder="Select action" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="fold">Fold</SelectItem>
-                    <SelectItem value="call">Call</SelectItem>
-                    <SelectItem value="raise">Raise</SelectItem>
-                    <SelectItem value="3bet">3-Bet</SelectItem>
-                    <SelectItem value="4bet">4-Bet</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="preflop-bet" className="text-slate-300">Bet Size (BB)</Label>
-                <Input
-                  id="preflop-bet"
-                  value={formData.preflopBet}
-                  onChange={(e) => setFormData({...formData, preflopBet: e.target.value})}
-                  placeholder="2.5"
-                  className="bg-slate-900/50 border-slate-700/50 text-slate-200"
-                />
-              </div>
+            
+            {renderActionFlow('preflop')}
+
+            <div>
+              <Label htmlFor="preflop-description" className="text-slate-300">Preflop Insights (Optional)</Label>
+              <Textarea
+                id="preflop-description"
+                value={formData.preflopDescription}
+                onChange={(e) => setFormData({...formData, preflopDescription: e.target.value})}
+                placeholder="Describe your thoughts, reads, or situation before the flop..."
+                rows={3}
+                className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+              />
             </div>
           </div>
         );
@@ -250,33 +349,30 @@ const ShareHandContent = () => {
         return (
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-slate-200 mb-4">Flop</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="flop-cards" className="text-slate-300">Flop Cards</Label>
-                <Input
-                  id="flop-cards"
-                  value={formData.flopCards}
-                  onChange={(e) => setFormData({...formData, flopCards: e.target.value})}
-                  placeholder="A♠ K♥ 7♣"
-                  className="bg-slate-900/50 border-slate-700/50 text-slate-200"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="flop-action" className="text-slate-300">Your Action</Label>
-                <Select value={formData.flopAction} onValueChange={(value) => setFormData({...formData, flopAction: value})}>
-                  <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200">
-                    <SelectValue placeholder="Select action" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="check">Check</SelectItem>
-                    <SelectItem value="bet">Bet</SelectItem>
-                    <SelectItem value="call">Call</SelectItem>
-                    <SelectItem value="raise">Raise</SelectItem>
-                    <SelectItem value="fold">Fold</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            
+            <div>
+              <Label htmlFor="flop-cards" className="text-slate-300">Flop Cards</Label>
+              <Input
+                id="flop-cards"
+                value={formData.flopCards}
+                onChange={(e) => setFormData({...formData, flopCards: e.target.value})}
+                placeholder="A♠ K♥ 7♣"
+                className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+              />
+            </div>
+
+            {renderActionFlow('flop')}
+
+            <div>
+              <Label htmlFor="flop-description" className="text-slate-300">Flop Insights (Optional)</Label>
+              <Textarea
+                id="flop-description"
+                value={formData.flopDescription}
+                onChange={(e) => setFormData({...formData, flopDescription: e.target.value})}
+                placeholder="Describe your thoughts about this flop texture, your hand strength, reads..."
+                rows={3}
+                className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+              />
             </div>
           </div>
         );
@@ -285,33 +381,30 @@ const ShareHandContent = () => {
         return (
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-slate-200 mb-4">Turn</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="turn-card" className="text-slate-300">Turn Card</Label>
-                <Input
-                  id="turn-card"
-                  value={formData.turnCard}
-                  onChange={(e) => setFormData({...formData, turnCard: e.target.value})}
-                  placeholder="Q♠"
-                  className="bg-slate-900/50 border-slate-700/50 text-slate-200"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="turn-action" className="text-slate-300">Your Action</Label>
-                <Select value={formData.turnAction} onValueChange={(value) => setFormData({...formData, turnAction: value})}>
-                  <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200">
-                    <SelectValue placeholder="Select action" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="check">Check</SelectItem>
-                    <SelectItem value="bet">Bet</SelectItem>
-                    <SelectItem value="call">Call</SelectItem>
-                    <SelectItem value="raise">Raise</SelectItem>
-                    <SelectItem value="fold">Fold</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            
+            <div>
+              <Label htmlFor="turn-card" className="text-slate-300">Turn Card</Label>
+              <Input
+                id="turn-card"
+                value={formData.turnCard}
+                onChange={(e) => setFormData({...formData, turnCard: e.target.value})}
+                placeholder="Q♠"
+                className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+              />
+            </div>
+
+            {renderActionFlow('turn')}
+
+            <div>
+              <Label htmlFor="turn-description" className="text-slate-300">Turn Insights (Optional)</Label>
+              <Textarea
+                id="turn-description"
+                value={formData.turnDescription}
+                onChange={(e) => setFormData({...formData, turnDescription: e.target.value})}
+                placeholder="How did the turn card change the dynamics? Your reasoning for the action..."
+                rows={3}
+                className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+              />
             </div>
           </div>
         );
@@ -320,34 +413,19 @@ const ShareHandContent = () => {
         return (
           <div className="space-y-6">
             <h3 className="text-lg font-medium text-slate-200 mb-4">River & Summary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div>
-                <Label htmlFor="river-card" className="text-slate-300">River Card</Label>
-                <Input
-                  id="river-card"
-                  value={formData.riverCard}
-                  onChange={(e) => setFormData({...formData, riverCard: e.target.value})}
-                  placeholder="2♦"
-                  className="bg-slate-900/50 border-slate-700/50 text-slate-200"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="river-action" className="text-slate-300">Your Action</Label>
-                <Select value={formData.riverAction} onValueChange={(value) => setFormData({...formData, riverAction: value})}>
-                  <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200">
-                    <SelectValue placeholder="Select action" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="check">Check</SelectItem>
-                    <SelectItem value="bet">Bet</SelectItem>
-                    <SelectItem value="call">Call</SelectItem>
-                    <SelectItem value="raise">Raise</SelectItem>
-                    <SelectItem value="fold">Fold</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            
+            <div>
+              <Label htmlFor="river-card" className="text-slate-300">River Card</Label>
+              <Input
+                id="river-card"
+                value={formData.riverCard}
+                onChange={(e) => setFormData({...formData, riverCard: e.target.value})}
+                placeholder="2♦"
+                className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+              />
             </div>
+
+            {renderActionFlow('river')}
 
             <div>
               <Label htmlFor="title" className="text-slate-300">Hand Title</Label>
@@ -366,7 +444,7 @@ const ShareHandContent = () => {
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
-                placeholder="Describe the action, your thought process, and what happened..."
+                placeholder="Overall summary, final thoughts, outcome, what you learned..."
                 rows={4}
                 className="bg-slate-900/50 border-slate-700/50 text-slate-200"
               />
@@ -471,8 +549,8 @@ const ShareHandContent = () => {
                   </Button>
                   
                   <div className="flex space-x-3">
-                    {/* Only show Share now button on final step */}
-                    {currentStep === steps.length - 1 && (
+                    {/* Show Share now button from Game Setup onwards, but not on final step */}
+                    {currentStep > 0 && currentStep < steps.length - 1 && (
                       <Button
                         variant="outline"
                         onClick={handleSubmit}
