@@ -1,19 +1,22 @@
-import { useState, useEffect } from 'react';
 
-interface ActionStep {
-  playerId: string;
-  playerName: string;
-  isHero: boolean;
-  action?: string;
-  betAmount?: string;
-  completed: boolean;
-}
+import { useState, useEffect } from 'react';
+import { ShareHandFormData, StreetType, ActionStep } from '@/types/shareHand';
+import { steps, getPositionName } from '@/utils/shareHandConstants';
+import { 
+  initializeActions, 
+  getAvailableActions, 
+  getActionButtonClass, 
+  createNextActionStep, 
+  shouldAddNextAction 
+} from '@/utils/shareHandActions';
+import { validateCurrentStep } from '@/utils/shareHandValidation';
+import { calculatePotSize, getCurrencySymbol, getAllSelectedCards } from '@/utils/shareHandCalculations';
 
 export const useShareHandLogic = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [tags, setTags] = useState<string[]>(['bluff', 'tournament']);
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ShareHandFormData>({
     gameType: '',
     gameFormat: '',
     stackSize: '',
@@ -36,120 +39,30 @@ export const useShareHandLogic = () => {
     description: ''
   });
 
-  const steps = [
-    { id: 'game-setup', title: 'Game Setup', description: 'Basic game information' },
-    { id: 'preflop', title: 'Preflop', description: 'Preflop action and betting' },
-    { id: 'flop', title: 'Flop', description: 'Flop cards and action' },
-    { id: 'turn', title: 'Turn', description: 'Turn card and action' },
-    { id: 'river', title: 'River', description: 'River card and final action' }
-  ];
-
-  const positionOrder = ['utg', 'mp', 'co', 'btn', 'sb', 'bb'];
-  
-  const getPositionName = (position: string) => {
-    const names: { [key: string]: string } = {
-      'utg': 'UTG',
-      'mp': 'Middle Position',
-      'co': 'Cut Off',
-      'btn': 'Button',
-      'sb': 'Small Blind',
-      'bb': 'Big Blind'
-    };
-    return names[position] || position;
-  };
-
-  const getAllSelectedCards = () => {
-    return [
-      ...formData.holeCards,
-      ...formData.flopCards,
-      ...formData.turnCard,
-      ...formData.riverCard
-    ];
-  };
-
-  const initializeActions = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions') => {
-    if (!formData.heroPosition || !formData.villainPosition) return [];
-    
-    const heroIndex = positionOrder.indexOf(formData.heroPosition);
-    const villainIndex = positionOrder.indexOf(formData.villainPosition);
-    
-    const actionOrder: ActionStep[] = [];
-    
-    if (heroIndex < villainIndex) {
-      actionOrder.push({
-        playerId: 'hero',
-        playerName: 'Hero',
-        isHero: true,
-        completed: false
-      });
-      actionOrder.push({
-        playerId: 'villain',
-        playerName: 'Villain',
-        isHero: false,
-        completed: false
-      });
-    } else {
-      actionOrder.push({
-        playerId: 'villain',
-        playerName: 'Villain',
-        isHero: false,
-        completed: false
-      });
-      actionOrder.push({
-        playerId: 'hero',
-        playerName: 'Hero',
-        isHero: true,
-        completed: false
-      });
-    }
-    
-    return actionOrder;
-  };
-
-  const getAvailableActions = (street: string, index: number) => {
-    return ['fold', 'call', 'bet', 'raise', 'check'];
-  };
-
-  const getActionButtonClass = (action: string, isSelected: boolean) => {
-    const baseClass = "transition-colors";
-    if (isSelected) {
-      return `${baseClass} bg-emerald-500 text-slate-900`;
-    }
-    return `${baseClass} border-slate-700/50 text-slate-300 hover:bg-slate-800/50`;
-  };
-
-  const addNextActionStep = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', currentIndex: number) => {
+  const addNextActionStep = (street: StreetType, currentIndex: number) => {
     const actions = formData[street];
     const currentAction = actions[currentIndex];
     
     console.log(`Adding next action step after ${currentAction.action} by ${currentAction.playerName}`);
     
-    if (currentAction.action === 'bet' || currentAction.action === 'raise') {
-      const nextPlayerId = currentAction.isHero ? 'villain' : 'hero';
-      const nextPlayerName = currentAction.isHero ? 'Villain' : 'Hero';
+    if (shouldAddNextAction(currentAction.action!)) {
+      const nextActionStep = createNextActionStep(currentAction);
       
       // Check if next action already exists
       const nextActionExists = actions.find((action, index) => 
-        index > currentIndex && action.playerId === nextPlayerId
+        index > currentIndex && action.playerId === nextActionStep.playerId
       );
       
       if (!nextActionExists) {
-        const newActionStep: ActionStep = {
-          playerId: nextPlayerId,
-          playerName: nextPlayerName,
-          isHero: !currentAction.isHero,
-          completed: false
-        };
-        
-        const updatedActions = [...actions, newActionStep];
-        console.log(`Adding next action step for ${nextPlayerName}`, updatedActions);
+        const updatedActions = [...actions, nextActionStep];
+        console.log(`Adding next action step for ${nextActionStep.playerName}`, updatedActions);
         
         setFormData(prev => ({ ...prev, [street]: updatedActions }));
       }
     }
   };
 
-  const updateAction = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', index: number, action: string, betAmount?: string) => {
+  const updateAction = (street: StreetType, index: number, action: string, betAmount?: string) => {
     console.log(`Updating action at index ${index} on ${street}:`, action, betAmount);
     
     setFormData(prev => {
@@ -166,13 +79,13 @@ export const useShareHandLogic = () => {
       
       // If changing from bet/raise to something else, remove subsequent actions
       if ((previousAction === 'bet' || previousAction === 'raise') && 
-          (action !== 'bet' && action !== 'raise')) {
+          !shouldAddNextAction(action)) {
         console.log(`Action changed from ${previousAction} to ${action}, removing subsequent actions`);
         const actionsToKeep = updatedActions.slice(0, index + 1);
         const newFormData = { ...prev, [street]: actionsToKeep };
         
         // If the new action is bet or raise, add next action step
-        if (action === 'bet' || action === 'raise') {
+        if (shouldAddNextAction(action)) {
           setTimeout(() => {
             addNextActionStep(street, index);
           }, 100);
@@ -184,7 +97,7 @@ export const useShareHandLogic = () => {
       const newFormData = { ...prev, [street]: updatedActions };
       
       // If this is a bet or raise action, add next action step
-      if (action === 'bet' || action === 'raise') {
+      if (shouldAddNextAction(action)) {
         setTimeout(() => {
           addNextActionStep(street, index);
         }, 100);
@@ -194,7 +107,7 @@ export const useShareHandLogic = () => {
     });
   };
 
-  const handleBetSizeSelect = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', index: number, amount: string) => {
+  const handleBetSizeSelect = (street: StreetType, index: number, amount: string) => {
     console.log(`Bet size selected: ${amount} for index ${index} on ${street}`);
     
     setFormData(prev => {
@@ -209,7 +122,7 @@ export const useShareHandLogic = () => {
       const newFormData = { ...prev, [street]: updatedActions };
       
       // Add next action step if this is a bet or raise
-      if (updatedActions[index].action === 'bet' || updatedActions[index].action === 'raise') {
+      if (shouldAddNextAction(updatedActions[index].action!)) {
         setTimeout(() => {
           addNextActionStep(street, index);
         }, 100);
@@ -219,60 +132,9 @@ export const useShareHandLogic = () => {
     });
   };
 
-  const validateCurrentStep = () => {
-    if (currentStep === 0) return { isValid: true, message: '' };
-    
-    const streetName = ['preflopActions', 'flopActions', 'turnActions', 'riverActions'][currentStep - 1] as 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions';
-    const actions = formData[streetName];
-    
-    // Check if any bet/raise action is missing bet amount
-    const incompleteBetAction = actions.find(action => 
-      (action.action === 'bet' || action.action === 'raise') && 
-      (!action.betAmount || action.betAmount.trim() === '')
-    );
-    
-    if (incompleteBetAction) {
-      return {
-        isValid: false,
-        message: `Please specify the bet size for ${incompleteBetAction.playerName}'s ${incompleteBetAction.action} before proceeding.`
-      };
-    }
-    
-    return { isValid: true, message: '' };
-  };
-
-  const calculatePotSize = () => {
-    let potSize = 0;
-    
-    if (formData.gameFormat === 'cash') {
-      potSize += 1.5;
-    } else {
-      potSize += 1.5;
-    }
-    
-    const allActions = [
-      ...formData.preflopActions,
-      ...formData.flopActions,
-      ...formData.turnActions,
-      ...formData.riverActions
-    ];
-    
-    allActions.forEach(action => {
-      if (action.betAmount && (action.action === 'bet' || action.action === 'raise' || action.action === 'call')) {
-        potSize += parseFloat(action.betAmount) || 0;
-      }
-    });
-    
-    return potSize;
-  };
-
-  const getCurrencySymbol = () => {
-    return formData.gameFormat === 'cash' ? '$' : 'BB';
-  };
-
   useEffect(() => {
     if (formData.heroPosition && formData.villainPosition) {
-      const streets: Array<'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions'> = [
+      const streets: StreetType[] = [
         'preflopActions', 'flopActions', 'turnActions', 'riverActions'
       ];
       
@@ -281,7 +143,7 @@ export const useShareHandLogic = () => {
       
       streets.forEach(street => {
         if (updatedFormData[street].length === 0) {
-          updatedFormData[street] = initializeActions(street);
+          updatedFormData[street] = initializeActions(street, formData.heroPosition, formData.villainPosition);
           hasChanges = true;
         }
       });
@@ -303,7 +165,7 @@ export const useShareHandLogic = () => {
   };
 
   const nextStep = () => {
-    const validation = validateCurrentStep();
+    const validation = validateCurrentStep(currentStep, formData);
     if (!validation.isValid) {
       alert(validation.message); // Simple alert for now, could be replaced with toast
       return;
@@ -321,7 +183,7 @@ export const useShareHandLogic = () => {
   };
 
   const handleSubmit = () => {
-    const validation = validateCurrentStep();
+    const validation = validateCurrentStep(currentStep, formData);
     if (!validation.isValid) {
       alert(validation.message);
       return;
@@ -342,9 +204,9 @@ export const useShareHandLogic = () => {
     getActionButtonClass,
     updateAction,
     handleBetSizeSelect,
-    calculatePotSize,
-    getCurrencySymbol,
-    getAllSelectedCards,
+    calculatePotSize: () => calculatePotSize(formData),
+    getCurrencySymbol: () => getCurrencySymbol(formData.gameFormat),
+    getAllSelectedCards: () => getAllSelectedCards(formData),
     addTag,
     removeTag,
     nextStep,
