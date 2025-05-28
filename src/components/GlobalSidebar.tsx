@@ -52,9 +52,9 @@ export const GlobalSidebar = () => {
   };
 
   return (
-    <aside className={`fixed h-screen bg-slate-950 border-r border-zinc-700/20 pt-6 transition-all duration-300 z-40 ${
+    <aside className={`hidden lg:block fixed h-[calc(100vh-4rem)] overflow-hidden border-r border-zinc-700/20 pt-6 transition-all duration-300 ${
       isCollapsed ? 'w-12 sm:w-16' : 'w-48 sm:w-56 md:w-64'
-    } hidden lg:block`}>
+    }`}>
       {/* Toggle Button */}
       <div className="absolute top-4 right-2 z-10">
         <Button
