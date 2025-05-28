@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { 
   Search, House, Bell, Bookmark, ThumbsUp, 
   MessageCircle, Share, Image, Table, ChartLine,
-  Rss, Fire, TrendingUp, Users
+  Rss, Flame, TrendingUp, Users
 } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
@@ -73,7 +72,7 @@ const Feed = () => {
               <span>Feed</span>
             </div>
             <div className="flex items-center px-4 py-2.5 text-zinc-400 hover:text-zinc-200 rounded-xl hover:bg-zinc-800/40 cursor-pointer">
-              <Fire className="w-5 h-5 mr-3" />
+              <Flame className="w-5 h-5 mr-3" />
               <span>Trending Hands</span>
             </div>
             <div className="flex items-center px-4 py-2.5 text-zinc-400 hover:text-zinc-200 rounded-xl hover:bg-zinc-800/40 cursor-pointer">
