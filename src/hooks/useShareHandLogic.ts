@@ -39,7 +39,10 @@ export const useShareHandLogic = () => {
     riverActions: [] as ActionStep[],
     riverDescription: '',
     title: '',
-    description: ''
+    description: '',
+    smallBlind: '',
+    bigBlind: '',
+    tableSize: ''
   });
 
   const addNextActionStep = (street: StreetType, currentIndex: number) => {
