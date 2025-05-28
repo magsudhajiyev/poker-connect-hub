@@ -12,6 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ArrowLeft, ArrowRight, Share2, Upload, Camera, Plus, X, Check } from 'lucide-react';
+import CardSelector from '@/components/CardSelector';
 
 interface ActionStep {
   playerId: string;
@@ -59,6 +60,28 @@ const ShareHandContent = () => {
   ];
 
   const progress = ((currentStep + 1) / steps.length) * 100;
+
+  // Get all selected cards to disable them in future selections
+  const getSelectedCards = () => {
+    const selected: string[] = [];
+    
+    // Add hero cards
+    if (formData.heroCards.card1) selected.push(formData.heroCards.card1);
+    if (formData.heroCards.card2) selected.push(formData.heroCards.card2);
+    
+    // Add flop cards
+    if (formData.flopCards.card1) selected.push(formData.flopCards.card1);
+    if (formData.flopCards.card2) selected.push(formData.flopCards.card2);
+    if (formData.flopCards.card3) selected.push(formData.flopCards.card3);
+    
+    // Add turn card
+    if (formData.turnCard) selected.push(formData.turnCard);
+    
+    // Add river card
+    if (formData.riverCard) selected.push(formData.riverCard);
+    
+    return selected;
+  };
 
   const addTag = (tag: string) => {
     if (tag && !tags.includes(tag)) {
@@ -251,103 +274,6 @@ const ShareHandContent = () => {
     setFormData({...formData, [street]: actions});
   };
 
-  const cards = ['A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K'];
-  const suits = ['♠', '♥', '♦', '♣'];
-
-  const renderCardSelector = (cardPosition: 'card1' | 'card2' | 'card3', cardValue?: string, onChange?: (card: string) => void) => {
-    const currentCard = cardValue || '';
-    const [rank, suit] = currentCard ? [currentCard.slice(0, -1), currentCard.slice(-1)] : ['', ''];
-
-    return (
-      <div className="space-y-3">
-        <Label className="text-slate-300">{cardPosition === 'card1' ? 'First Card' : cardPosition === 'card2' ? 'Second Card' : 'Third Card'}</Label>
-        
-        {/* Rank Selection */}
-        <div>
-          <div className="text-sm text-slate-400 mb-2">Rank</div>
-          <div className="grid grid-cols-7 gap-2">
-            {cards.map((card) => (
-              <Button
-                key={card}
-                variant={rank === card ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => {
-                  const newCard = card + (suit || '♠');
-                  if (onChange) {
-                    onChange(newCard);
-                  }
-                }}
-                className={`aspect-square ${
-                  rank === card 
-                    ? 'bg-emerald-500 text-slate-900' 
-                    : 'border-slate-700/50 text-slate-300'
-                }`}
-              >
-                {card}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {/* Suit Selection */}
-        <div>
-          <div className="text-sm text-slate-400 mb-2">Suit</div>
-          <div className="grid grid-cols-4 gap-2">
-            {suits.map((suitSymbol) => (
-              <Button
-                key={suitSymbol}
-                variant={suit === suitSymbol ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => {
-                  const newCard = (rank || 'A') + suitSymbol;
-                  if (onChange) {
-                    onChange(newCard);
-                  }
-                }}
-                className={`aspect-square ${
-                  suit === suitSymbol 
-                    ? 'bg-emerald-500 text-slate-900' 
-                    : 'border-slate-700/50 text-slate-300'
-                } ${
-                  suitSymbol === '♥' || suitSymbol === '♦' ? 'text-red-400' : ''
-                }`}
-              >
-                {suitSymbol}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {/* Selected Card Display */}
-        {currentCard && (
-          <div className="mt-3">
-            <div className={`inline-flex items-center justify-center w-16 h-20 bg-slate-800 border-2 border-slate-600 rounded-lg text-lg font-bold ${
-              suit === '♥' || suit === '♦' ? 'text-red-400' : 'text-slate-200'
-            }`}>
-              {currentCard}
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const renderHoleCardSelector = (cardPosition: 'card1' | 'card2') => {
-    return renderCardSelector(
-      cardPosition,
-      formData.heroCards[cardPosition],
-      (newCard) => {
-        setFormData({
-          ...formData,
-          heroCards: {
-            ...formData.heroCards,
-            [cardPosition]: newCard
-          }
-        });
-      }
-    );
-  };
-
   const renderActionFlow = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions') => {
     let actions = formData[street];
     
@@ -426,6 +352,7 @@ const ShareHandContent = () => {
   const renderStepContent = () => {
     const potSize = calculatePotSize();
     const showPot = currentStep > 0; // Show pot on all screens except Game Setup
+    const selectedCards = getSelectedCards();
 
     switch (currentStep) {
       case 0: // Game Setup
@@ -599,8 +526,24 @@ const ShareHandContent = () => {
             <div className="space-y-4">
               <h4 className="text-md font-medium text-slate-300">Your Hole Cards</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {renderHoleCardSelector('card1')}
-                {renderHoleCardSelector('card2')}
+                <CardSelector
+                  label="First Card"
+                  value={formData.heroCards.card1}
+                  onChange={(card) => setFormData({
+                    ...formData,
+                    heroCards: { ...formData.heroCards, card1: card }
+                  })}
+                  disabledCards={selectedCards.filter(c => c !== formData.heroCards.card1)}
+                />
+                <CardSelector
+                  label="Second Card"
+                  value={formData.heroCards.card2}
+                  onChange={(card) => setFormData({
+                    ...formData,
+                    heroCards: { ...formData.heroCards, card2: card }
+                  })}
+                  disabledCards={selectedCards.filter(c => c !== formData.heroCards.card2)}
+                />
               </div>
               
               {/* Cards Preview */}
@@ -659,15 +602,33 @@ const ShareHandContent = () => {
             <div className="space-y-4">
               <h4 className="text-md font-medium text-slate-300">Flop Cards</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {renderCardSelector('card1', formData.flopCards.card1, (card) => 
-                  setFormData({...formData, flopCards: {...formData.flopCards, card1: card}})
-                )}
-                {renderCardSelector('card2', formData.flopCards.card2, (card) => 
-                  setFormData({...formData, flopCards: {...formData.flopCards, card2: card}})
-                )}
-                {renderCardSelector('card3', formData.flopCards.card3, (card) => 
-                  setFormData({...formData, flopCards: {...formData.flopCards, card3: card}})
-                )}
+                <CardSelector
+                  label="First Flop Card"
+                  value={formData.flopCards.card1}
+                  onChange={(card) => setFormData({
+                    ...formData,
+                    flopCards: { ...formData.flopCards, card1: card }
+                  })}
+                  disabledCards={selectedCards.filter(c => c !== formData.flopCards.card1)}
+                />
+                <CardSelector
+                  label="Second Flop Card"
+                  value={formData.flopCards.card2}
+                  onChange={(card) => setFormData({
+                    ...formData,
+                    flopCards: { ...formData.flopCards, card2: card }
+                  })}
+                  disabledCards={selectedCards.filter(c => c !== formData.flopCards.card2)}
+                />
+                <CardSelector
+                  label="Third Flop Card"
+                  value={formData.flopCards.card3}
+                  onChange={(card) => setFormData({
+                    ...formData,
+                    flopCards: { ...formData.flopCards, card3: card }
+                  })}
+                  disabledCards={selectedCards.filter(c => c !== formData.flopCards.card3)}
+                />
               </div>
 
               {/* Board Preview */}
@@ -723,9 +684,12 @@ const ShareHandContent = () => {
             <div className="space-y-4">
               <h4 className="text-md font-medium text-slate-300">Turn Card</h4>
               <div className="max-w-sm">
-                {renderCardSelector('card1', formData.turnCard, (card) => 
-                  setFormData({...formData, turnCard: card})
-                )}
+                <CardSelector
+                  label="Turn Card"
+                  value={formData.turnCard}
+                  onChange={(card) => setFormData({ ...formData, turnCard: card })}
+                  disabledCards={selectedCards.filter(c => c !== formData.turnCard)}
+                />
               </div>
 
               {/* Board Preview with Turn */}
@@ -781,9 +745,12 @@ const ShareHandContent = () => {
             <div className="space-y-4">
               <h4 className="text-md font-medium text-slate-300">River Card</h4>
               <div className="max-w-sm">
-                {renderCardSelector('card1', formData.riverCard, (card) => 
-                  setFormData({...formData, riverCard: card})
-                )}
+                <CardSelector
+                  label="River Card"
+                  value={formData.riverCard}
+                  onChange={(card) => setFormData({ ...formData, riverCard: card })}
+                  disabledCards={selectedCards.filter(c => c !== formData.riverCard)}
+                />
               </div>
 
               {/* Final Board Preview */}
