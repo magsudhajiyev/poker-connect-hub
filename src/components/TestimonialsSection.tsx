@@ -31,7 +31,9 @@ const TestimonialsSection = () => {
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-20">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            What <span className="bg-gradient-to-r from-emerald-500 via-blue-500 to-pink-500 bg-clip-text text-transparent">Players</span> Are Saying
+            <span className="text-white">What </span>
+            <span className="bg-gradient-to-r from-emerald-500 via-blue-500 to-pink-500 bg-clip-text text-transparent">Players</span>
+            <span className="text-white"> Are Saying</span>
           </h2>
         </div>
         

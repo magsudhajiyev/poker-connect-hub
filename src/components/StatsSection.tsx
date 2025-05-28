@@ -14,7 +14,9 @@ const StatsSection = () => {
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Join the <span className="bg-gradient-to-r from-emerald-500 to-violet-500 bg-clip-text text-transparent">Fastest Growing</span> Poker Community
+            <span className="text-white">Join the </span>
+            <span className="bg-gradient-to-r from-emerald-500 to-violet-500 bg-clip-text text-transparent">Fastest Growing</span>
+            <span className="text-white"> Poker Community</span>
           </h2>
         </div>
         
