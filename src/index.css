@@ -114,6 +114,22 @@
   .animate-scale-in {
     animation: scaleIn 0.5s ease-out;
   }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  .animate-wiggle {
+    animation: wiggle 1s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
 }
 
 @keyframes fadeIn {
@@ -149,6 +165,51 @@
   }
 }
 
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes wiggle {
+  0%, 7%, 100% {
+    transform: rotate(0deg);
+  }
+  15% {
+    transform: rotate(-3deg);
+  }
+  20% {
+    transform: rotate(3deg);
+  }
+  25% {
+    transform: rotate(-3deg);
+  }
+  35% {
+    transform: rotate(2deg);
+  }
+  45% {
+    transform: rotate(-1deg);
+  }
+  55%, 65% {
+    transform: rotate(1deg);
+  }
+  75% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 5px #10b981, 0 0 10px #10b981, 0 0 15px #10b981;
+  }
+  to {
+    text-shadow: 0 0 10px #10b981, 0 0 20px #10b981, 0 0 30px #10b981;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -161,6 +222,7 @@
 ::-webkit-scrollbar-thumb {
   background: #475569;
   border-radius: 4px;
+  transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -177,6 +239,12 @@ html {
   background: linear-gradient(145deg, #ffffff 0%, #f1f5f9 100%);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.poker-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 /* Gradient text utilities */
@@ -187,3 +255,41 @@ html {
 .gradient-emerald-violet {
   @apply bg-gradient-to-r from-emerald-500 to-violet-500;
 }
+
+/* Button hover effects */
+.btn-poker {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-poker::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-poker:hover::before {
+  left: 100%;
+}
+
+/* Micro-interaction for cards */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Staggered animations */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
