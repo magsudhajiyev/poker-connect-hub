@@ -40,6 +40,10 @@ class SharedHandsStore {
     return this.hands;
   }
 
+  getHand(id: string): SharedHand | null {
+    return this.hands.find(hand => hand.id === id) || null;
+  }
+
   getHandById(id: string): SharedHand | undefined {
     return this.hands.find(hand => hand.id === id);
   }

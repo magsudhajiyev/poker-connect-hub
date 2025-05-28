@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Menu } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
-import { HeroSection } from '@/components/HeroSection';
-import { FeaturesSection } from '@/components/FeaturesSection';
-import { TestimonialsSection } from '@/components/TestimonialsSection';
-import { StatsSection } from '@/components/StatsSection';
+import HeroSection from '@/components/HeroSection';
+import FeaturesSection from '@/components/FeaturesSection';
+import TestimonialsSection from '@/components/TestimonialsSection';
+import StatsSection from '@/components/StatsSection';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
 import {
   Sheet,
