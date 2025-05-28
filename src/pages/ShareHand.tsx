@@ -138,8 +138,43 @@ const ShareHandContent = () => {
     const actions = formData[street];
     const currentAction = actions[currentIndex];
     
+    console.log(`Processing action: ${currentAction.action} by ${currentAction.playerName} at index ${currentIndex}`);
+    
     // If this action requires a response (bet, raise), add the next player's action
     if (currentAction.action === 'bet' || currentAction.action === 'raise') {
+      // For a raise, we need to give the original bettor a chance to respond
+      if (currentAction.action === 'raise') {
+        // Find the original bettor (the player who made the first bet in this sequence)
+        const originalBettor = actions.find((action, index) => 
+          index < currentIndex && action.action === 'bet'
+        );
+        
+        if (originalBettor) {
+          // Check if the original bettor already has a subsequent action
+          const originalBettorHasResponse = actions.find((action, index) => 
+            index > currentIndex && action.playerId === originalBettor.playerId
+          );
+          
+          if (!originalBettorHasResponse) {
+            const newActionStep: ActionStep = {
+              playerId: originalBettor.playerId,
+              playerName: originalBettor.playerName,
+              isHero: originalBettor.isHero,
+              completed: false
+            };
+            
+            const updatedActions = [...actions];
+            updatedActions.push(newActionStep);
+            
+            console.log(`Adding response action for original bettor ${originalBettor.playerName} after raise`, updatedActions);
+            
+            setFormData({ ...formData, [street]: updatedActions });
+            return;
+          }
+        }
+      }
+      
+      // For a regular bet or if no original bettor found, add next player action
       const nextPlayerId = currentAction.isHero ? 'villain' : 'hero';
       const nextPlayerName = currentAction.isHero ? 'Villain' : 'Hero';
       
