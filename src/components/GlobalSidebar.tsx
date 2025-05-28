@@ -73,15 +73,21 @@ export const GlobalSidebar = () => {
           className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
             isActive('/feed') 
               ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
-              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+              : isCollapsed 
+                ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
           }`}
         >
-          <Rss className={`w-5 h-5 mr-3 ${isActive('/feed') ? 'text-emerald-500' : ''}`} />
+          <Rss className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isActive('/feed') ? 'text-emerald-500' : ''}`} />
           {!isCollapsed && <span>Feed</span>}
         </div>
         
-        <div className="flex items-center px-4 py-2.5 text-zinc-400 hover:text-zinc-200 rounded-xl hover:bg-zinc-800/40 cursor-pointer">
-          <Flame className="w-5 h-5 mr-3" />
+        <div className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
+          isCollapsed 
+            ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+        }`}>
+          <Flame className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'}`} />
           {!isCollapsed && <span>Trending Hands</span>}
         </div>
         
@@ -90,10 +96,12 @@ export const GlobalSidebar = () => {
           className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
             isActive('/share-hand') 
               ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
-              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+              : isCollapsed 
+                ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
           }`}
         >
-          <Share2 className={`w-5 h-5 mr-3 ${isActive('/share-hand') ? 'text-emerald-500' : ''}`} />
+          <Share2 className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isActive('/share-hand') ? 'text-emerald-500' : ''}`} />
           {!isCollapsed && <span>Share Hand</span>}
         </div>
         
@@ -102,20 +110,30 @@ export const GlobalSidebar = () => {
           className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
             isActive('/profile') 
               ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
-              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+              : isCollapsed 
+                ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
           }`}
         >
-          <User className={`w-5 h-5 mr-3 ${isActive('/profile') ? 'text-emerald-500' : ''}`} />
+          <User className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'} ${isActive('/profile') ? 'text-emerald-500' : ''}`} />
           {!isCollapsed && <span>My Profile</span>}
         </div>
         
-        <div className="flex items-center px-4 py-2.5 text-zinc-400 hover:text-zinc-200 rounded-xl hover:bg-zinc-800/40 cursor-pointer">
-          <Users className="w-5 h-5 mr-3" />
+        <div className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
+          isCollapsed 
+            ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+        }`}>
+          <Users className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'}`} />
           {!isCollapsed && <span>Following</span>}
         </div>
         
-        <div className="flex items-center px-4 py-2.5 text-zinc-400 hover:text-zinc-200 rounded-xl hover:bg-zinc-800/40 cursor-pointer">
-          <HelpCircle className="w-5 h-5 mr-3" />
+        <div className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
+          isCollapsed 
+            ? 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+        }`}>
+          <HelpCircle className={`w-5 h-5 ${isCollapsed ? '' : 'mr-3'}`} />
           {!isCollapsed && <span>Help & Support</span>}
         </div>
       </nav>

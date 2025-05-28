@@ -74,12 +74,12 @@ export const ProfileTopBar = () => {
             {/* Profile Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="p-0 rounded-full">
-                  <Avatar className="w-8 h-8 border border-slate-700/50">
+                <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-violet-500/50">
+                  <Avatar className="w-8 h-8 border border-slate-700/50 hover:border-slate-600/50 transition-colors">
                     <AvatarImage src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" />
                     <AvatarFallback>MJ</AvatarFallback>
                   </Avatar>
-                </Button>
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent 
                 align="end" 
