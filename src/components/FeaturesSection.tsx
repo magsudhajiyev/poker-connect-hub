@@ -1,4 +1,3 @@
-
 import { Card } from '@/components/ui/card';
 import { ArrowRight, BarChart3, Share2, Users, TrendingUp, Smartphone } from 'lucide-react';
 
@@ -45,7 +44,7 @@ const FeaturesSection = () => {
   return (
     <section id="features" className="py-24 px-4 bg-slate-900/30">
       <div className="container mx-auto max-w-6xl">
-        <div className="text-center mb-20 animate-fade-in">
+        <div className="text-center mb-20">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             <span className="bg-gradient-to-r from-emerald-500 via-blue-500 to-pink-500 bg-clip-text text-transparent">
               Features
@@ -63,19 +62,15 @@ const FeaturesSection = () => {
           {features.map((feature, index) => (
             <Card 
               key={index} 
-              className="bg-slate-900/60 border-slate-700/20 p-6 hover:border-slate-600/50 transition-all duration-500 hover:scale-105 group card-hover animate-slide-up"
-              style={{ animationDelay: `${index * 0.1}s` } as React.CSSProperties}
+              className="bg-slate-900/60 border-slate-700/20 p-6 hover:border-slate-600/50 transition-all duration-300 hover:scale-105 group"
             >
-              <div className="w-12 h-12 bg-gradient-to-r from-emerald-500/20 to-violet-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                <feature.icon className={`${feature.color} text-xl group-hover:animate-pulse`} />
+              <div className="w-12 h-12 bg-gradient-to-r from-emerald-500/20 to-violet-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                <feature.icon className={`${feature.color} text-xl`} />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-slate-100 group-hover:text-white transition-colors duration-300">{feature.title}</h3>
-              <p className="text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors duration-300">
+              <h3 className="text-xl font-semibold mb-3 text-slate-100">{feature.title}</h3>
+              <p className="text-slate-400 leading-relaxed">
                 {feature.description}
               </p>
-              <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <ArrowRight className="text-emerald-500 w-5 h-5 transform translate-x-0 group-hover:translate-x-2 transition-transform duration-300" />
-              </div>
             </Card>
           ))}
         </div>
