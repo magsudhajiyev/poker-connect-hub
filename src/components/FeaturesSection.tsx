@@ -1,3 +1,4 @@
+
 import { Card } from '@/components/ui/card';
 import { ArrowRight, BarChart3, Share2, Users, TrendingUp, Smartphone } from 'lucide-react';
 
@@ -46,10 +47,12 @@ const FeaturesSection = () => {
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-20">
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            <span className="bg-gradient-to-r from-emerald-500 via-blue-500 to-pink-500 bg-clip-text text-transparent">
+            <span className="text-white">
               Features
             </span>{' '}
-            Designed for Poker Players
+            <span className="text-white font-extrabold drop-shadow-lg">
+              Designed for Poker Players
+            </span>
           </h2>
           <p className="text-slate-400 text-xl max-w-2xl mx-auto leading-relaxed">
             Everything you need to analyze, share, and improve your poker gameplay in one place.
