@@ -2,11 +2,33 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Home, Share, Bell, User } from 'lucide-react';
+import { Search, Home, Share, Bell, User, Settings, LogOut } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useNavigate } from 'react-router-dom';
 
 export const ProfileTopBar = () => {
   const [searchValue, setSearchValue] = useState('');
+  const navigate = useNavigate();
+
+  const handleProfileClick = () => {
+    navigate('/profile');
+  };
+
+  const handleSettingsClick = () => {
+    navigate('/settings');
+  };
+
+  const handleLogout = () => {
+    // TODO: Implement logout logic
+    console.log('Logout clicked');
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 bg-slate-900/80 backdrop-blur-lg border-b border-slate-700/20 z-50">
@@ -48,10 +70,45 @@ export const ProfileTopBar = () => {
               <Bell className="w-5 h-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full"></span>
             </Button>
-            <Avatar className="w-8 h-8 border border-slate-700/50">
-              <AvatarImage src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" />
-              <AvatarFallback>MJ</AvatarFallback>
-            </Avatar>
+            
+            {/* Profile Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="p-0 rounded-full">
+                  <Avatar className="w-8 h-8 border border-slate-700/50">
+                    <AvatarImage src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" />
+                    <AvatarFallback>MJ</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent 
+                align="end" 
+                className="w-48 bg-slate-800/95 backdrop-blur-sm border-slate-700/50 text-slate-200"
+              >
+                <DropdownMenuItem 
+                  onClick={handleProfileClick}
+                  className="flex items-center gap-2 cursor-pointer hover:bg-slate-700/50"
+                >
+                  <User className="w-4 h-4" />
+                  Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={handleSettingsClick}
+                  className="flex items-center gap-2 cursor-pointer hover:bg-slate-700/50"
+                >
+                  <Settings className="w-4 h-4" />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-slate-700/50" />
+                <DropdownMenuItem 
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 cursor-pointer hover:bg-slate-700/50 text-red-400"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
