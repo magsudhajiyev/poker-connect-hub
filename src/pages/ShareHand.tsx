@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { ProfileTopBar } from '@/components/profile/ProfileTopBar';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
@@ -12,7 +13,8 @@ import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ArrowLeft, ArrowRight, Share2, Upload, Camera, Plus, X, Check } from 'lucide-react';
-import CardSelector from '@/components/CardSelector';
+import SingleCardBoard from '@/components/SingleCardBoard';
+import BetSizingButtons from '@/components/BetSizingButtons';
 
 interface ActionStep {
   playerId: string;
@@ -36,16 +38,13 @@ const ShareHandContent = () => {
     villainPosition: '',
     heroStackSize: [100], // Array for slider value
     villainStackSize: [100], // Array for slider value
-    heroCards: { card1: '', card2: '' },
+    selectedCards: [] as string[], // Single array for all card selections
     preflopActions: [] as ActionStep[],
     preflopDescription: '',
-    flopCards: { card1: '', card2: '', card3: '' },
     flopActions: [] as ActionStep[],
     flopDescription: '',
-    turnCard: '',
     turnActions: [] as ActionStep[],
     turnDescription: '',
-    riverCard: '',
     riverActions: [] as ActionStep[],
     title: '',
     description: ''
@@ -60,28 +59,6 @@ const ShareHandContent = () => {
   ];
 
   const progress = ((currentStep + 1) / steps.length) * 100;
-
-  // Get all selected cards to disable them in future selections
-  const getSelectedCards = () => {
-    const selected: string[] = [];
-    
-    // Add hero cards
-    if (formData.heroCards.card1) selected.push(formData.heroCards.card1);
-    if (formData.heroCards.card2) selected.push(formData.heroCards.card2);
-    
-    // Add flop cards
-    if (formData.flopCards.card1) selected.push(formData.flopCards.card1);
-    if (formData.flopCards.card2) selected.push(formData.flopCards.card2);
-    if (formData.flopCards.card3) selected.push(formData.flopCards.card3);
-    
-    // Add turn card
-    if (formData.turnCard) selected.push(formData.turnCard);
-    
-    // Add river card
-    if (formData.riverCard) selected.push(formData.riverCard);
-    
-    return selected;
-  };
 
   const addTag = (tag: string) => {
     if (tag && !tags.includes(tag)) {
@@ -108,6 +85,18 @@ const ShareHandContent = () => {
   const handleSubmit = () => {
     console.log('Submitting hand:', formData, tags);
     // TODO: Implement submission logic
+  };
+
+  const handleCardSelect = (card: string) => {
+    const currentCards = [...formData.selectedCards];
+    if (currentCards.includes(card)) {
+      // Remove card if already selected
+      const updatedCards = currentCards.filter(c => c !== card);
+      setFormData({...formData, selectedCards: updatedCards});
+    } else {
+      // Add card if not selected
+      setFormData({...formData, selectedCards: [...currentCards, card]});
+    }
   };
 
   const getStackSizeLabel = () => {
@@ -274,6 +263,31 @@ const ShareHandContent = () => {
     setFormData({...formData, [street]: actions});
   };
 
+  const handleBetSizeSelect = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', playerIndex: number, amount: string) => {
+    const actions = [...formData[street]];
+    actions[playerIndex] = {
+      ...actions[playerIndex],
+      betAmount: amount
+    };
+    setFormData({...formData, [street]: actions});
+  };
+
+  const getActionButtonClass = (action: string, isSelected: boolean) => {
+    const baseClass = "transition-colors";
+    
+    if (action === 'fold') {
+      return `${baseClass} ${isSelected ? 'bg-red-700 text-white border-red-700' : 'bg-red-500 text-white border-red-500 hover:bg-red-600'}`;
+    } else if (action === 'check') {
+      return `${baseClass} ${isSelected ? 'bg-yellow-700 text-slate-900 border-yellow-700' : 'bg-yellow-500 text-slate-900 border-yellow-500 hover:bg-yellow-600'}`;
+    } else if (action === 'bet' || action === 'raise') {
+      return `${baseClass} ${isSelected ? 'bg-green-700 text-white border-green-700' : 'bg-green-500 text-white border-green-500 hover:bg-green-600'}`;
+    } else if (action === 'call') {
+      return `${baseClass} ${isSelected ? 'bg-blue-700 text-white border-blue-700' : 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600'}`;
+    }
+    
+    return `${baseClass} ${isSelected ? 'bg-slate-700 text-white border-slate-700' : 'border-slate-700/50 text-slate-300 hover:bg-slate-800/50'}`;
+  };
+
   const renderActionFlow = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions') => {
     let actions = formData[street];
     
@@ -281,6 +295,9 @@ const ShareHandContent = () => {
       actions = initializeActions(street);
       setFormData({...formData, [street]: actions});
     }
+    
+    const potSize = calculatePotSize();
+    const currentStackSize = formData.heroStackSize[0];
     
     return (
       <div className="space-y-4">
@@ -306,14 +323,9 @@ const ShareHandContent = () => {
                     {availableActions.map((action) => (
                       <Button
                         key={action}
-                        variant={actionStep.action === action ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => updateAction(street, index, action)}
-                        className={`${
-                          actionStep.action === action 
-                            ? 'bg-emerald-500 text-slate-900' 
-                            : 'border-slate-700/50 text-slate-300'
-                        }`}
+                        className={getActionButtonClass(action, actionStep.action === action)}
                       >
                         {action.charAt(0).toUpperCase() + action.slice(1)}
                       </Button>
@@ -322,14 +334,25 @@ const ShareHandContent = () => {
                 </div>
                 
                 {(actionStep.action === 'bet' || actionStep.action === 'raise') && (
-                  <div>
-                    <Label className="text-slate-300">{getBetSizeLabel()}</Label>
-                    <Input
-                      value={actionStep.betAmount || ''}
-                      onChange={(e) => updateAction(street, index, actionStep.action!, e.target.value)}
-                      placeholder="2.5"
-                      className="bg-slate-900/50 border-slate-700/50 text-slate-200"
-                    />
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-slate-300">Quick Bet Sizes</Label>
+                      <BetSizingButtons
+                        potSize={potSize}
+                        stackSize={currentStackSize}
+                        onBetSizeSelect={(amount) => handleBetSizeSelect(street, index, amount)}
+                        gameFormat={formData.gameFormat}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-slate-300">{getBetSizeLabel()}</Label>
+                      <Input
+                        value={actionStep.betAmount || ''}
+                        onChange={(e) => updateAction(street, index, actionStep.action!, e.target.value)}
+                        placeholder="2.5"
+                        className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+                      />
+                    </div>
                   </div>
                 )}
 
@@ -352,7 +375,6 @@ const ShareHandContent = () => {
   const renderStepContent = () => {
     const potSize = calculatePotSize();
     const showPot = currentStep > 0; // Show pot on all screens except Game Setup
-    const selectedCards = getSelectedCards();
 
     switch (currentStep) {
       case 0: // Game Setup
@@ -503,6 +525,13 @@ const ShareHandContent = () => {
                 </div>
               </div>
             </div>
+
+            {/* Single Card Board */}
+            <SingleCardBoard
+              selectedCards={formData.selectedCards}
+              onCardSelect={handleCardSelect}
+              title="Select Cards (Hole Cards, Flop, Turn, River)"
+            />
           </div>
         );
 
@@ -522,49 +551,12 @@ const ShareHandContent = () => {
 
             <h3 className="text-lg font-medium text-slate-200 mb-4">Preflop Action</h3>
             
-            {/* Hole Cards Selection */}
-            <div className="space-y-4">
-              <h4 className="text-md font-medium text-slate-300">Your Hole Cards</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <CardSelector
-                  label="First Card"
-                  value={formData.heroCards.card1}
-                  onChange={(card) => setFormData({
-                    ...formData,
-                    heroCards: { ...formData.heroCards, card1: card }
-                  })}
-                  disabledCards={selectedCards.filter(c => c !== formData.heroCards.card1)}
-                />
-                <CardSelector
-                  label="Second Card"
-                  value={formData.heroCards.card2}
-                  onChange={(card) => setFormData({
-                    ...formData,
-                    heroCards: { ...formData.heroCards, card2: card }
-                  })}
-                  disabledCards={selectedCards.filter(c => c !== formData.heroCards.card2)}
-                />
-              </div>
-              
-              {/* Cards Preview */}
-              {formData.heroCards.card1 && formData.heroCards.card2 && (
-                <div className="flex items-center space-x-3 pt-4">
-                  <span className="text-slate-300 font-medium">Your Hand:</span>
-                  <div className="flex space-x-2">
-                    <div className={`w-12 h-16 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-sm ${
-                      formData.heroCards.card1.includes('♥') || formData.heroCards.card1.includes('♦') ? 'text-red-400' : 'text-slate-200'
-                    }`}>
-                      {formData.heroCards.card1}
-                    </div>
-                    <div className={`w-12 h-16 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-sm ${
-                      formData.heroCards.card2.includes('♥') || formData.heroCards.card2.includes('♦') ? 'text-red-400' : 'text-slate-200'
-                    }`}>
-                      {formData.heroCards.card2}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Single Card Board */}
+            <SingleCardBoard
+              selectedCards={formData.selectedCards}
+              onCardSelect={handleCardSelect}
+              title="Select Cards"
+            />
             
             {renderActionFlow('preflopActions')}
 
@@ -598,55 +590,12 @@ const ShareHandContent = () => {
 
             <h3 className="text-lg font-medium text-slate-200 mb-4">Flop</h3>
             
-            {/* Flop Cards Selection */}
-            <div className="space-y-4">
-              <h4 className="text-md font-medium text-slate-300">Flop Cards</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <CardSelector
-                  label="First Flop Card"
-                  value={formData.flopCards.card1}
-                  onChange={(card) => setFormData({
-                    ...formData,
-                    flopCards: { ...formData.flopCards, card1: card }
-                  })}
-                  disabledCards={selectedCards.filter(c => c !== formData.flopCards.card1)}
-                />
-                <CardSelector
-                  label="Second Flop Card"
-                  value={formData.flopCards.card2}
-                  onChange={(card) => setFormData({
-                    ...formData,
-                    flopCards: { ...formData.flopCards, card2: card }
-                  })}
-                  disabledCards={selectedCards.filter(c => c !== formData.flopCards.card2)}
-                />
-                <CardSelector
-                  label="Third Flop Card"
-                  value={formData.flopCards.card3}
-                  onChange={(card) => setFormData({
-                    ...formData,
-                    flopCards: { ...formData.flopCards, card3: card }
-                  })}
-                  disabledCards={selectedCards.filter(c => c !== formData.flopCards.card3)}
-                />
-              </div>
-
-              {/* Board Preview */}
-              {formData.flopCards.card1 && formData.flopCards.card2 && formData.flopCards.card3 && (
-                <div className="flex items-center space-x-3 pt-4">
-                  <span className="text-slate-300 font-medium">Board:</span>
-                  <div className="flex space-x-2">
-                    {[formData.flopCards.card1, formData.flopCards.card2, formData.flopCards.card3].map((card, index) => (
-                      <div key={index} className={`w-12 h-16 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-sm ${
-                        card.includes('♥') || card.includes('♦') ? 'text-red-400' : 'text-slate-200'
-                      }`}>
-                        {card}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Single Card Board */}
+            <SingleCardBoard
+              selectedCards={formData.selectedCards}
+              onCardSelect={handleCardSelect}
+              title="Select Cards"
+            />
 
             {renderActionFlow('flopActions')}
 
@@ -680,34 +629,12 @@ const ShareHandContent = () => {
 
             <h3 className="text-lg font-medium text-slate-200 mb-4">Turn</h3>
             
-            {/* Turn Card Selection */}
-            <div className="space-y-4">
-              <h4 className="text-md font-medium text-slate-300">Turn Card</h4>
-              <div className="max-w-sm">
-                <CardSelector
-                  label="Turn Card"
-                  value={formData.turnCard}
-                  onChange={(card) => setFormData({ ...formData, turnCard: card })}
-                  disabledCards={selectedCards.filter(c => c !== formData.turnCard)}
-                />
-              </div>
-
-              {/* Board Preview with Turn */}
-              {formData.flopCards.card1 && formData.flopCards.card2 && formData.flopCards.card3 && formData.turnCard && (
-                <div className="flex items-center space-x-3 pt-4">
-                  <span className="text-slate-300 font-medium">Board:</span>
-                  <div className="flex space-x-2">
-                    {[formData.flopCards.card1, formData.flopCards.card2, formData.flopCards.card3, formData.turnCard].map((card, index) => (
-                      <div key={index} className={`w-12 h-16 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-sm ${
-                        card.includes('♥') || card.includes('♦') ? 'text-red-400' : 'text-slate-200'
-                      }`}>
-                        {card}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Single Card Board */}
+            <SingleCardBoard
+              selectedCards={formData.selectedCards}
+              onCardSelect={handleCardSelect}
+              title="Select Cards"
+            />
 
             {renderActionFlow('turnActions')}
 
@@ -741,34 +668,12 @@ const ShareHandContent = () => {
 
             <h3 className="text-lg font-medium text-slate-200 mb-4">River & Summary</h3>
             
-            {/* River Card Selection */}
-            <div className="space-y-4">
-              <h4 className="text-md font-medium text-slate-300">River Card</h4>
-              <div className="max-w-sm">
-                <CardSelector
-                  label="River Card"
-                  value={formData.riverCard}
-                  onChange={(card) => setFormData({ ...formData, riverCard: card })}
-                  disabledCards={selectedCards.filter(c => c !== formData.riverCard)}
-                />
-              </div>
-
-              {/* Final Board Preview */}
-              {formData.flopCards.card1 && formData.flopCards.card2 && formData.flopCards.card3 && formData.turnCard && formData.riverCard && (
-                <div className="flex items-center space-x-3 pt-4">
-                  <span className="text-slate-300 font-medium">Final Board:</span>
-                  <div className="flex space-x-2">
-                    {[formData.flopCards.card1, formData.flopCards.card2, formData.flopCards.card3, formData.turnCard, formData.riverCard].map((card, index) => (
-                      <div key={index} className={`w-12 h-16 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-sm ${
-                        card.includes('♥') || card.includes('♦') ? 'text-red-400' : 'text-slate-200'
-                      }`}>
-                        {card}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Single Card Board */}
+            <SingleCardBoard
+              selectedCards={formData.selectedCards}
+              onCardSelect={handleCardSelect}
+              title="Select Cards"
+            />
 
             {renderActionFlow('riverActions')}
 
