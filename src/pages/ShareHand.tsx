@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ProfileTopBar } from '@/components/profile/ProfileTopBar';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
@@ -384,7 +383,7 @@ const ShareHandContent = () => {
         <Label className="text-slate-300">{label}:</Label>
         <div className="flex flex-wrap gap-2">
           {cards.map((card, index) => (
-            <div key={index} className={`w-12 h-16 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-sm ${
+            <div key={index} className={`w-10 h-12 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-xs ${
               card.includes('♥') || card.includes('♦') ? 'text-red-400' : 'text-slate-200'
             }`}>
               {card}
@@ -985,13 +984,7 @@ const ShareHandContent = () => {
         onConfirm={handleCardSelection}
         title={modalConfig.title}
         maxCards={modalConfig.maxCards}
-        disabledCards={getAllSelectedCards().filter(card => 
-          currentCardType === 'hole' ? !formData.holeCards.includes(card) :
-          currentCardType === 'flop' ? !formData.flopCards.includes(card) :
-          currentCardType === 'turn' ? !formData.turnCard.includes(card) :
-          currentCardType === 'river' ? !formData.riverCard.includes(card) :
-          true
-        )}
+        disabledCards={getAllSelectedCards().filter(card => !modalConfig.currentSelection.includes(card))}
         currentSelection={modalConfig.currentSelection}
       />
     </div>

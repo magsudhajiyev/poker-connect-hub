@@ -72,11 +72,11 @@ const CardSelectionModal = ({
             Select {maxCards} card{maxCards > 1 ? 's' : ''} ({selectedCards.length}/{maxCards} selected)
           </div>
           
-          {/* Card Grid */}
+          {/* Card Grid - Made more compact */}
           <div className="border border-slate-700/50 rounded-lg p-4 bg-slate-800/30 max-h-80 overflow-y-auto">
-            <div className="space-y-3">
+            <div className="space-y-2">
               {suits.map((suit) => (
-                <div key={suit} className="flex gap-2 flex-wrap">
+                <div key={suit} className="flex gap-1 flex-wrap">
                   {ranks.map((rank) => {
                     const card = rank + suit;
                     const isSelected = isCardSelected(card);
@@ -89,7 +89,7 @@ const CardSelectionModal = ({
                         size="sm"
                         onClick={() => handleCardClick(rank, suit)}
                         disabled={isDisabled}
-                        className={`w-10 h-12 text-xs font-bold ${
+                        className={`w-8 h-10 text-xs font-bold ${
                           isSelected 
                             ? 'bg-emerald-500 text-slate-900 border-emerald-500' 
                             : isDisabled
@@ -110,13 +110,13 @@ const CardSelectionModal = ({
             </div>
           </div>
 
-          {/* Selected Cards Display */}
+          {/* Selected Cards Display - Made more compact */}
           {selectedCards.length > 0 && (
             <div className="space-y-2">
               <Label className="text-slate-300">Selected Cards:</Label>
               <div className="flex flex-wrap gap-2">
                 {selectedCards.map((card, index) => (
-                  <div key={index} className={`w-12 h-16 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-sm ${
+                  <div key={index} className={`w-10 h-12 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-xs ${
                     card.includes('♥') || card.includes('♦') ? 'text-red-400' : 'text-slate-200'
                   }`}>
                     {card}
