@@ -1,0 +1,28 @@
+
+import { Label } from '@/components/ui/label';
+
+interface SelectedCardsDisplayProps {
+  cards: string[];
+  label: string;
+}
+
+const SelectedCardsDisplay = ({ cards, label }: SelectedCardsDisplayProps) => {
+  if (cards.length === 0) return null;
+  
+  return (
+    <div className="space-y-2">
+      <Label className="text-slate-300">{label}:</Label>
+      <div className="flex flex-wrap gap-2">
+        {cards.map((card, index) => (
+          <div key={index} className={`w-10 h-12 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-xs ${
+            card.includes('♥') || card.includes('♦') ? 'text-red-400' : 'text-slate-200'
+          }`}>
+            {card}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default SelectedCardsDisplay;
