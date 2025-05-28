@@ -15,8 +15,8 @@ const BetSizingButtons = ({ potSize, stackSize, onBetSizeSelect, gameFormat }: B
       return stackSize.toString();
     }
     
-    // Calculate percentage of pot
-    const betAmount = (potSize * percentage) / 100;
+    // Calculate bet using the formula: bet = pot + pot * percentage
+    const betAmount = potSize + (potSize * percentage / 100);
     return betAmount.toFixed(1);
   };
 

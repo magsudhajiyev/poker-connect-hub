@@ -50,6 +50,7 @@ const FlopStep = ({
           onCardsChange={(cards) => setFormData({...formData, flopCards: cards})}
           maxCards={3}
           placeholder="Type flop cards (e.g., Kh, 9s, 4d)"
+          excludeCards={formData.holeCards}
         />
       </div>
 

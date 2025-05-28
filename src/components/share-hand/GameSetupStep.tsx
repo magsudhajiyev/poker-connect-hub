@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +17,34 @@ const GameSetupStep = ({ formData, setFormData }: GameSetupStepProps) => {
 
   const getStackSizePlaceholder = () => {
     return formData.gameFormat === 'cash' ? '200' : '100';
+  };
+
+  // Get available positions for villain (exclude hero's position)
+  const getAvailableVillainPositions = () => {
+    const allPositions = [
+      { value: 'utg', label: 'UTG' },
+      { value: 'mp', label: 'Middle Position' },
+      { value: 'co', label: 'Cut Off' },
+      { value: 'btn', label: 'Button' },
+      { value: 'sb', label: 'Small Blind' },
+      { value: 'bb', label: 'Big Blind' }
+    ];
+    
+    return allPositions.filter(pos => pos.value !== formData.heroPosition);
+  };
+
+  // Get available positions for hero (exclude villain's position)
+  const getAvailableHeroPositions = () => {
+    const allPositions = [
+      { value: 'utg', label: 'UTG' },
+      { value: 'mp', label: 'Middle Position' },
+      { value: 'co', label: 'Cut Off' },
+      { value: 'btn', label: 'Button' },
+      { value: 'sb', label: 'Small Blind' },
+      { value: 'bb', label: 'Big Blind' }
+    ];
+    
+    return allPositions.filter(pos => pos.value !== formData.villainPosition);
   };
 
   return (
@@ -95,17 +122,19 @@ const GameSetupStep = ({ formData, setFormData }: GameSetupStepProps) => {
         <div className="space-y-4">
           <div>
             <Label htmlFor="hero-position" className="text-slate-300">Hero Position</Label>
-            <Select value={formData.heroPosition} onValueChange={(value) => setFormData({...formData, heroPosition: value})}>
+            <Select 
+              value={formData.heroPosition} 
+              onValueChange={(value) => setFormData({...formData, heroPosition: value})}
+            >
               <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200">
                 <SelectValue placeholder="Select position" />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
-                <SelectItem value="utg">UTG</SelectItem>
-                <SelectItem value="mp">Middle Position</SelectItem>
-                <SelectItem value="co">Cut Off</SelectItem>
-                <SelectItem value="btn">Button</SelectItem>
-                <SelectItem value="sb">Small Blind</SelectItem>
-                <SelectItem value="bb">Big Blind</SelectItem>
+                {getAvailableHeroPositions().map((position) => (
+                  <SelectItem key={position.value} value={position.value}>
+                    {position.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -133,17 +162,19 @@ const GameSetupStep = ({ formData, setFormData }: GameSetupStepProps) => {
         <div className="space-y-4">
           <div>
             <Label htmlFor="villain-position" className="text-slate-300">Villain Position</Label>
-            <Select value={formData.villainPosition} onValueChange={(value) => setFormData({...formData, villainPosition: value})}>
+            <Select 
+              value={formData.villainPosition} 
+              onValueChange={(value) => setFormData({...formData, villainPosition: value})}
+            >
               <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200">
                 <SelectValue placeholder="Select position" />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
-                <SelectItem value="utg">UTG</SelectItem>
-                <SelectItem value="mp">Middle Position</SelectItem>
-                <SelectItem value="co">Cut Off</SelectItem>
-                <SelectItem value="btn">Button</SelectItem>
-                <SelectItem value="sb">Small Blind</SelectItem>
-                <SelectItem value="bb">Big Blind</SelectItem>
+                {getAvailableVillainPositions().map((position) => (
+                  <SelectItem key={position.value} value={position.value}>
+                    {position.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

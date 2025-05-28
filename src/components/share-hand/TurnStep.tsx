@@ -32,6 +32,7 @@ const TurnStep = ({
   handleBetSizeSelect 
 }: TurnStepProps) => {
   const potSize = calculatePotSize();
+  const previousCards = [...formData.holeCards, ...formData.flopCards];
 
   return (
     <div className="space-y-6">
@@ -51,6 +52,7 @@ const TurnStep = ({
           onCardsChange={(cards) => setFormData({...formData, turnCard: cards})}
           maxCards={1}
           placeholder="Type turn card (e.g., 2h)"
+          excludeCards={previousCards}
         />
       </div>
 

@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -11,9 +10,10 @@ interface CardInputProps {
   onCardsChange: (cards: string[]) => void;
   maxCards: number;
   placeholder?: string;
+  excludeCards?: string[];
 }
 
-const CardInput = ({ label, cards, onCardsChange, maxCards, placeholder }: CardInputProps) => {
+const CardInput = ({ label, cards, onCardsChange, maxCards, placeholder, excludeCards = [] }: CardInputProps) => {
   const [inputValue, setInputValue] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
@@ -31,13 +31,16 @@ const CardInput = ({ label, cards, onCardsChange, maxCards, placeholder }: CardI
   // Generate all possible cards
   const allCards = ranks.flatMap(rank => suits.map(suit => rank + suit));
 
-  // Filter suggestions based on input
+  // Filter suggestions based on input and exclude already selected cards
   const getSuggestions = (input: string) => {
     if (!input.trim()) return [];
     
     const normalizedInput = input.toLowerCase().replace(/[,\s]+/g, '');
+    const allExcludedCards = [...cards, ...excludeCards];
     
     return allCards.filter(card => {
+      if (allExcludedCards.includes(card)) return false;
+      
       const normalizedCard = card.toLowerCase();
       const cardWithTextSuit = card.replace(/[♠♥♦♣]/g, (suit) => {
         const suitName = { '♠': 's', '♥': 'h', '♦': 'd', '♣': 'c' }[suit];
@@ -55,6 +58,7 @@ const CardInput = ({ label, cards, onCardsChange, maxCards, placeholder }: CardI
   const parseCardInput = (input: string): string[] => {
     const parts = input.split(/[,\s]+/).filter(part => part.trim());
     const parsedCards: string[] = [];
+    const allExcludedCards = [...cards, ...excludeCards];
 
     for (const part of parts) {
       const trimmed = part.trim();
@@ -66,7 +70,7 @@ const CardInput = ({ label, cards, onCardsChange, maxCards, placeholder }: CardI
           const suit = suitMap[suitChar] || suits.find(s => s === trimmed[1]);
           if (suit) {
             const card = rank + suit;
-            if (!parsedCards.includes(card)) {
+            if (!parsedCards.includes(card) && !allExcludedCards.includes(card)) {
               parsedCards.push(card);
             }
           }
@@ -120,7 +124,8 @@ const CardInput = ({ label, cards, onCardsChange, maxCards, placeholder }: CardI
   };
 
   const selectSuggestion = (card: string) => {
-    if (cards.length < maxCards && !cards.includes(card)) {
+    const allExcludedCards = [...cards, ...excludeCards];
+    if (cards.length < maxCards && !allExcludedCards.includes(card)) {
       const newCards = [...cards, card];
       onCardsChange(newCards);
       
