@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ProfileTopBar } from '@/components/profile/ProfileTopBar';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
 import { Button } from '@/components/ui/button';
@@ -59,6 +58,83 @@ const ShareHandContent = () => {
   ];
 
   const progress = ((currentStep + 1) / steps.length) * 100;
+
+  // Position order for action flow
+  const positionOrder = ['utg', 'mp', 'co', 'btn', 'sb', 'bb'];
+  
+  const getPositionName = (position: string) => {
+    const names: { [key: string]: string } = {
+      'utg': 'UTG',
+      'mp': 'Middle Position',
+      'co': 'Cut Off',
+      'btn': 'Button',
+      'sb': 'Small Blind',
+      'bb': 'Big Blind'
+    };
+    return names[position] || position;
+  };
+
+  const initializeActions = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions') => {
+    if (!formData.heroPosition || !formData.villainPosition) return [];
+    
+    const heroIndex = positionOrder.indexOf(formData.heroPosition);
+    const villainIndex = positionOrder.indexOf(formData.villainPosition);
+    
+    const actionOrder: ActionStep[] = [];
+    
+    if (heroIndex < villainIndex) {
+      actionOrder.push({
+        playerId: 'hero',
+        playerName: 'Hero',
+        isHero: true,
+        completed: false
+      });
+      actionOrder.push({
+        playerId: 'villain',
+        playerName: 'Villain',
+        isHero: false,
+        completed: false
+      });
+    } else {
+      actionOrder.push({
+        playerId: 'villain',
+        playerName: 'Villain',
+        isHero: false,
+        completed: false
+      });
+      actionOrder.push({
+        playerId: 'hero',
+        playerName: 'Hero',
+        isHero: true,
+        completed: false
+      });
+    }
+    
+    return actionOrder;
+  };
+
+  // Initialize actions when positions change
+  useEffect(() => {
+    if (formData.heroPosition && formData.villainPosition) {
+      const streets: Array<'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions'> = [
+        'preflopActions', 'flopActions', 'turnActions', 'riverActions'
+      ];
+      
+      const updatedFormData = { ...formData };
+      let hasChanges = false;
+      
+      streets.forEach(street => {
+        if (updatedFormData[street].length === 0) {
+          updatedFormData[street] = initializeActions(street);
+          hasChanges = true;
+        }
+      });
+      
+      if (hasChanges) {
+        setFormData(updatedFormData);
+      }
+    }
+  }, [formData.heroPosition, formData.villainPosition]);
 
   const addTag = (tag: string) => {
     if (tag && !tags.includes(tag)) {
@@ -143,60 +219,6 @@ const ShareHandContent = () => {
     return potSize;
   };
 
-  // Position order for action flow
-  const positionOrder = ['utg', 'mp', 'co', 'btn', 'sb', 'bb'];
-  
-  const getPositionName = (position: string) => {
-    const names: { [key: string]: string } = {
-      'utg': 'UTG',
-      'mp': 'Middle Position',
-      'co': 'Cut Off',
-      'btn': 'Button',
-      'sb': 'Small Blind',
-      'bb': 'Big Blind'
-    };
-    return names[position] || position;
-  };
-
-  const initializeActions = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions') => {
-    if (!formData.heroPosition || !formData.villainPosition) return [];
-    
-    const heroIndex = positionOrder.indexOf(formData.heroPosition);
-    const villainIndex = positionOrder.indexOf(formData.villainPosition);
-    
-    const actionOrder: ActionStep[] = [];
-    
-    if (heroIndex < villainIndex) {
-      actionOrder.push({
-        playerId: 'hero',
-        playerName: 'Hero',
-        isHero: true,
-        completed: false
-      });
-      actionOrder.push({
-        playerId: 'villain',
-        playerName: 'Villain',
-        isHero: false,
-        completed: false
-      });
-    } else {
-      actionOrder.push({
-        playerId: 'villain',
-        playerName: 'Villain',
-        isHero: false,
-        completed: false
-      });
-      actionOrder.push({
-        playerId: 'hero',
-        playerName: 'Hero',
-        isHero: true,
-        completed: false
-      });
-    }
-    
-    return actionOrder;
-  };
-
   const getAvailableActions = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', playerIndex: number) => {
     const actions = formData[street];
     const currentPlayerAction = actions[playerIndex];
@@ -226,11 +248,6 @@ const ShareHandContent = () => {
 
   const updateAction = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', playerIndex: number, action: string, betAmount?: string) => {
     const actions = [...formData[street]];
-    if (actions.length === 0) {
-      const newActions = initializeActions(street);
-      setFormData({...formData, [street]: newActions});
-      return;
-    }
     
     // For call action, get the bet amount from previous action
     let finalBetAmount = betAmount;
@@ -289,13 +306,7 @@ const ShareHandContent = () => {
   };
 
   const renderActionFlow = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions') => {
-    let actions = formData[street];
-    
-    if (actions.length === 0) {
-      actions = initializeActions(street);
-      setFormData({...formData, [street]: actions});
-    }
-    
+    const actions = formData[street];
     const potSize = calculatePotSize();
     const currentStackSize = formData.heroStackSize[0];
     
