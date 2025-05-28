@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { ShareHandFormData, StreetType, ActionStep } from '@/types/shareHand';
 import { steps, getPositionName } from '@/utils/shareHandConstants';
@@ -112,23 +111,31 @@ export const useShareHandLogic = () => {
     
     setFormData(prev => {
       const updatedActions = [...prev[street]];
+      const currentAction = updatedActions[index];
       
+      // Update the current action with bet amount and mark as completed
       updatedActions[index] = {
-        ...updatedActions[index],
+        ...currentAction,
         betAmount: amount,
         completed: true
       };
       
-      const newFormData = { ...prev, [street]: updatedActions };
-      
-      // Add next action step if this is a bet or raise
-      if (shouldAddNextAction(updatedActions[index].action!)) {
-        setTimeout(() => {
-          addNextActionStep(street, index);
-        }, 100);
+      // Add next action step if this is a bet or raise and it doesn't already exist
+      if (shouldAddNextAction(currentAction.action!)) {
+        const nextActionStep = createNextActionStep(currentAction);
+        
+        // Check if next action already exists
+        const nextActionExists = updatedActions.find((action, actionIndex) => 
+          actionIndex > index && action.playerId === nextActionStep.playerId
+        );
+        
+        if (!nextActionExists) {
+          updatedActions.push(nextActionStep);
+          console.log(`Adding next action step for ${nextActionStep.playerName}`, updatedActions);
+        }
       }
       
-      return newFormData;
+      return { ...prev, [street]: updatedActions };
     });
   };
 
