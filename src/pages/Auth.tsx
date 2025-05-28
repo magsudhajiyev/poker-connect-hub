@@ -1,12 +1,12 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Eye, EyeOff, Lock, Mail, LogIn, UserPlus } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Auth = () => {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -26,7 +26,23 @@ const Auth = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Form submitted:', formData);
-    // Handle authentication logic here
+    
+    // Mock authentication - check if email and password are provided
+    if (formData.email && formData.password) {
+      if (!isLogin) {
+        // For registration, also check confirm password
+        if (formData.password !== formData.confirmPassword) {
+          alert('Passwords do not match!');
+          return;
+        }
+      }
+      
+      console.log(isLogin ? 'Login successful!' : 'Registration successful!');
+      // Redirect to onboarding page
+      navigate('/onboarding');
+    } else {
+      alert('Please fill in all required fields');
+    }
   };
 
   return (
