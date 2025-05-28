@@ -43,7 +43,7 @@ const FlopStep = ({
 
       <h3 className="text-lg font-medium text-slate-200 mb-4">Flop</h3>
       
-      <div className="space-y-4">
+      <div className="flex flex-wrap items-start gap-6">
         <SelectedCardsDisplay cards={formData.holeCards} label="Your Hole Cards" />
         
         <CardInput

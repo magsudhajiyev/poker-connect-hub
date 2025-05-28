@@ -119,33 +119,20 @@ const HandReplay = ({ formData, getPositionName, getCurrencySymbol }: HandReplay
           <SelectedCardsDisplay cards={formData.holeCards} label="Hero Cards" />
         )}
 
-        {/* Community Cards */}
-        {currentStreet === 1 && formData.flopCards.length > 0 && (
-          <SelectedCardsDisplay cards={formData.flopCards} label="Flop" />
-        )}
-        
-        {currentStreet === 2 && (
+        {/* Community Cards - Side by side layout */}
+        {(currentStreet >= 1 || currentStreet === 3) && (
           <div className="space-y-3">
-            {formData.flopCards.length > 0 && (
-              <SelectedCardsDisplay cards={formData.flopCards} label="Flop" />
-            )}
-            {formData.turnCard.length > 0 && (
-              <SelectedCardsDisplay cards={formData.turnCard} label="Turn" />
-            )}
-          </div>
-        )}
-        
-        {currentStreet === 3 && (
-          <div className="space-y-3">
-            {formData.flopCards.length > 0 && (
-              <SelectedCardsDisplay cards={formData.flopCards} label="Flop" />
-            )}
-            {formData.turnCard.length > 0 && (
-              <SelectedCardsDisplay cards={formData.turnCard} label="Turn" />
-            )}
-            {formData.riverCard.length > 0 && (
-              <SelectedCardsDisplay cards={formData.riverCard} label="River" />
-            )}
+            <div className="flex flex-wrap items-start gap-6">
+              {currentStreet >= 1 && formData.flopCards.length > 0 && (
+                <SelectedCardsDisplay cards={formData.flopCards} label="Flop" />
+              )}
+              {currentStreet >= 2 && formData.turnCard.length > 0 && (
+                <SelectedCardsDisplay cards={formData.turnCard} label="Turn" />
+              )}
+              {currentStreet >= 3 && formData.riverCard.length > 0 && (
+                <SelectedCardsDisplay cards={formData.riverCard} label="River" />
+              )}
+            </div>
           </div>
         )}
 

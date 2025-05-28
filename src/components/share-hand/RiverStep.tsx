@@ -53,7 +53,7 @@ const RiverStep = ({
 
       <h3 className="text-lg font-medium text-slate-200 mb-4">River & Summary</h3>
       
-      <div className="space-y-4">
+      <div className="flex flex-wrap items-start gap-6">
         <SelectedCardsDisplay cards={formData.holeCards} label="Your Hole Cards" />
         <SelectedCardsDisplay cards={formData.flopCards} label="Flop" />
         <SelectedCardsDisplay cards={formData.turnCard} label="Turn" />
