@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Play, UserPlus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const HeroSection = () => {
   return (
@@ -19,13 +20,15 @@ const HeroSection = () => {
               Join the ultimate social platform built exclusively for poker players. Share hands, track stats, and learn from the community.
             </p>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-              <Button 
-                size="lg" 
-                className="w-full sm:w-auto h-[56px] px-8 bg-gradient-to-r from-emerald-500 to-violet-500 hover:from-emerald-600 hover:to-violet-600 text-slate-900 font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-emerald-500/20"
-              >
-                <UserPlus className="w-5 h-5 mr-2" />
-                Create Account
-              </Button>
+              <Link to="/auth">
+                <Button 
+                  size="lg" 
+                  className="w-full sm:w-auto h-[56px] px-8 bg-gradient-to-r from-emerald-500 to-violet-500 hover:from-emerald-600 hover:to-violet-600 text-slate-900 font-medium transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-emerald-500/20"
+                >
+                  <UserPlus className="w-5 h-5 mr-2" />
+                  Create Account
+                </Button>
+              </Link>
               <Button 
                 variant="outline" 
                 size="lg"

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Menu, UserPlus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,14 +12,14 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
+          <Link to="/" className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-violet-500 rounded-xl flex items-center justify-center">
               <span className="text-slate-900 text-xl font-bold">♦</span>
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-emerald-500 via-blue-500 to-pink-500 bg-clip-text text-transparent">
               PokerConnect
             </span>
-          </div>
+          </Link>
           
           {/* Navigation Links */}
           <nav className="hidden md:flex items-center space-x-10">
@@ -30,13 +31,17 @@ const Header = () => {
           
           {/* Auth Buttons */}
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" className="hidden md:block text-slate-200 hover:text-slate-100 text-[15px]">
-              Sign In
-            </Button>
-            <Button className="hidden md:flex px-6 py-3 bg-gradient-to-r from-emerald-500 to-violet-500 hover:from-emerald-600 hover:to-violet-600 text-slate-900 text-[15px] font-medium items-center gap-2 transition-all duration-300">
-              <UserPlus className="w-4 h-4" />
-              <span>Get Started</span>
-            </Button>
+            <Link to="/auth">
+              <Button variant="ghost" className="hidden md:block text-slate-200 hover:text-slate-100 text-[15px]">
+                Sign In
+              </Button>
+            </Link>
+            <Link to="/auth">
+              <Button className="hidden md:flex px-6 py-3 bg-gradient-to-r from-emerald-500 to-violet-500 hover:from-emerald-600 hover:to-violet-600 text-slate-900 text-[15px] font-medium items-center gap-2 transition-all duration-300">
+                <UserPlus className="w-4 h-4" />
+                <span>Get Started</span>
+              </Button>
+            </Link>
             <Button
               variant="ghost"
               size="sm"
@@ -57,10 +62,14 @@ const Header = () => {
               <a href="#testimonials" className="text-slate-400 hover:text-slate-200 transition-colors">Testimonials</a>
               <a href="#pricing" className="text-slate-400 hover:text-slate-200 transition-colors">Pricing</a>
               <div className="flex flex-col space-y-2 pt-4">
-                <Button variant="ghost" className="text-slate-200">Sign In</Button>
-                <Button className="bg-gradient-to-r from-emerald-500 to-violet-500 text-slate-900">
-                  Get Started
-                </Button>
+                <Link to="/auth">
+                  <Button variant="ghost" className="text-slate-200 w-full">Sign In</Button>
+                </Link>
+                <Link to="/auth">
+                  <Button className="bg-gradient-to-r from-emerald-500 to-violet-500 text-slate-900 w-full">
+                    Get Started
+                  </Button>
+                </Link>
               </div>
             </nav>
           </div>
