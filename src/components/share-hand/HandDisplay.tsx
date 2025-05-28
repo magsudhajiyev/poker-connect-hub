@@ -14,6 +14,12 @@ interface HandDisplayProps {
   getPositionName: (position: string) => string;
   getCurrencySymbol: () => string;
   calculatePotSize: () => number;
+  authorName?: string;
+  authorUsername?: string;
+  authorAvatar?: string;
+  createdAt?: Date;
+  likes?: number;
+  comments?: number;
 }
 
 const HandDisplay = ({ 
@@ -21,25 +27,42 @@ const HandDisplay = ({
   tags, 
   getPositionName, 
   getCurrencySymbol, 
-  calculatePotSize 
+  calculatePotSize,
+  authorName = 'Alex Rivera',
+  authorUsername = '@pokerwizard',
+  authorAvatar = 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg',
+  createdAt = new Date(Date.now() - 2 * 60 * 60 * 1000),
+  likes = 83,
+  comments = 14
 }: HandDisplayProps) => {
   const potSize = calculatePotSize();
+
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
+    return `${Math.floor(diffMins / 1440)}d ago`;
+  };
 
   return (
     <Card className="bg-slate-900/60 border-slate-700/20">
       <CardHeader>
         <div className="flex items-center space-x-3 mb-3">
           <img 
-            src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg" 
+            src={authorAvatar} 
             alt="User avatar" 
             className="w-10 h-10 rounded-full border border-slate-700/50"
           />
           <div>
             <div className="flex items-center">
-              <h3 className="font-medium text-slate-200">Alex Rivera</h3>
-              <span className="ml-2 text-xs text-slate-400">@pokerwizard</span>
+              <h3 className="font-medium text-slate-200">{authorName}</h3>
+              <span className="ml-2 text-xs text-slate-400">{authorUsername}</span>
             </div>
-            <p className="text-xs text-slate-400">2 hours ago</p>
+            <p className="text-xs text-slate-400">{formatTimeAgo(createdAt)}</p>
           </div>
           <div className="ml-auto flex space-x-2">
             <Button variant="outline" size="sm" className="border-slate-700/50 text-slate-400 hover:text-slate-200">
@@ -96,11 +119,11 @@ const HandDisplay = ({
             <div className="flex justify-end space-x-3 mt-2">
               <div className="flex items-center gap-2">
                 <ThumbsUp className="w-4 h-4 text-emerald-500" />
-                <span className="text-emerald-500 text-sm">83</span>
+                <span className="text-emerald-500 text-sm">{likes}</span>
               </div>
               <div className="flex items-center gap-2">
                 <MessageCircle className="w-4 h-4 text-violet-500" />
-                <span className="text-violet-500 text-sm">14</span>
+                <span className="text-violet-500 text-sm">{comments}</span>
               </div>
             </div>
           </div>

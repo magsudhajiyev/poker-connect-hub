@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ShareHandFormData, StreetType, ActionStep } from '@/types/shareHand';
 import { steps, getPositionName } from '@/utils/shareHandConstants';
 import { 
@@ -10,8 +11,10 @@ import {
 } from '@/utils/shareHandActions';
 import { validateCurrentStep } from '@/utils/shareHandValidation';
 import { calculatePotSize, getCurrencySymbol, getAllSelectedCards } from '@/utils/shareHandCalculations';
+import { sharedHandsStore } from '@/stores/sharedHandsStore';
 
 export const useShareHandLogic = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [tags, setTags] = useState<string[]>(['bluff', 'tournament']);
   
@@ -198,6 +201,10 @@ export const useShareHandLogic = () => {
     }
     
     console.log('Submitting hand:', formData, tags);
+    
+    // Add hand to store and navigate to feed
+    const handId = sharedHandsStore.addHand(formData, tags);
+    navigate('/feed');
   };
 
   return {
