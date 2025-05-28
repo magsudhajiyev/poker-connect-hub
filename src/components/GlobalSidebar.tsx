@@ -2,9 +2,9 @@
 import { useState, createContext, useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
-  Rss, Flame, ChartLine, User, Users, HelpCircle, ChevronLeft, ChevronRight
+  Rss, Flame, Share2, User, Users, HelpCircle, ChevronLeft, ChevronRight
 } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface SidebarContextType {
   isCollapsed: boolean;
@@ -38,11 +38,17 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
 export const GlobalSidebar = () => {
   const { isCollapsed, toggleSidebar } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path: string) => {
     if (path === '/feed' && location.pathname === '/feed') return true;
     if (path === '/profile' && location.pathname === '/profile') return true;
+    if (path === '/share-hand' && location.pathname === '/share-hand') return true;
     return false;
+  };
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
   };
 
   return (
@@ -62,11 +68,14 @@ export const GlobalSidebar = () => {
       </div>
 
       <nav className="px-4 space-y-1">
-        <div className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
-          isActive('/feed') 
-            ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
-            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
-        }`}>
+        <div 
+          onClick={() => handleNavigation('/feed')}
+          className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
+            isActive('/feed') 
+              ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
+              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+          }`}
+        >
           <Rss className={`w-5 h-5 mr-3 ${isActive('/feed') ? 'text-emerald-500' : ''}`} />
           {!isCollapsed && <span>Feed</span>}
         </div>
@@ -76,16 +85,26 @@ export const GlobalSidebar = () => {
           {!isCollapsed && <span>Trending Hands</span>}
         </div>
         
-        <div className="flex items-center px-4 py-2.5 text-zinc-400 hover:text-zinc-200 rounded-xl hover:bg-zinc-800/40 cursor-pointer">
-          <ChartLine className="w-5 h-5 mr-3" />
-          {!isCollapsed && <span>My Stats</span>}
+        <div 
+          onClick={() => handleNavigation('/share-hand')}
+          className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
+            isActive('/share-hand') 
+              ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
+              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+          }`}
+        >
+          <Share2 className={`w-5 h-5 mr-3 ${isActive('/share-hand') ? 'text-emerald-500' : ''}`} />
+          {!isCollapsed && <span>Share Hand</span>}
         </div>
         
-        <div className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
-          isActive('/profile') 
-            ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
-            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
-        }`}>
+        <div 
+          onClick={() => handleNavigation('/profile')}
+          className={`flex items-center px-4 py-2.5 rounded-xl cursor-pointer ${
+            isActive('/profile') 
+              ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
+              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+          }`}
+        >
           <User className={`w-5 h-5 mr-3 ${isActive('/profile') ? 'text-emerald-500' : ''}`} />
           {!isCollapsed && <span>My Profile</span>}
         </div>
