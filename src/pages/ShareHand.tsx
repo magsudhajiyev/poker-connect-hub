@@ -134,7 +134,41 @@ const ShareHandContent = () => {
     return `${baseClass} border-slate-700/50 text-slate-300 hover:bg-slate-800/50`;
   };
 
+  const addNextActionStep = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', currentIndex: number) => {
+    const actions = formData[street];
+    const currentAction = actions[currentIndex];
+    
+    // If this action requires a response (bet, raise), add the next player's action
+    if (currentAction.action === 'bet' || currentAction.action === 'raise') {
+      const nextPlayerId = currentAction.isHero ? 'villain' : 'hero';
+      const nextPlayerName = currentAction.isHero ? 'Villain' : 'Hero';
+      
+      // Check if next action step already exists
+      const nextActionExists = actions.find((action, index) => 
+        index > currentIndex && action.playerId === nextPlayerId
+      );
+      
+      if (!nextActionExists) {
+        const newActionStep: ActionStep = {
+          playerId: nextPlayerId,
+          playerName: nextPlayerName,
+          isHero: !currentAction.isHero,
+          completed: false
+        };
+        
+        const updatedActions = [...actions];
+        updatedActions.push(newActionStep);
+        
+        console.log(`Adding next action step for ${nextPlayerName} after ${currentAction.action}`, updatedActions);
+        
+        setFormData({ ...formData, [street]: updatedActions });
+      }
+    }
+  };
+
   const updateAction = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', index: number, action: string, betAmount?: string) => {
+    console.log(`Updating action at index ${index} on ${street}:`, action, betAmount);
+    
     const updatedActions = [...formData[street]];
     updatedActions[index] = {
       ...updatedActions[index],
@@ -142,7 +176,11 @@ const ShareHandContent = () => {
       betAmount: betAmount || updatedActions[index].betAmount,
       completed: true
     };
+    
     setFormData({ ...formData, [street]: updatedActions });
+    
+    // Add next action step if needed
+    addNextActionStep(street, index);
   };
 
   const handleBetSizeSelect = (street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions', index: number, amount: string) => {
