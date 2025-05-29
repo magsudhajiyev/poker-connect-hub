@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Play, UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -61,64 +60,76 @@ const HeroSection = () => {
             <div className="absolute -top-10 -left-10 w-32 h-32 sm:w-40 sm:h-40 bg-emerald-500/20 rounded-full blur-3xl"></div>
             <div className="absolute -bottom-10 -right-10 w-32 h-32 sm:w-40 sm:h-40 bg-violet-500/20 rounded-full blur-3xl"></div>
             
-            {/* Pile of overlapping screenshots */}
-            <div className="relative z-10 max-w-md mx-auto h-80 sm:h-96">
+            {/* Pile of overlapping screenshots - made bigger */}
+            <div className="relative z-10 max-w-lg mx-auto h-96 sm:h-[26rem] lg:h-[28rem]">
               {/* Feed page screenshot - bottom layer */}
-              <div className="absolute top-8 left-4 w-64 h-48 sm:w-72 sm:h-56 transform rotate-[-8deg] transition-transform duration-300 hover:rotate-[-4deg] hover:scale-105">
+              <div className="absolute top-8 left-2 w-80 h-60 sm:w-96 sm:h-72 transform rotate-[-8deg] transition-transform duration-300 hover:rotate-[-4deg] hover:scale-105">
                 <div className="w-full h-full bg-slate-900/90 rounded-xl border border-slate-700/30 shadow-2xl overflow-hidden">
-                  <div className="bg-slate-950/80 h-8 flex items-center px-3 border-b border-slate-700/30">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <div className="bg-slate-950/80 h-10 flex items-center px-4 border-b border-slate-700/30">
+                    <div className="flex space-x-1.5">
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                     </div>
-                    <span className="ml-3 text-xs text-slate-400">Feed</span>
+                    <span className="ml-3 text-sm text-slate-400">Feed</span>
                   </div>
-                  <div className="p-3 space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-6 h-6 bg-blue-500 rounded-full"></div>
-                      <div className="h-2 bg-slate-700 rounded w-20"></div>
-                      <div className="h-1.5 bg-emerald-500 rounded w-8"></div>
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-blue-500 rounded-full"></div>
+                      <div className="h-3 bg-slate-700 rounded w-24"></div>
+                      <div className="h-2 bg-emerald-500 rounded w-12"></div>
                     </div>
-                    <div className="h-1.5 bg-slate-700 rounded w-full"></div>
-                    <div className="h-1.5 bg-slate-700 rounded w-3/4"></div>
-                    <div className="flex space-x-1 mt-2">
-                      <div className="h-1 bg-violet-500 rounded w-8"></div>
-                      <div className="h-1 bg-emerald-500 rounded w-8"></div>
+                    <div className="h-2 bg-slate-700 rounded w-full"></div>
+                    <div className="h-2 bg-slate-700 rounded w-3/4"></div>
+                    <div className="flex space-x-2 mt-3">
+                      <div className="h-1.5 bg-violet-500 rounded w-12"></div>
+                      <div className="h-1.5 bg-emerald-500 rounded w-12"></div>
                     </div>
-                    <div className="flex justify-between items-center mt-3">
-                      <div className="flex space-x-2">
-                        <div className="w-4 h-4 bg-slate-600 rounded"></div>
-                        <div className="w-4 h-4 bg-slate-600 rounded"></div>
+                    <div className="flex justify-between items-center mt-4">
+                      <div className="flex space-x-3">
+                        <div className="w-6 h-6 bg-slate-600 rounded"></div>
+                        <div className="w-6 h-6 bg-slate-600 rounded"></div>
                       </div>
-                      <div className="w-4 h-4 bg-slate-600 rounded"></div>
+                      <div className="w-6 h-6 bg-slate-600 rounded"></div>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Hand sharing page screenshot - middle layer */}
-              <div className="absolute top-0 right-2 w-64 h-48 sm:w-72 sm:h-56 transform rotate-[6deg] transition-transform duration-300 hover:rotate-[3deg] hover:scale-105">
+              <div className="absolute top-0 right-0 w-80 h-60 sm:w-96 sm:h-72 transform rotate-[6deg] transition-transform duration-300 hover:rotate-[3deg] hover:scale-105">
                 <div className="w-full h-full bg-slate-900/90 rounded-xl border border-slate-700/30 shadow-2xl overflow-hidden">
-                  <div className="bg-slate-950/80 h-8 flex items-center px-3 border-b border-slate-700/30">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <div className="bg-slate-950/80 h-10 flex items-center px-4 border-b border-slate-700/30">
+                    <div className="flex space-x-1.5">
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                     </div>
-                    <span className="ml-3 text-xs text-slate-400">Share Hand</span>
+                    <span className="ml-3 text-sm text-slate-400">Share Hand</span>
                   </div>
-                  <div className="p-3">
-                    <div className="flex justify-center space-x-1 mb-3">
-                      <div className="w-6 h-8 bg-white rounded text-xs flex items-center justify-center text-slate-900">A♠</div>
-                      <div className="w-6 h-8 bg-white rounded text-xs flex items-center justify-center text-red-500">K♥</div>
+                  <div className="p-4">
+                    {/* Hole cards */}
+                    <div className="flex justify-center space-x-2 mb-4">
+                      <div className="w-8 h-12 bg-white rounded shadow-md flex items-center justify-center text-black font-bold text-sm">
+                        A<span className="text-black">♠</span>
+                      </div>
+                      <div className="w-8 h-12 bg-white rounded shadow-md flex items-center justify-center text-red-500 font-bold text-sm">
+                        K<span className="text-red-500">♥</span>
+                      </div>
                     </div>
-                    <div className="flex justify-center space-x-1 mb-3">
-                      <div className="w-4 h-5 bg-white rounded text-xs flex items-center justify-center">A♣</div>
-                      <div className="w-4 h-5 bg-white rounded text-xs flex items-center justify-center">K♦</div>
-                      <div className="w-4 h-5 bg-white rounded text-xs flex items-center justify-center">2♠</div>
+                    {/* Community cards */}
+                    <div className="flex justify-center space-x-1 mb-4">
+                      <div className="w-6 h-8 bg-white rounded text-xs flex items-center justify-center font-semibold">
+                        A<span className="text-black">♣</span>
+                      </div>
+                      <div className="w-6 h-8 bg-white rounded text-xs flex items-center justify-center font-semibold">
+                        K<span className="text-red-500">♦</span>
+                      </div>
+                      <div className="w-6 h-8 bg-white rounded text-xs flex items-center justify-center font-semibold">
+                        2<span className="text-black">♠</span>
+                      </div>
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-xs text-slate-400">Position</span>
                         <span className="text-xs text-slate-300">Button</span>
@@ -132,32 +143,32 @@ const HeroSection = () => {
                 </div>
               </div>
 
-              {/* Third screenshot - top layer */}
-              <div className="absolute top-12 left-8 w-60 h-44 sm:w-68 sm:h-52 transform rotate-[2deg] transition-transform duration-300 hover:rotate-[1deg] hover:scale-105">
+              {/* Hand analysis screenshot - top layer */}
+              <div className="absolute top-12 left-6 w-76 h-56 sm:w-88 sm:h-68 transform rotate-[2deg] transition-transform duration-300 hover:rotate-[1deg] hover:scale-105">
                 <div className="w-full h-full bg-slate-900/90 rounded-xl border border-slate-700/30 shadow-2xl overflow-hidden">
-                  <div className="bg-slate-950/80 h-8 flex items-center px-3 border-b border-slate-700/30">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <div className="bg-slate-950/80 h-10 flex items-center px-4 border-b border-slate-700/30">
+                    <div className="flex space-x-1.5">
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                     </div>
-                    <span className="ml-3 text-xs text-slate-400">Hand Analysis</span>
+                    <span className="ml-3 text-sm text-slate-400">Hand Analysis</span>
                   </div>
-                  <div className="p-3">
-                    <div className="bg-slate-800/50 rounded p-2 mb-2">
-                      <div className="text-xs text-emerald-400 mb-1">Recent Hand Analysis</div>
+                  <div className="p-4">
+                    <div className="bg-slate-800/50 rounded-lg p-3 mb-3">
+                      <div className="text-sm text-emerald-400 mb-2">Recent Hand Analysis</div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-300">Two Pair, Aces up</span>
-                        <span className="text-xs bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">+$245</span>
+                        <span className="text-sm text-slate-300">Two Pair, Aces up</span>
+                        <span className="text-sm bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">+$245</span>
                       </div>
                     </div>
-                    <div className="space-y-1">
-                      <div className="h-1.5 bg-slate-700 rounded w-full"></div>
-                      <div className="h-1.5 bg-slate-700 rounded w-2/3"></div>
-                      <div className="flex space-x-1 mt-2">
-                        <div className="h-1 bg-violet-500 rounded w-6"></div>
-                        <div className="h-1 bg-emerald-500 rounded w-6"></div>
-                        <div className="h-1 bg-blue-500 rounded w-6"></div>
+                    <div className="space-y-2">
+                      <div className="h-2 bg-slate-700 rounded w-full"></div>
+                      <div className="h-2 bg-slate-700 rounded w-2/3"></div>
+                      <div className="flex space-x-2 mt-3">
+                        <div className="h-1.5 bg-violet-500 rounded w-8"></div>
+                        <div className="h-1.5 bg-emerald-500 rounded w-8"></div>
+                        <div className="h-1.5 bg-blue-500 rounded w-8"></div>
                       </div>
                     </div>
                   </div>
