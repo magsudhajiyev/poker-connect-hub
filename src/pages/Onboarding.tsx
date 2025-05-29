@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,25 +29,25 @@ const Onboarding = () => {
       title: 'Welcome to PokerConnect! 🎉',
       subtitle: 'Let\'s set up your profile',
       icon: User,
-      emoji: '👋'
+      emoji: '🎉'
     },
     {
       title: 'Tell us about your poker experience 🃏',
       subtitle: 'This helps us personalize your experience',
       icon: Target,
-      emoji: '🎯'
+      emoji: '🃏'
     },
     {
       title: 'What are your poker goals? 🚀',
       subtitle: 'Select all that apply',
       icon: TrendingUp,
-      emoji: '📈'
+      emoji: '🚀'
     },
     {
       title: 'Complete your profile ✨',
       subtitle: 'Add some final details',
       icon: Users,
-      emoji: '🎭'
+      emoji: '✨'
     }
   ];
 
