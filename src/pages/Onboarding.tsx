@@ -177,7 +177,7 @@ const Onboarding = () => {
       case 2:
         return <div className="space-y-4 lg:space-y-6">
             <div className="text-center">
-              <div className="text-3xl lg:text-5xl mb-2">{steps[currentStep].emoji}</div>
+              
             </div>
             <div>
               <Label className="text-slate-200 text-sm lg:text-base">What do you want to achieve on PokerConnect?</Label>
