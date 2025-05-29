@@ -10,6 +10,8 @@ import {
   Sheet,
   SheetContent,
   SheetTrigger,
+  SheetTitle,
+  SheetDescription,
 } from '@/components/ui/sheet';
 
 const MobileSidebar = () => {
@@ -20,8 +22,10 @@ const MobileSidebar = () => {
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="p-0 w-64 bg-slate-950 border-slate-800">
-        <div className="h-full bg-slate-950">
+      <SheetContent side="left" className="p-0 w-64 bg-slate-950 border-slate-800 text-slate-200">
+        <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+        <SheetDescription className="sr-only">Main navigation menu for the application</SheetDescription>
+        <div className="h-full bg-slate-950 text-slate-200">
           <GlobalSidebar />
         </div>
       </SheetContent>
