@@ -2,8 +2,20 @@
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from '@/components/ui/pagination';
+import { useState } from 'react';
 
 const Blog = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 2;
+
   const blogPosts = [
     {
       id: 1,
@@ -28,8 +40,32 @@ const Blog = () => {
       date: "March 5, 2024",
       readTime: "6 min read",
       category: "Psychology"
+    },
+    {
+      id: 4,
+      title: "Position Play in Texas Hold'em",
+      description: "Understanding how position affects your strategy and decision-making.",
+      date: "March 1, 2024",
+      readTime: "4 min read",
+      category: "Strategy"
+    },
+    {
+      id: 5,
+      title: "Tournament vs Cash Game Strategy",
+      description: "Key differences between tournament and cash game approaches.",
+      date: "February 25, 2024",
+      readTime: "8 min read",
+      category: "Strategy"
     }
   ];
+
+  const totalPages = Math.ceil(blogPosts.length / postsPerPage);
+  const startIndex = (currentPage - 1) * postsPerPage;
+  const currentPosts = blogPosts.slice(startIndex, startIndex + postsPerPage);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
@@ -57,8 +93,8 @@ const Blog = () => {
         </div>
 
         {/* Blog Posts Grid */}
-        <div className="grid gap-6 md:gap-8">
-          {blogPosts.map((post) => (
+        <div className="grid gap-6 md:gap-8 mb-8">
+          {currentPosts.map((post) => (
             <Card key={post.id} className="bg-slate-800/40 border-slate-700/50 backdrop-blur-xl hover:bg-slate-800/60 transition-all duration-300">
               <CardHeader>
                 <div className="flex items-center justify-between mb-2">
@@ -91,8 +127,63 @@ const Blog = () => {
           ))}
         </div>
 
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex justify-center mb-12">
+            <Pagination>
+              <PaginationContent className="bg-slate-800/40 border border-slate-700/50 backdrop-blur-xl rounded-lg p-2">
+                <PaginationItem>
+                  <PaginationPrevious 
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage > 1) handlePageChange(currentPage - 1);
+                    }}
+                    className={`text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 ${
+                      currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  />
+                </PaginationItem>
+                
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePageChange(page);
+                      }}
+                      isActive={currentPage === page}
+                      className={`${
+                        currentPage === page
+                          ? 'bg-emerald-500 text-slate-900 hover:bg-emerald-600'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'
+                      }`}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                
+                <PaginationItem>
+                  <PaginationNext 
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage < totalPages) handlePageChange(currentPage + 1);
+                    }}
+                    className={`text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 ${
+                      currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+
         {/* Newsletter Signup */}
-        <div className="mt-16 text-center">
+        <div className="text-center">
           <Card className="bg-slate-800/40 border-slate-700/50 backdrop-blur-xl">
             <CardHeader>
               <CardTitle className="text-2xl text-slate-200">Stay Updated</CardTitle>
