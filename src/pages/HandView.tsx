@@ -9,6 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Heart, MessageCircle, Share2, Bookmark, TrendingUp, Menu } from 'lucide-react';
 import { sharedHandsStore, SharedHand } from '@/stores/sharedHandsStore';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
+import HandReplay from '@/components/share-hand/HandReplay';
+import { getPositionName } from '@/utils/shareHandConstants';
 import {
   Sheet,
   SheetContent,
@@ -23,7 +25,7 @@ const MobileSidebar = () => {
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="p-0 w-64">
+      <SheetContent side="left" className="p-0 w-64 overflow-y-auto">
         <div className="h-full bg-slate-950">
           <GlobalSidebar />
         </div>
@@ -48,6 +50,10 @@ const HandViewContent = () => {
       setHand(foundHand);
     }
   }, [location.search]);
+
+  const getCurrencySymbol = () => {
+    return hand?.formData.gameFormat === 'cash' ? '$' : '';
+  };
 
   if (!hand) {
     return (
@@ -192,6 +198,13 @@ const HandViewContent = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Street-by-Street Hand Replay */}
+            <HandReplay
+              formData={hand.formData}
+              getPositionName={getPositionName}
+              getCurrencySymbol={getCurrencySymbol}
+            />
 
             <Card className="bg-slate-800/40 border-slate-700/30">
               <CardHeader>
