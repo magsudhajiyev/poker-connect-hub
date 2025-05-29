@@ -107,7 +107,7 @@ const HeroSection = () => {
                       </div>
                       {/* Like and comment section */}
                       <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-700/30">
-                        <div className="flex space-x-3">
+                        <div className="flex items-center space-x-4">
                           <div className="flex items-center space-x-1">
                             <div className="w-3 h-3 bg-red-500 rounded"></div>
                             <span className="text-xs text-slate-400">24</span>
@@ -120,12 +120,21 @@ const HeroSection = () => {
                         <div className="w-3 h-3 bg-slate-600 rounded"></div>
                       </div>
                       {/* Comments preview */}
-                      <div className="space-y-1">
-                        <div className="flex items-center space-x-1">
-                          <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                          <div className="h-1 bg-slate-600 rounded w-12"></div>
+                      <div className="space-y-2 mt-3">
+                        <div className="flex items-start space-x-2">
+                          <div className="w-3 h-3 bg-purple-500 rounded-full flex-shrink-0 mt-0.5"></div>
+                          <div className="flex-1">
+                            <div className="h-1 bg-slate-600 rounded w-12 mb-1"></div>
+                            <div className="h-1 bg-slate-600 rounded w-16"></div>
+                          </div>
                         </div>
-                        <div className="h-1 bg-slate-600 rounded w-20 ml-4"></div>
+                        <div className="flex items-start space-x-2">
+                          <div className="w-3 h-3 bg-emerald-500 rounded-full flex-shrink-0 mt-0.5"></div>
+                          <div className="flex-1">
+                            <div className="h-1 bg-slate-600 rounded w-10 mb-1"></div>
+                            <div className="h-1 bg-slate-600 rounded w-14"></div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -231,31 +240,31 @@ const HeroSection = () => {
                       {/* Post content */}
                       <div className="text-xs text-slate-200 mb-2">Sick bluff with 72o! Sometimes you gotta trust your reads 🎯</div>
                       {/* Engagement */}
-                      <div className="flex items-center space-x-4 py-2 border-y border-slate-700/20">
-                        <div className="flex items-center space-x-1">
+                      <div className="flex items-center space-x-6 py-2 border-y border-slate-700/20">
+                        <div className="flex items-center space-x-1.5">
                           <div className="w-3 h-3">❤️</div>
                           <span className="text-xs text-slate-400">156</span>
                         </div>
-                        <div className="flex items-center space-x-1">
+                        <div className="flex items-center space-x-1.5">
                           <div className="w-3 h-3">💬</div>
                           <span className="text-xs text-slate-400">23</span>
                         </div>
-                        <div className="flex items-center space-x-1">
+                        <div className="flex items-center space-x-1.5">
                           <div className="w-3 h-3">🔄</div>
                           <span className="text-xs text-slate-400">8</span>
                         </div>
                       </div>
                       {/* Comments */}
-                      <div className="space-y-1 mt-2">
+                      <div className="space-y-2.5 mt-2">
                         <div className="flex items-start space-x-2">
-                          <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                          <div className="w-4 h-4 bg-blue-500 rounded-full flex-shrink-0 mt-0.5"></div>
                           <div className="flex-1">
                             <div className="text-xs text-slate-300 font-medium">PokerAce</div>
                             <div className="text-xs text-slate-400">Nice read! What gave it away?</div>
                           </div>
                         </div>
                         <div className="flex items-start space-x-2">
-                          <div className="w-4 h-4 bg-purple-500 rounded-full"></div>
+                          <div className="w-4 h-4 bg-purple-500 rounded-full flex-shrink-0 mt-0.5"></div>
                           <div className="flex-1">
                             <div className="text-xs text-slate-300 font-medium">ChipLeader</div>
                             <div className="text-xs text-slate-400">7-2 is my favorite hand now! 😂</div>
