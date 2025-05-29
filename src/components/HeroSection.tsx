@@ -41,10 +41,24 @@ const HeroSection = () => {
             </div>
             <div className="mt-6 sm:mt-8 md:mt-10 flex items-center justify-center lg:justify-start space-x-3">
               <div className="flex -space-x-2 sm:-space-x-3">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-emerald-500 rounded-full border-2 border-slate-900"></div>
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-blue-500 rounded-full border-2 border-slate-900"></div>
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-violet-500 rounded-full border-2 border-slate-900"></div>
-                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-pink-500 rounded-full border-2 border-slate-900"></div>
+                <img 
+                  src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=32&h=32&fit=crop&crop=face" 
+                  alt="User 1" 
+                  className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-slate-900 object-cover"
+                />
+                <img 
+                  src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=32&h=32&fit=crop&crop=face" 
+                  alt="User 2" 
+                  className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-slate-900 object-cover"
+                />
+                <img 
+                  src="https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=32&h=32&fit=crop&crop=face" 
+                  alt="User 3" 
+                  className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-slate-900 object-cover"
+                />
+                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-emerald-500 to-violet-500 rounded-full border-2 border-slate-900 flex items-center justify-center text-slate-800 font-bold text-xs">
+                  +
+                </div>
               </div>
               <span className="text-slate-400 text-sm sm:text-[15px]">Join 10,000+ poker players</span>
             </div>
