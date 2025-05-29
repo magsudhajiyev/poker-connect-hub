@@ -23,15 +23,15 @@ const SingleCardBoard = ({ selectedCards, onCardSelect, title }: SingleCardBoard
 
   const getCardColor = (card: string) => {
     const suit = card.slice(-1);
-    return suit === '♥' || suit === '♦' ? 'text-red-500' : 'text-white';
+    return suit === '♥' || suit === '♦' ? 'text-red-400' : 'text-white';
   };
 
   const getButtonColor = (suit: string, isSelected: boolean) => {
     const isRedSuit = suit === '♥' || suit === '♦';
     if (isSelected) {
-      return isRedSuit ? 'bg-emerald-500 text-red-700' : 'bg-emerald-500 text-slate-900';
+      return isRedSuit ? 'bg-emerald-500 text-red-600' : 'bg-emerald-500 text-slate-900';
     }
-    return isRedSuit ? 'border-slate-700/50 text-red-500 hover:bg-slate-800/50' : 'border-slate-700/50 text-slate-300 hover:bg-slate-800/50';
+    return isRedSuit ? 'border-slate-700/50 text-red-400 hover:bg-slate-800/50' : 'border-slate-700/50 text-slate-300 hover:bg-slate-800/50';
   };
 
   return (
@@ -53,7 +53,7 @@ const SingleCardBoard = ({ selectedCards, onCardSelect, title }: SingleCardBoard
                     variant={isSelected ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => handleCardClick(rank, suit)}
-                    className={`w-10 h-12 text-lg font-bold ${getButtonColor(suit, isSelected)}`}
+                    className={`w-12 h-16 text-xl font-bold ${getButtonColor(suit, isSelected)}`}
                   >
                     {card}
                   </Button>
@@ -70,13 +70,13 @@ const SingleCardBoard = ({ selectedCards, onCardSelect, title }: SingleCardBoard
           <Label className="text-slate-300">Selected Cards:</Label>
           <div className="flex flex-wrap gap-2">
             {selectedCards.map((card, index) => (
-              <div key={index} className={`w-12 h-16 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-xl ${getCardColor(card)}`}>
+              <div key={index} className={`w-14 h-20 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-2xl ${getCardColor(card)}`}>
                 {card}
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

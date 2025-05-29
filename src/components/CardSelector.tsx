@@ -25,11 +25,11 @@ const CardSelector = ({ label, value, onChange, disabledCards = [] }: CardSelect
     if (isSelected) {
       return 'bg-emerald-500 text-slate-900';
     }
-    return isRedSuit ? 'border-slate-700/50 text-red-500' : 'border-slate-700/50 text-slate-300';
+    return isRedSuit ? 'border-slate-700/50 text-red-400' : 'border-slate-700/50 text-slate-300';
   };
 
   const getCardDisplayColor = () => {
-    return suit === '♥' || suit === '♦' ? 'text-red-500' : 'text-white';
+    return suit === '♥' || suit === '♦' ? 'text-red-400' : 'text-white';
   };
 
   return (
@@ -49,7 +49,7 @@ const CardSelector = ({ label, value, onChange, disabledCards = [] }: CardSelect
                 const newCard = card + (suit || '♠');
                 onChange(newCard);
               }}
-              className={`aspect-square text-lg font-bold ${
+              className={`aspect-square text-xl font-bold ${
                 rank === card 
                   ? 'bg-emerald-500 text-slate-900' 
                   : 'border-slate-700/50 text-slate-300'
@@ -81,7 +81,7 @@ const CardSelector = ({ label, value, onChange, disabledCards = [] }: CardSelect
                     onChange(newCard);
                   }
                 }}
-                className={`aspect-square text-2xl font-bold ${getSuitColor(suitSymbol, suit === suitSymbol)} ${
+                className={`aspect-square text-3xl font-bold ${getSuitColor(suitSymbol, suit === suitSymbol)} ${
                   isDisabled ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
@@ -95,7 +95,7 @@ const CardSelector = ({ label, value, onChange, disabledCards = [] }: CardSelect
       {/* Selected Card Display */}
       {currentCard && (
         <div className="mt-3">
-          <div className={`inline-flex items-center justify-center w-16 h-20 bg-slate-800 border-2 border-slate-600 rounded-lg text-2xl font-bold ${getCardDisplayColor()}`}>
+          <div className={`inline-flex items-center justify-center w-20 h-28 bg-slate-800 border-2 border-slate-600 rounded-lg text-3xl font-bold ${getCardDisplayColor()}`}>
             {currentCard}
           </div>
         </div>

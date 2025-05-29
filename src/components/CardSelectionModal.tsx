@@ -68,15 +68,15 @@ const CardSelectionModal = ({
     }
     
     if (isSelected) {
-      return isRedSuit ? 'bg-emerald-500 text-red-700 border-emerald-500' : 'bg-emerald-500 text-slate-900 border-emerald-500';
+      return isRedSuit ? 'bg-emerald-500 text-red-600 border-emerald-500' : 'bg-emerald-500 text-slate-900 border-emerald-500';
     }
     
-    return isRedSuit ? 'border-slate-700/50 text-red-500 hover:bg-slate-800/50' : 'border-slate-700/50 text-slate-300 hover:bg-slate-800/50';
+    return isRedSuit ? 'border-slate-700/50 text-red-400 hover:bg-slate-800/50' : 'border-slate-700/50 text-slate-300 hover:bg-slate-800/50';
   };
 
   const getCardColor = (card: string) => {
     const suit = card.slice(-1);
-    return suit === '♥' || suit === '♦' ? 'text-red-500' : 'text-white';
+    return suit === '♥' || suit === '♦' ? 'text-red-400' : 'text-white';
   };
 
   return (
@@ -108,7 +108,7 @@ const CardSelectionModal = ({
                         size="sm"
                         onClick={() => handleCardClick(rank, suit)}
                         disabled={isDisabled}
-                        className={`w-8 h-10 text-lg font-bold ${getButtonColor(suit, isSelected, isDisabled)}`}
+                        className={`w-10 h-14 text-lg font-bold ${getButtonColor(suit, isSelected, isDisabled)}`}
                       >
                         {card}
                       </Button>
@@ -125,7 +125,7 @@ const CardSelectionModal = ({
               <Label className="text-slate-300">Selected Cards:</Label>
               <div className="flex flex-wrap gap-2">
                 {selectedCards.map((card, index) => (
-                  <div key={index} className={`w-10 h-12 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-lg ${getCardColor(card)}`}>
+                  <div key={index} className={`w-12 h-16 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-xl ${getCardColor(card)}`}>
                     {card}
                   </div>
                 ))}

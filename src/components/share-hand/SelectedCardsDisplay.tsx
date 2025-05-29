@@ -11,7 +11,7 @@ const SelectedCardsDisplay = ({ cards, label }: SelectedCardsDisplayProps) => {
   
   const getCardColor = (card: string) => {
     const suit = card.slice(-1);
-    return suit === '♥' || suit === '♦' ? 'text-red-500' : 'text-white';
+    return suit === '♥' || suit === '♦' ? 'text-red-400' : 'text-white';
   };
   
   return (
@@ -19,7 +19,7 @@ const SelectedCardsDisplay = ({ cards, label }: SelectedCardsDisplayProps) => {
       <Label className="text-slate-300">{label}:</Label>
       <div className="flex flex-wrap gap-2">
         {cards.map((card, index) => (
-          <div key={index} className={`w-10 h-12 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-lg ${getCardColor(card)}`}>
+          <div key={index} className={`w-12 h-16 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-xl ${getCardColor(card)}`}>
             {card}
           </div>
         ))}
