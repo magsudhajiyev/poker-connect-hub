@@ -47,13 +47,13 @@ const ShareHandContent = () => {
         <ProfileTopBar />
       </div>
       
-      <div className="flex pt-16 lg:pt-0">
-        <div className="hidden lg:block fixed left-0 top-16 h-[calc(100vh-4rem)] z-40">
+      <div className="flex pt-16">
+        <div className="hidden lg:block">
           <GlobalSidebar />
         </div>
 
-        <main className={`w-full px-2 sm:px-3 md:px-4 py-3 sm:py-4 md:py-6 transition-all duration-300 overflow-x-hidden ${
-          isCollapsed ? 'lg:pl-20' : 'lg:pl-68'
+        <main className={`flex-1 px-2 sm:px-3 md:px-4 py-3 sm:py-4 md:py-6 transition-all duration-300 overflow-x-hidden ${
+          isCollapsed ? 'lg:ml-12 xl:ml-16' : 'lg:ml-48 xl:ml-64'
         }`}>
           <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4 md:space-y-6 w-full">
             <ShareHandProvider>
