@@ -1,5 +1,6 @@
 
 import { Heart, Github, Twitter, Linkedin } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -14,6 +15,28 @@ const Footer = () => {
             <p className="text-slate-400 text-sm">
               Elevating poker players worldwide
             </p>
+          </div>
+          
+          {/* Navigation Links */}
+          <div className="flex items-center space-x-6">
+            <Link 
+              to="/blog" 
+              className="text-slate-400 hover:text-emerald-400 transition-colors duration-300 text-sm"
+            >
+              Blog
+            </Link>
+            <Link 
+              to="/privacy-policy" 
+              className="text-slate-400 hover:text-emerald-400 transition-colors duration-300 text-sm"
+            >
+              Privacy Policy
+            </Link>
+            <Link 
+              to="/terms-conditions" 
+              className="text-slate-400 hover:text-emerald-400 transition-colors duration-300 text-sm"
+            >
+              Terms & Conditions
+            </Link>
           </div>
           
           {/* Social links */}

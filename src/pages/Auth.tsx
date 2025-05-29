@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Mail, Lock, User, Menu } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
@@ -37,6 +38,7 @@ const AuthContent = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -162,9 +164,37 @@ const AuthContent = () => {
                 </div>
               )}
 
+              {!isLogin && (
+                <div className="flex items-start space-x-3 pt-2">
+                  <Checkbox
+                    id="acceptTerms"
+                    checked={acceptTerms}
+                    onCheckedChange={(checked) => setAcceptTerms(!!checked)}
+                    className="mt-0.5"
+                  />
+                  <Label htmlFor="acceptTerms" className="text-sm text-slate-300 leading-relaxed">
+                    I agree to the{' '}
+                    <Link 
+                      to="/terms-conditions" 
+                      className="text-emerald-400 hover:text-emerald-300 underline"
+                    >
+                      Terms & Conditions
+                    </Link>
+                    {' '}and{' '}
+                    <Link 
+                      to="/privacy-policy" 
+                      className="text-emerald-400 hover:text-emerald-300 underline"
+                    >
+                      Privacy Policy
+                    </Link>
+                  </Label>
+                </div>
+              )}
+
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-emerald-500 to-violet-500 hover:from-emerald-600 hover:to-violet-600 text-slate-900 font-medium py-3"
+                disabled={!isLogin && !acceptTerms}
+                className="w-full bg-gradient-to-r from-emerald-500 to-violet-500 hover:from-emerald-600 hover:to-violet-600 text-slate-900 font-medium py-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLogin ? 'Sign In' : 'Create Account'}
               </Button>
@@ -222,9 +252,9 @@ const AuthContent = () => {
 
         <p className="text-center text-xs text-slate-500">
           By continuing, you agree to our{' '}
-          <a href="#" className="text-emerald-400 hover:text-emerald-300">Terms of Service</a>{' '}
+          <Link to="/terms-conditions" className="text-emerald-400 hover:text-emerald-300">Terms of Service</Link>{' '}
           and{' '}
-          <a href="#" className="text-emerald-400 hover:text-emerald-300">Privacy Policy</a>
+          <Link to="/privacy-policy" className="text-emerald-400 hover:text-emerald-300">Privacy Policy</Link>
         </p>
       </div>
     </div>
