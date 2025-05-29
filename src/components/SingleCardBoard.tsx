@@ -75,8 +75,8 @@ const SingleCardBoard = ({ selectedCards, onCardSelect, title }: SingleCardBoard
               </div>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
