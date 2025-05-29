@@ -1,11 +1,13 @@
 
 import { ProfileTopBar } from '@/components/profile/ProfileTopBar';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
+import { MobileSidebarContent } from '@/components/MobileSidebarContent';
 import { ShareHandProvider } from '@/components/share-hand/ShareHandProvider';
 import ShareHandHeader from '@/components/share-hand/ShareHandHeader';
 import ShareHandForm from '@/components/share-hand/ShareHandForm';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
+import { useState } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -15,19 +17,19 @@ import {
 } from '@/components/ui/sheet';
 
 const MobileSidebar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="lg:hidden">
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="p-0 w-64 bg-slate-950 border-slate-800 text-slate-200">
+      <SheetContent side="left" className="p-0 w-64 bg-slate-950 border-slate-800">
         <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
         <SheetDescription className="sr-only">Main navigation menu for the application</SheetDescription>
-        <div className="h-full bg-slate-950 text-slate-200">
-          <GlobalSidebar />
-        </div>
+        <MobileSidebarContent onNavigate={() => setIsOpen(false)} />
       </SheetContent>
     </Sheet>
   );
