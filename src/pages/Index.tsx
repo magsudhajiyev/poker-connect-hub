@@ -38,23 +38,29 @@ const IndexContent = () => {
   const { isCollapsed } = useSidebar();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      <MobileSidebar />
-      <Header />
-      <main className="pt-16 sm:pt-20">
-        <HeroSection />
-        <section id="features">
-          <FeaturesSection />
-        </section>
-        <section id="testimonials">
-          <TestimonialsSection />
-        </section>
-        <StatsSection />
-        <section id="pricing">
-          <PricingSection />
-        </section>
-      </main>
-      <Footer />
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 overflow-x-hidden">
+      <div className="w-full">
+        <MobileSidebar />
+        <Header />
+        <main className="pt-16 sm:pt-20 w-full">
+          <div className="w-full overflow-x-hidden">
+            <HeroSection />
+            <section id="features" className="w-full">
+              <FeaturesSection />
+            </section>
+            <section id="testimonials" className="w-full">
+              <TestimonialsSection />
+            </section>
+            <div className="w-full">
+              <StatsSection />
+            </div>
+            <section id="pricing" className="w-full">
+              <PricingSection />
+            </section>
+          </div>
+        </main>
+        <Footer />
+      </div>
     </div>
   );
 };
