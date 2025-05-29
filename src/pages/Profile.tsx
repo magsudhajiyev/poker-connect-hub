@@ -40,22 +40,22 @@ const ProfileContent_Internal = () => {
   const { isCollapsed } = useSidebar();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex overflow-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <GlobalSidebar />
       </div>
 
       {/* Main Content Container */}
-      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out ${
+      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out overflow-hidden ${
         isCollapsed ? 'lg:ml-12' : 'lg:ml-64'
       }`}>
         {/* Mobile Header */}
         <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/50">
-          <div className="flex items-center justify-between h-14 px-3">
-            <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-between h-14 px-4">
+            <div className="flex items-center space-x-3 min-w-0">
               <MobileSidebar />
-              <h1 className="text-lg font-semibold text-slate-200">Profile</h1>
+              <h1 className="text-lg font-semibold text-slate-200 truncate">Profile</h1>
             </div>
           </div>
         </div>
@@ -66,12 +66,14 @@ const ProfileContent_Internal = () => {
         </div>
         
         {/* Main Content */}
-        <main className="flex-1 pt-14 lg:pt-0">
-          <div className="w-full px-3 lg:px-6 py-4 lg:py-6">
-            <div className="max-w-6xl mx-auto space-y-4 lg:space-y-6">
-              <ProfileHeader />
-              <ProfileNav activeTab={activeTab} onTabChange={setActiveTab} />
-              <ProfileContent activeTab={activeTab} />
+        <main className="flex-1 pt-14 lg:pt-0 overflow-hidden">
+          <div className="w-full h-full overflow-y-auto">
+            <div className="px-4 lg:px-6 py-4 lg:py-6">
+              <div className="max-w-6xl mx-auto space-y-4 lg:space-y-6">
+                <ProfileHeader />
+                <ProfileNav activeTab={activeTab} onTabChange={setActiveTab} />
+                <ProfileContent activeTab={activeTab} />
+              </div>
             </div>
           </div>
         </main>

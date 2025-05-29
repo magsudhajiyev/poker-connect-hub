@@ -5,7 +5,7 @@ import { Edit3, Settings, Check, Share, Users, UserPlus, ThumbsUp } from 'lucide
 
 export const ProfileHeader = () => {
   return (
-    <section className="bg-slate-900/60 rounded-xl border border-slate-700/20 p-4 lg:p-6">
+    <section className="bg-slate-900/60 rounded-xl border border-slate-700/20 p-4 lg:p-6 overflow-hidden">
       <div className="flex flex-col space-y-4 lg:space-y-6">
         {/* Avatar and Basic Info */}
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 lg:gap-6">
@@ -21,12 +21,12 @@ export const ProfileHeader = () => {
           </div>
           
           {/* Profile Info and Actions */}
-          <div className="flex-1 text-center sm:text-left w-full">
+          <div className="flex-1 text-center sm:text-left w-full min-w-0">
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 lg:gap-4">
               <div className="min-w-0 flex-1">
                 <h1 className="text-xl lg:text-2xl font-bold text-slate-200 truncate">Michael Johnson</h1>
-                <p className="text-slate-400 text-sm lg:text-base">@pokerpro92</p>
-                <p className="text-slate-300 mt-2 text-sm lg:text-base leading-relaxed">
+                <p className="text-slate-400 text-sm lg:text-base break-words">@pokerpro92</p>
+                <p className="text-slate-300 mt-2 text-sm lg:text-base leading-relaxed break-words">
                   Mid-stakes grinder focusing on NLH cash games. Sharing hands and learning from the community. Based in Las Vegas.
                 </p>
               </div>
@@ -35,7 +35,7 @@ export const ProfileHeader = () => {
                   <Edit3 className="w-4 h-4 mr-2" />
                   Edit Profile
                 </Button>
-                <Button variant="outline" size="icon" className="border-slate-700/30 bg-slate-800/40 self-center sm:self-auto">
+                <Button variant="outline" size="icon" className="border-slate-700/30 bg-slate-800/40 self-center sm:self-auto flex-shrink-0">
                   <Settings className="w-4 h-4" />
                 </Button>
               </div>
@@ -44,40 +44,40 @@ export const ProfileHeader = () => {
         </div>
         
         {/* Stats Summary */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
-          <div className="flex items-center gap-2 lg:gap-3 p-2 lg:p-0">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-6">
+          <div className="flex items-center gap-2 lg:gap-3 p-2 lg:p-0 min-w-0">
             <div className="w-8 h-8 lg:w-10 lg:h-10 bg-slate-800/40 rounded-xl border border-slate-700/30 flex items-center justify-center flex-shrink-0">
               <Share className="w-4 h-4 lg:w-5 lg:h-5 text-emerald-500" />
             </div>
-            <div className="min-w-0">
-              <p className="text-base lg:text-lg font-semibold text-slate-200 truncate">1,280</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm lg:text-lg font-semibold text-slate-200 truncate">1,280</p>
               <p className="text-xs text-slate-400 truncate">Hands Shared</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 lg:gap-3 p-2 lg:p-0">
+          <div className="flex items-center gap-2 lg:gap-3 p-2 lg:p-0 min-w-0">
             <div className="w-8 h-8 lg:w-10 lg:h-10 bg-slate-800/40 rounded-xl border border-slate-700/30 flex items-center justify-center flex-shrink-0">
               <Users className="w-4 h-4 lg:w-5 lg:h-5 text-blue-500" />
             </div>
-            <div className="min-w-0">
-              <p className="text-base lg:text-lg font-semibold text-slate-200 truncate">3,476</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm lg:text-lg font-semibold text-slate-200 truncate">3,476</p>
               <p className="text-xs text-slate-400 truncate">Followers</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 lg:gap-3 p-2 lg:p-0">
+          <div className="flex items-center gap-2 lg:gap-3 p-2 lg:p-0 min-w-0">
             <div className="w-8 h-8 lg:w-10 lg:h-10 bg-slate-800/40 rounded-xl border border-slate-700/30 flex items-center justify-center flex-shrink-0">
               <UserPlus className="w-4 h-4 lg:w-5 lg:h-5 text-violet-500" />
             </div>
-            <div className="min-w-0">
-              <p className="text-base lg:text-lg font-semibold text-slate-200 truncate">521</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm lg:text-lg font-semibold text-slate-200 truncate">521</p>
               <p className="text-xs text-slate-400 truncate">Following</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 lg:gap-3 p-2 lg:p-0">
+          <div className="flex items-center gap-2 lg:gap-3 p-2 lg:p-0 min-w-0">
             <div className="w-8 h-8 lg:w-10 lg:h-10 bg-slate-800/40 rounded-xl border border-slate-700/30 flex items-center justify-center flex-shrink-0">
               <ThumbsUp className="w-4 h-4 lg:w-5 lg:h-5 text-pink-500" />
             </div>
-            <div className="min-w-0">
-              <p className="text-base lg:text-lg font-semibold text-slate-200 truncate">9,824</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm lg:text-lg font-semibold text-slate-200 truncate">9,824</p>
               <p className="text-xs text-slate-400 truncate">Likes Received</p>
             </div>
           </div>
