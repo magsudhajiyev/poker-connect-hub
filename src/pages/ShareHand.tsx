@@ -20,7 +20,7 @@ const MobileSidebar = () => {
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="p-0 w-64">
+      <SheetContent side="left" className="p-0 w-64 bg-slate-950 border-slate-800">
         <div className="h-full bg-slate-950">
           <GlobalSidebar />
         </div>
