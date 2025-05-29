@@ -110,38 +110,23 @@ const HeroSection = () => {
                   <div className="p-4">
                     {/* Hole cards */}
                     <div className="flex justify-center space-x-2 mb-4">
-                      <div className="w-8 h-12 bg-white rounded shadow-md flex items-center justify-center text-black font-bold text-sm group cursor-pointer hover:shadow-lg transition-shadow duration-300">
-                        <span className="relative overflow-hidden">
-                          A<span className="text-black">♠</span>
-                          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:animate-[shine_0.5s_ease-out] skew-x-12"></div>
-                        </span>
+                      <div className="w-8 h-12 bg-white rounded shadow-md flex items-center justify-center text-black font-bold text-sm">
+                        A<span className="text-black">♠</span>
                       </div>
-                      <div className="w-8 h-12 bg-white rounded shadow-md flex items-center justify-center text-red-500 font-bold text-sm group cursor-pointer hover:shadow-lg transition-shadow duration-300">
-                        <span className="relative overflow-hidden">
-                          K<span className="text-red-500">♥</span>
-                          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:animate-[shine_0.5s_ease-out] skew-x-12"></div>
-                        </span>
+                      <div className="w-8 h-12 bg-white rounded shadow-md flex items-center justify-center text-red-500 font-bold text-sm">
+                        K<span className="text-red-500">♥</span>
                       </div>
                     </div>
                     {/* Community cards */}
                     <div className="flex justify-center space-x-1 mb-4">
-                      <div className="w-6 h-8 bg-white rounded text-xs flex items-center justify-center font-semibold group cursor-pointer hover:shadow-lg transition-shadow duration-300">
-                        <span className="relative overflow-hidden">
-                          A<span className="text-black">♣</span>
-                          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:animate-[shine_0.5s_ease-out] skew-x-12"></div>
-                        </span>
+                      <div className="w-6 h-8 bg-white rounded text-xs flex items-center justify-center font-semibold">
+                        A<span className="text-black">♣</span>
                       </div>
-                      <div className="w-6 h-8 bg-white rounded text-xs flex items-center justify-center font-semibold group cursor-pointer hover:shadow-lg transition-shadow duration-300">
-                        <span className="relative overflow-hidden">
-                          K<span className="text-red-500">♦</span>
-                          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:animate-[shine_0.5s_ease-out] skew-x-12"></div>
-                        </span>
+                      <div className="w-6 h-8 bg-white rounded text-xs flex items-center justify-center font-semibold">
+                        K<span className="text-red-500">♦</span>
                       </div>
-                      <div className="w-6 h-8 bg-white rounded text-xs flex items-center justify-center font-semibold group cursor-pointer hover:shadow-lg transition-shadow duration-300">
-                        <span className="relative overflow-hidden">
-                          2<span className="text-black">♠</span>
-                          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent group-hover:animate-[shine_0.5s_ease-out] skew-x-12"></div>
-                        </span>
+                      <div className="w-6 h-8 bg-white rounded text-xs flex items-center justify-center font-semibold">
+                        2<span className="text-black">♠</span>
                       </div>
                     </div>
                     <div className="space-y-2">
