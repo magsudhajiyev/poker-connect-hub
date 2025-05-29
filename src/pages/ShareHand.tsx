@@ -47,8 +47,8 @@ const ShareHandContent = () => {
         <ProfileTopBar />
       </div>
       
-      <div className="flex pt-16">
-        <div className="hidden lg:block fixed left-0 top-16 h-full z-40">
+      <div className="flex pt-16 lg:pt-0">
+        <div className="hidden lg:block fixed left-0 top-16 h-[calc(100vh-4rem)] z-40">
           <GlobalSidebar />
         </div>
 
