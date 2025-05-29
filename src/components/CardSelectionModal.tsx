@@ -81,6 +81,7 @@ const CardSelectionModal = ({
                     const card = rank + suit;
                     const isSelected = isCardSelected(card);
                     const isDisabled = isCardDisabled(card);
+                    const isRedSuit = suit === '♥' || suit === '♦';
                     
                     return (
                       <Button
@@ -89,16 +90,16 @@ const CardSelectionModal = ({
                         size="sm"
                         onClick={() => handleCardClick(rank, suit)}
                         disabled={isDisabled}
-                        className={`w-8 h-10 text-xs font-bold ${
+                        className={`w-8 h-10 text-sm font-bold ${
                           isSelected 
                             ? 'bg-emerald-500 text-slate-900 border-emerald-500' 
                             : isDisabled
                             ? 'bg-slate-700 text-slate-500 border-slate-600 cursor-not-allowed'
                             : 'border-slate-700/50 text-slate-300 hover:bg-slate-800/50'
                         } ${
-                          (suit === '♥' || suit === '♦') && !isSelected && !isDisabled ? 'text-red-400' : ''
+                          isRedSuit && !isSelected && !isDisabled ? 'text-red-500' : ''
                         } ${
-                          isSelected && (suit === '♥' || suit === '♦') ? 'text-red-600' : ''
+                          isSelected && isRedSuit ? 'text-red-700' : ''
                         }`}
                       >
                         {card}
@@ -116,8 +117,8 @@ const CardSelectionModal = ({
               <Label className="text-slate-300">Selected Cards:</Label>
               <div className="flex flex-wrap gap-2">
                 {selectedCards.map((card, index) => (
-                  <div key={index} className={`w-10 h-12 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-xs ${
-                    card.includes('♥') || card.includes('♦') ? 'text-red-400' : 'text-slate-200'
+                  <div key={index} className={`w-10 h-12 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-sm ${
+                    card.includes('♥') || card.includes('♦') ? 'text-red-500' : 'text-white'
                   }`}>
                     {card}
                   </div>

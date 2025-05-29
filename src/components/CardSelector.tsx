@@ -56,6 +56,7 @@ const CardSelector = ({ label, value, onChange, disabledCards = [] }: CardSelect
           {suits.map((suitSymbol) => {
             const potentialCard = (rank || 'A') + suitSymbol;
             const isDisabled = isCardDisabled(potentialCard);
+            const isRedSuit = suitSymbol === '♥' || suitSymbol === '♦';
             
             return (
               <Button
@@ -74,7 +75,7 @@ const CardSelector = ({ label, value, onChange, disabledCards = [] }: CardSelect
                     ? 'bg-emerald-500 text-slate-900' 
                     : 'border-slate-700/50 text-slate-300'
                 } ${
-                  suitSymbol === '♥' || suitSymbol === '♦' ? 'text-red-400' : ''
+                  isRedSuit && suit !== suitSymbol ? 'text-red-500' : ''
                 } ${
                   isDisabled ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
@@ -89,8 +90,8 @@ const CardSelector = ({ label, value, onChange, disabledCards = [] }: CardSelect
       {/* Selected Card Display */}
       {currentCard && (
         <div className="mt-3">
-          <div className={`inline-flex items-center justify-center w-16 h-20 bg-slate-800 border-2 border-slate-600 rounded-lg text-lg font-bold ${
-            suit === '♥' || suit === '♦' ? 'text-red-400' : 'text-slate-200'
+          <div className={`inline-flex items-center justify-center w-16 h-20 bg-slate-800 border-2 border-slate-600 rounded-lg text-xl font-bold ${
+            suit === '♥' || suit === '♦' ? 'text-red-500' : 'text-white'
           }`}>
             {currentCard}
           </div>

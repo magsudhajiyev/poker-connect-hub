@@ -13,8 +13,8 @@ const CardDisplay = ({ cards, onRemoveCard }: CardDisplayProps) => {
     <div className="flex flex-wrap gap-2">
       {cards.map((card, index) => (
         <div key={index} className="relative group">
-          <div className={`w-10 h-12 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-xs ${
-            card.includes('♥') || card.includes('♦') ? 'text-red-400' : 'text-slate-200'
+          <div className={`w-10 h-12 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-sm ${
+            card.includes('♥') || card.includes('♦') ? 'text-red-500' : 'text-white'
           }`}>
             {card}
           </div>
