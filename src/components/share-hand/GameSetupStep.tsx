@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -61,14 +62,14 @@ const GameSetupStep = ({ formData, setFormData }: GameSetupStepProps) => {
             className={`h-16 flex flex-col items-center justify-center relative ${
               formData.gameFormat === 'mtt' 
                 ? 'bg-emerald-500 text-slate-900 border-emerald-500' 
-                : 'border-slate-700/50 text-slate-200 hover:bg-slate-800/50'
+                : 'border-slate-700/50 text-white hover:bg-slate-800/50 bg-slate-900/30'
             }`}
           >
             {formData.gameFormat === 'mtt' && (
               <Check className="absolute top-2 right-2 w-4 h-4" />
             )}
-            <span className="font-bold text-sm">MTT</span>
-            <span className="text-xs font-semibold opacity-90">Multi-Table Tournament</span>
+            <span className="font-black text-base">MTT</span>
+            <span className="text-sm font-bold">Multi-Table Tournament</span>
           </Button>
           
           <Button
@@ -77,14 +78,14 @@ const GameSetupStep = ({ formData, setFormData }: GameSetupStepProps) => {
             className={`h-16 flex flex-col items-center justify-center relative ${
               formData.gameFormat === 'cash' 
                 ? 'bg-emerald-500 text-slate-900 border-emerald-500' 
-                : 'border-slate-700/50 text-slate-200 hover:bg-slate-800/50'
+                : 'border-slate-700/50 text-white hover:bg-slate-800/50 bg-slate-900/30'
             }`}
           >
             {formData.gameFormat === 'cash' && (
               <Check className="absolute top-2 right-2 w-4 h-4" />
             )}
-            <span className="font-bold text-sm">Cash Game</span>
-            <span className="text-xs font-semibold opacity-90">Real Money Cash</span>
+            <span className="font-black text-base">Cash Game</span>
+            <span className="text-sm font-bold">Real Money Cash</span>
           </Button>
         </div>
       </div>
