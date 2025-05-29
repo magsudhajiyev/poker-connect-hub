@@ -36,14 +36,14 @@ const TurnStep = ({
   const potSize = calculatePotSize();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {showPot && (
         <PotDisplay potSize={potSize} getCurrencySymbol={getCurrencySymbol} />
       )}
 
-      <h3 className="text-lg font-medium text-slate-200 mb-4">Turn</h3>
+      <h3 className="text-base font-medium text-slate-200 mb-2">Turn</h3>
       
-      <div className="flex flex-wrap items-start gap-6">
+      <div className="flex flex-wrap items-start gap-3">
         <SelectedCardsDisplay cards={formData.holeCards} label="Your Hole Cards" />
         <SelectedCardsDisplay cards={formData.flopCards} label="Flop" />
         
@@ -70,14 +70,14 @@ const TurnStep = ({
       />
 
       <div>
-        <Label htmlFor="turn-description" className="text-slate-300">Turn Insights (Optional)</Label>
+        <Label htmlFor="turn-description" className="text-slate-300 text-sm">Turn Insights (Optional)</Label>
         <Textarea
           id="turn-description"
           value={formData.turnDescription}
           onChange={(e) => setFormData({...formData, turnDescription: e.target.value})}
           placeholder="How did the turn card change the dynamics? Your reasoning for the action..."
-          rows={3}
-          className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+          rows={2}
+          className="bg-slate-900/50 border-slate-700/50 text-slate-200 text-sm mt-1"
         />
       </div>
     </div>

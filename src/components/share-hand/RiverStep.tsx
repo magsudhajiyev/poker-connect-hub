@@ -46,14 +46,14 @@ const RiverStep = ({
   const potSize = calculatePotSize();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {showPot && (
         <PotDisplay potSize={potSize} getCurrencySymbol={getCurrencySymbol} isFinal />
       )}
 
-      <h3 className="text-lg font-medium text-slate-200 mb-4">River & Summary</h3>
+      <h3 className="text-base font-medium text-slate-200 mb-2">River & Summary</h3>
       
-      <div className="flex flex-wrap items-start gap-6">
+      <div className="flex flex-wrap items-start gap-3">
         <SelectedCardsDisplay cards={formData.holeCards} label="Your Hole Cards" />
         <SelectedCardsDisplay cards={formData.flopCards} label="Flop" />
         <SelectedCardsDisplay cards={formData.turnCard} label="Turn" />
@@ -81,51 +81,51 @@ const RiverStep = ({
       />
 
       <div>
-        <Label htmlFor="riverDescription" className="text-slate-300">River Analysis</Label>
+        <Label htmlFor="riverDescription" className="text-slate-300 text-sm">River Analysis</Label>
         <Textarea
           id="riverDescription"
           value={formData.riverDescription}
           onChange={(e) => setFormData({...formData, riverDescription: e.target.value})}
           placeholder="Analysis of river play, thoughts on the spot..."
-          rows={3}
-          className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+          rows={2}
+          className="bg-slate-900/50 border-slate-700/50 text-slate-200 text-sm mt-1"
         />
       </div>
 
       <div>
-        <Label htmlFor="title" className="text-slate-300">Hand Title</Label>
+        <Label htmlFor="title" className="text-slate-300 text-sm">Hand Title</Label>
         <Input
           id="title"
           value={formData.title}
           onChange={(e) => setFormData({...formData, title: e.target.value})}
           placeholder="Give your hand a catchy title"
-          className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+          className="bg-slate-900/50 border-slate-700/50 text-slate-200 h-9 mt-1"
         />
       </div>
 
       <div>
-        <Label htmlFor="description" className="text-slate-300">Hand Description</Label>
+        <Label htmlFor="description" className="text-slate-300 text-sm">Hand Description</Label>
         <Textarea
           id="description"
           value={formData.description}
           onChange={(e) => setFormData({...formData, description: e.target.value})}
           placeholder="Overall summary, final thoughts, outcome, what you learned..."
-          rows={4}
-          className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+          rows={3}
+          className="bg-slate-900/50 border-slate-700/50 text-slate-200 text-sm mt-1"
         />
       </div>
 
       <div>
-        <Label className="text-slate-300 mb-3 block">Tags</Label>
-        <div className="flex flex-wrap gap-2 mb-3">
+        <Label className="text-slate-300 mb-2 block text-sm">Tags</Label>
+        <div className="flex flex-wrap gap-1 mb-2">
           {tags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="bg-emerald-500/10 text-emerald-400">
+            <Badge key={tag} variant="secondary" className="bg-emerald-500/10 text-emerald-400 text-xs">
               {tag}
               <button
                 onClick={() => removeTag(tag)}
-                className="ml-2 hover:text-red-400"
+                className="ml-1 hover:text-red-400"
               >
-                <X className="w-3 h-3" />
+                <X className="w-2 h-2" />
               </button>
             </Badge>
           ))}
@@ -133,7 +133,7 @@ const RiverStep = ({
         <div className="flex gap-2">
           <Input
             placeholder="Add a tag"
-            className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+            className="bg-slate-900/50 border-slate-700/50 text-slate-200 h-9"
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
                 addTag(e.currentTarget.value);
@@ -141,8 +141,8 @@ const RiverStep = ({
               }
             }}
           />
-          <Button variant="outline" size="sm" className="border-slate-700/50 text-slate-300">
-            <Plus className="w-4 h-4" />
+          <Button variant="outline" size="sm" className="border-slate-700/50 text-slate-300 h-9">
+            <Plus className="w-3 h-3" />
           </Button>
         </div>
       </div>

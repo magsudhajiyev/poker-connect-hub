@@ -49,52 +49,52 @@ const GameSetupStep = ({ formData, setFormData }: GameSetupStepProps) => {
   };
 
   return (
-    <div className="space-y-6">
-      <h3 className="text-lg font-medium text-slate-200 mb-4">Game Setup</h3>
+    <div className="space-y-4">
+      <h3 className="text-base font-medium text-slate-200 mb-3">Game Setup</h3>
       
       {/* Game Format Selection with Toggle Buttons */}
       <div>
-        <Label className="text-slate-300 mb-3 block">Game Format</Label>
-        <div className="grid grid-cols-2 gap-3">
+        <Label className="text-slate-300 mb-2 block text-sm">Game Format</Label>
+        <div className="grid grid-cols-2 gap-2">
           <Button
             variant={formData.gameFormat === 'mtt' ? 'default' : 'outline'}
             onClick={() => setFormData({...formData, gameFormat: 'mtt'})}
-            className={`h-16 flex flex-col items-center justify-center relative ${
+            className={`h-12 flex flex-col items-center justify-center relative ${
               formData.gameFormat === 'mtt' 
                 ? 'bg-emerald-500 text-slate-900 border-emerald-500' 
                 : 'border-slate-700/50 text-white hover:bg-slate-800/50 bg-slate-900/30'
             }`}
           >
             {formData.gameFormat === 'mtt' && (
-              <Check className="absolute top-2 right-2 w-4 h-4" />
+              <Check className="absolute top-1 right-1 w-3 h-3" />
             )}
-            <span className="font-black text-base">MTT</span>
-            <span className="text-sm font-bold">Multi-Table Tournament</span>
+            <span className="font-black text-sm">MTT</span>
+            <span className="text-xs font-bold">Multi-Table Tournament</span>
           </Button>
           
           <Button
             variant={formData.gameFormat === 'cash' ? 'default' : 'outline'}
             onClick={() => setFormData({...formData, gameFormat: 'cash'})}
-            className={`h-16 flex flex-col items-center justify-center relative ${
+            className={`h-12 flex flex-col items-center justify-center relative ${
               formData.gameFormat === 'cash' 
                 ? 'bg-emerald-500 text-slate-900 border-emerald-500' 
                 : 'border-slate-700/50 text-white hover:bg-slate-800/50 bg-slate-900/30'
             }`}
           >
             {formData.gameFormat === 'cash' && (
-              <Check className="absolute top-2 right-2 w-4 h-4" />
+              <Check className="absolute top-1 right-1 w-3 h-3" />
             )}
-            <span className="font-black text-base">Cash Game</span>
-            <span className="text-sm font-bold">Real Money Cash</span>
+            <span className="font-black text-sm">Cash Game</span>
+            <span className="text-xs font-bold">Real Money Cash</span>
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div>
-          <Label htmlFor="game-type" className="text-slate-300">Game Type</Label>
+          <Label htmlFor="game-type" className="text-slate-300 text-sm">Game Type</Label>
           <Select value={formData.gameType} onValueChange={(value) => setFormData({...formData, gameType: value})}>
-            <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200">
+            <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200 h-9">
               <SelectValue placeholder="Select game type" />
             </SelectTrigger>
             <SelectContent className="bg-slate-800 border-slate-700">
@@ -107,27 +107,27 @@ const GameSetupStep = ({ formData, setFormData }: GameSetupStepProps) => {
         </div>
         
         <div>
-          <Label htmlFor="stack-size" className="text-slate-300">{getStackSizeLabel()}</Label>
+          <Label htmlFor="stack-size" className="text-slate-300 text-sm">{getStackSizeLabel()}</Label>
           <Input
             id="stack-size"
             value={formData.stackSize}
             onChange={(e) => setFormData({...formData, stackSize: e.target.value})}
             placeholder={getStackSizePlaceholder()}
-            className="bg-slate-900/50 border-slate-700/50 text-slate-200"
+            className="bg-slate-900/50 border-slate-700/50 text-slate-200 h-9"
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Hero Position and Stack */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div>
-            <Label htmlFor="hero-position" className="text-slate-300">Hero Position</Label>
+            <Label htmlFor="hero-position" className="text-slate-300 text-sm">Hero Position</Label>
             <Select 
               value={formData.heroPosition} 
               onValueChange={(value) => setFormData({...formData, heroPosition: value})}
             >
-              <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200">
+              <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200 h-9">
                 <SelectValue placeholder="Select position" />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
@@ -141,7 +141,7 @@ const GameSetupStep = ({ formData, setFormData }: GameSetupStepProps) => {
           </div>
           
           <div>
-            <Label className="text-slate-300 mb-3 block">
+            <Label className="text-slate-300 mb-2 block text-sm">
               Hero Stack Size: {formData.gameFormat === 'cash' ? '$' : ''}{formData.heroStackSize[0]}{formData.gameFormat === 'mtt' ? ' BB' : ''}
             </Label>
             <Slider
@@ -160,14 +160,14 @@ const GameSetupStep = ({ formData, setFormData }: GameSetupStepProps) => {
         </div>
         
         {/* Villain Position and Stack */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div>
-            <Label htmlFor="villain-position" className="text-slate-300">Villain Position</Label>
+            <Label htmlFor="villain-position" className="text-slate-300 text-sm">Villain Position</Label>
             <Select 
               value={formData.villainPosition} 
               onValueChange={(value) => setFormData({...formData, villainPosition: value})}
             >
-              <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200">
+              <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200 h-9">
                 <SelectValue placeholder="Select position" />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
@@ -181,7 +181,7 @@ const GameSetupStep = ({ formData, setFormData }: GameSetupStepProps) => {
           </div>
           
           <div>
-            <Label className="text-slate-300 mb-3 block">
+            <Label className="text-slate-300 mb-2 block text-sm">
               Villain Stack Size: {formData.gameFormat === 'cash' ? '$' : ''}{formData.villainStackSize[0]}{formData.gameFormat === 'mtt' ? ' BB' : ''}
             </Label>
             <Slider
