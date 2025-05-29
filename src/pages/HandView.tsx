@@ -81,9 +81,9 @@ const HandViewContent = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 w-full overflow-x-hidden">
       {/* Mobile Header */}
-      <div className="fixed top-0 w-full z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50 lg:hidden">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50 lg:hidden">
         <div className="flex items-center justify-between h-16 px-4">
           <div className="flex items-center space-x-4">
             <MobileSidebar />
@@ -92,15 +92,15 @@ const HandViewContent = () => {
         </div>
       </div>
 
-      <div className="flex pt-16 lg:pt-0">
+      <div className="flex w-full">
         <div className="hidden lg:block">
           <GlobalSidebar />
         </div>
 
-        <main className={`flex-1 px-2 sm:px-4 py-4 sm:py-6 transition-all duration-300 ${
+        <main className={`flex-1 min-w-0 px-2 sm:px-4 py-4 sm:py-6 transition-all duration-300 ${
           isCollapsed ? 'lg:ml-16' : 'lg:ml-64'
-        }`}>
-          <div className="max-w-4xl mx-auto space-y-6">
+        } pt-16 lg:pt-6`}>
+          <div className="max-w-4xl mx-auto space-y-6 w-full">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <Button 
                 variant="outline" 
@@ -117,24 +117,24 @@ const HandViewContent = () => {
               </Badge>
             </div>
 
-            <Card className="bg-slate-800/40 border-slate-700/30">
+            <Card className="bg-slate-800/40 border-slate-700/30 w-full">
               <CardHeader className="flex flex-row items-center space-y-0 pb-4">
-                <Avatar className="w-12 h-12 mr-4">
+                <Avatar className="w-12 h-12 mr-4 flex-shrink-0">
                   <AvatarImage src={hand.authorAvatar} />
                   <AvatarFallback>{hand.authorName[0]}</AvatarFallback>
                 </Avatar>
-                <div className="flex-1">
-                  <h3 className="text-slate-200 font-medium text-lg">{hand.authorName}</h3>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-slate-200 font-medium text-lg truncate">{hand.authorName}</h3>
                   <p className="text-slate-400">{formatTimeAgo(hand.createdAt)}</p>
                 </div>
               </CardHeader>
               
               <CardContent className="space-y-6">
                 <div>
-                  <h1 className="text-2xl font-bold text-slate-200 mb-3">
+                  <h1 className="text-2xl font-bold text-slate-200 mb-3 break-words">
                     {hand.formData.title || 'Poker Hand Analysis'}
                   </h1>
-                  <p className="text-slate-300 text-lg leading-relaxed">
+                  <p className="text-slate-300 text-lg leading-relaxed break-words">
                     {hand.formData.description || `${hand.formData.gameType} hand analysis from ${hand.formData.heroPosition} vs ${hand.formData.villainPosition}`}
                   </p>
                 </div>
@@ -150,27 +150,27 @@ const HandViewContent = () => {
                 <div className="bg-slate-900/50 rounded-lg p-6 border border-slate-700/30">
                   <h3 className="text-lg font-semibold text-slate-200 mb-4">Hand Details</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-                    <div>
+                    <div className="min-w-0">
                       <span className="text-slate-400">Game Type:</span>
-                      <span className="text-slate-200 ml-2">{hand.formData.gameType}</span>
+                      <span className="text-slate-200 ml-2 break-words">{hand.formData.gameType}</span>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <span className="text-slate-400">Stakes:</span>
                       <span className="text-slate-200 ml-2">{hand.formData.smallBlind}/{hand.formData.bigBlind}</span>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <span className="text-slate-400">Position:</span>
                       <span className="text-slate-200 ml-2">{hand.formData.heroPosition}</span>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <span className="text-slate-400">Players:</span>
                       <span className="text-slate-200 ml-2">{hand.formData.tableSize}</span>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <span className="text-slate-400">Stack Size:</span>
                       <span className="text-slate-200 ml-2">{hand.formData.stackSize} BB</span>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <span className="text-slate-400">Format:</span>
                       <span className="text-slate-200 ml-2">{hand.formData.gameFormat === 'mtt' ? 'Tournament' : 'Cash Game'}</span>
                     </div>
@@ -178,7 +178,7 @@ const HandViewContent = () => {
                 </div>
 
                 <div className="flex items-center justify-between pt-4 border-t border-slate-700/30">
-                  <div className="flex items-center space-x-6">
+                  <div className="flex items-center space-x-4 sm:space-x-6">
                     <Button variant="ghost" size="sm" className="text-slate-400 hover:text-red-400">
                       <Heart className="w-5 h-5 mr-2" />
                       {hand.likes}
@@ -200,13 +200,15 @@ const HandViewContent = () => {
             </Card>
 
             {/* Street-by-Street Hand Replay */}
-            <HandReplay
-              formData={hand.formData}
-              getPositionName={getPositionName}
-              getCurrencySymbol={getCurrencySymbol}
-            />
+            <div className="w-full">
+              <HandReplay
+                formData={hand.formData}
+                getPositionName={getPositionName}
+                getCurrencySymbol={getCurrencySymbol}
+              />
+            </div>
 
-            <Card className="bg-slate-800/40 border-slate-700/30">
+            <Card className="bg-slate-800/40 border-slate-700/30 w-full">
               <CardHeader>
                 <h3 className="text-lg font-semibold text-slate-200">Comments</h3>
               </CardHeader>
@@ -216,7 +218,7 @@ const HandViewContent = () => {
                     placeholder="Share your thoughts on this hand..."
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    className="bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500 min-h-[100px]"
+                    className="bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500 min-h-[100px] w-full"
                   />
                   <Button 
                     disabled={!comment.trim()}

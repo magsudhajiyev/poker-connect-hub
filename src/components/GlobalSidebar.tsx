@@ -57,8 +57,8 @@ export const GlobalSidebar = () => {
   };
 
   return (
-    <aside className={`hidden lg:block fixed left-0 top-16 h-[calc(100vh-4rem)] z-40 bg-slate-950 border-r border-zinc-700/20 transition-all duration-300 ease-in-out ${
-      isCollapsed ? 'w-12' : 'w-64'
+    <aside className={`hidden lg:block fixed left-0 top-0 h-screen z-40 bg-slate-950 border-r border-zinc-700/20 transition-all duration-300 ease-in-out ${
+      isCollapsed ? 'w-16' : 'w-64'
     }`}>
       <nav className="px-3 space-y-1 pt-6">
         <div 
