@@ -201,9 +201,9 @@ const SettingsContent = () => {
                       Control how and when you receive notifications
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4 sm:space-y-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
+                  <CardContent className="space-y-5 sm:space-y-6">
+                    <div className="space-y-5">
+                      <div className="flex items-center justify-between py-2 border-b border-slate-700/20">
                         <div className="space-y-1 flex-1 mr-4">
                           <Label className="text-slate-200 text-sm sm:text-base">Email notifications</Label>
                           <p className="text-xs sm:text-sm text-slate-400">Receive notifications via email</p>
@@ -214,7 +214,7 @@ const SettingsContent = () => {
                         />
                       </div>
 
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between py-2 border-b border-slate-700/20">
                         <div className="space-y-1 flex-1 mr-4">
                           <Label className="text-slate-200 text-sm sm:text-base">Push notifications</Label>
                           <p className="text-xs sm:text-sm text-slate-400">Receive push notifications in your browser</p>
@@ -225,7 +225,7 @@ const SettingsContent = () => {
                         />
                       </div>
 
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between py-2 border-b border-slate-700/20">
                         <div className="space-y-1 flex-1 mr-4">
                           <Label className="text-slate-200 text-sm sm:text-base">Marketing emails</Label>
                           <p className="text-xs sm:text-sm text-slate-400">Receive updates about new features and promotions</p>
@@ -236,7 +236,7 @@ const SettingsContent = () => {
                         />
                       </div>
 
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between py-2">
                         <div className="space-y-1 flex-1 mr-4">
                           <Label className="text-slate-200 text-sm sm:text-base">Hand updates</Label>
                           <p className="text-xs sm:text-sm text-slate-400">Get notified when someone comments on your hands</p>
@@ -262,9 +262,9 @@ const SettingsContent = () => {
                       Control who can see your information and activity
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-4 sm:space-y-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
+                  <CardContent className="space-y-5 sm:space-y-6">
+                    <div className="space-y-5">
+                      <div className="flex items-center justify-between py-2 border-b border-slate-700/20">
                         <div className="space-y-1 flex-1 mr-4">
                           <Label className="text-slate-200 text-sm sm:text-base">Public profile</Label>
                           <p className="text-xs sm:text-sm text-slate-400">Make your profile visible to other users</p>
@@ -275,7 +275,7 @@ const SettingsContent = () => {
                         />
                       </div>
 
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between py-2 border-b border-slate-700/20">
                         <div className="space-y-1 flex-1 mr-4">
                           <Label className="text-slate-200 text-sm sm:text-base">Show statistics</Label>
                           <p className="text-xs sm:text-sm text-slate-400">Display your poker statistics on your profile</p>
@@ -286,7 +286,7 @@ const SettingsContent = () => {
                         />
                       </div>
 
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between py-2">
                         <div className="space-y-1 flex-1 mr-4">
                           <Label className="text-slate-200 text-sm sm:text-base">Online status</Label>
                           <p className="text-xs sm:text-sm text-slate-400">Show when you're online to other users</p>
