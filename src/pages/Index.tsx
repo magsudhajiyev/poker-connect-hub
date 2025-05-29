@@ -43,10 +43,16 @@ const IndexContent = () => {
       <Header />
       <main className="pt-16 sm:pt-20">
         <HeroSection />
-        <FeaturesSection />
-        <TestimonialsSection />
+        <section id="features">
+          <FeaturesSection />
+        </section>
+        <section id="testimonials">
+          <TestimonialsSection />
+        </section>
         <StatsSection />
-        <PricingSection />
+        <section id="pricing">
+          <PricingSection />
+        </section>
       </main>
       <Footer />
     </div>

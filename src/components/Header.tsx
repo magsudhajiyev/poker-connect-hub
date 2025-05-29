@@ -21,6 +21,17 @@ const Header = () => {
     navigate('/auth');
   };
 
+  const handleNavClick = (sectionId: string) => {
+    setIsMenuOpen(false);
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  };
+
   return (
     <>
       <PokerChipConfetti isActive={showConfetti} onComplete={handleConfettiComplete} />
@@ -39,10 +50,10 @@ const Header = () => {
             
             {/* Navigation Links - Desktop */}
             <nav className="hidden lg:flex items-center space-x-8 xl:space-x-10">
-              <a href="#features" className="text-slate-400 hover:text-slate-200 transition-colors text-[15px]">Features</a>
-              <a href="#community" className="text-slate-400 hover:text-slate-200 transition-colors text-[15px]">Community</a>
-              <a href="#testimonials" className="text-slate-400 hover:text-slate-200 transition-colors text-[15px]">Testimonials</a>
-              <a href="#pricing" className="text-slate-400 hover:text-slate-200 transition-colors text-[15px]">Pricing</a>
+              <button onClick={() => handleNavClick('features')} className="text-slate-400 hover:text-slate-200 transition-colors text-[15px]">Features</button>
+              <button onClick={() => handleNavClick('testimonials')} className="text-slate-400 hover:text-slate-200 transition-colors text-[15px]">Community</button>
+              <button onClick={() => handleNavClick('testimonials')} className="text-slate-400 hover:text-slate-200 transition-colors text-[15px]">Testimonials</button>
+              <button onClick={() => handleNavClick('pricing')} className="text-slate-400 hover:text-slate-200 transition-colors text-[15px]">Pricing</button>
             </nav>
             
             {/* Auth Buttons - Desktop */}
@@ -77,10 +88,10 @@ const Header = () => {
           {isMenuOpen && (
             <div className="md:hidden py-4 border-t border-slate-800/50">
               <nav className="flex flex-col space-y-4">
-                <a href="#features" className="text-slate-400 hover:text-slate-200 transition-colors py-2" onClick={() => setIsMenuOpen(false)}>Features</a>
-                <a href="#community" className="text-slate-400 hover:text-slate-200 transition-colors py-2" onClick={() => setIsMenuOpen(false)}>Community</a>
-                <a href="#testimonials" className="text-slate-400 hover:text-slate-200 transition-colors py-2" onClick={() => setIsMenuOpen(false)}>Testimonials</a>
-                <a href="#pricing" className="text-slate-400 hover:text-slate-200 transition-colors py-2" onClick={() => setIsMenuOpen(false)}>Pricing</a>
+                <button onClick={() => handleNavClick('features')} className="text-slate-400 hover:text-slate-200 transition-colors py-2 text-left">Features</button>
+                <button onClick={() => handleNavClick('testimonials')} className="text-slate-400 hover:text-slate-200 transition-colors py-2 text-left">Community</button>
+                <button onClick={() => handleNavClick('testimonials')} className="text-slate-400 hover:text-slate-200 transition-colors py-2 text-left">Testimonials</button>
+                <button onClick={() => handleNavClick('pricing')} className="text-slate-400 hover:text-slate-200 transition-colors py-2 text-left">Pricing</button>
                 <div className="flex flex-col space-y-3 pt-4">
                   <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
                     <Button variant="ghost" className="text-slate-200 w-full justify-start">Sign In</Button>
