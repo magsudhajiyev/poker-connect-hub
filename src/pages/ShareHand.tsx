@@ -33,7 +33,8 @@ const ShareHandContent = () => {
   const { isCollapsed } = useSidebar();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+      {/* Fixed Header */}
       <div className="fixed top-0 w-full z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50">
         <div className="flex items-center justify-between h-16 px-4">
           <div className="flex items-center space-x-4">
@@ -43,23 +44,31 @@ const ShareHandContent = () => {
         </div>
       </div>
       
+      {/* Desktop Profile Top Bar */}
       <div className="hidden lg:block">
         <ProfileTopBar />
       </div>
       
-      <div className="flex pt-16">
+      {/* Main Layout Container */}
+      <div className="flex min-h-screen pt-16">
+        {/* Desktop Sidebar */}
         <div className="hidden lg:block">
           <GlobalSidebar />
         </div>
 
-        <main className={`flex-1 px-2 sm:px-3 md:px-4 py-3 sm:py-4 md:py-6 transition-all duration-300 overflow-x-hidden ${
-          isCollapsed ? 'lg:ml-12 xl:ml-16' : 'lg:ml-48 xl:ml-64'
+        {/* Main Content with Responsive Margins */}
+        <main className={`flex-1 transition-all duration-300 ease-in-out ${
+          isCollapsed 
+            ? 'lg:ml-12 xl:ml-16' // Collapsed sidebar width
+            : 'lg:ml-48 xl:ml-64' // Expanded sidebar width
         }`}>
-          <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4 md:space-y-6 w-full">
-            <ShareHandProvider>
-              <ShareHandHeader />
-              <ShareHandForm />
-            </ShareHandProvider>
+          <div className="w-full px-2 sm:px-3 md:px-4 py-3 sm:py-4 md:py-6">
+            <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4 md:space-y-6">
+              <ShareHandProvider>
+                <ShareHandHeader />
+                <ShareHandForm />
+              </ShareHandProvider>
+            </div>
           </div>
         </main>
       </div>

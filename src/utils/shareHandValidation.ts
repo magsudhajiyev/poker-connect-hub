@@ -5,7 +5,24 @@ export const validateCurrentStep = (
   currentStep: number,
   formData: ShareHandFormData
 ): ValidationResult => {
-  if (currentStep === 0) return { isValid: true, message: '' };
+  // Validate game setup step (step 0)
+  if (currentStep === 0) {
+    if (!formData.heroPosition || formData.heroPosition.trim() === '') {
+      return {
+        isValid: false,
+        message: 'Please select Hero position before proceeding.'
+      };
+    }
+    
+    if (!formData.villainPosition || formData.villainPosition.trim() === '') {
+      return {
+        isValid: false,
+        message: 'Please select Villain position before proceeding.'
+      };
+    }
+    
+    return { isValid: true, message: '' };
+  }
   
   const streetName = ['preflopActions', 'flopActions', 'turnActions', 'riverActions'][currentStep - 1] as StreetType;
   const actions = formData[streetName];

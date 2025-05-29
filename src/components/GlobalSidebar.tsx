@@ -1,4 +1,3 @@
-
 import { useState, createContext, useContext } from 'react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -52,7 +51,7 @@ export const GlobalSidebar = () => {
   };
 
   return (
-    <aside className={`hidden lg:block fixed h-[calc(100vh-4rem)] overflow-hidden border-r border-zinc-700/20 pt-6 transition-all duration-300 ${
+    <aside className={`hidden lg:block fixed left-0 top-16 h-[calc(100vh-4rem)] z-40 bg-slate-950 border-r border-zinc-700/20 transition-all duration-300 ease-in-out ${
       isCollapsed ? 'w-12 sm:w-16' : 'w-48 sm:w-56 md:w-64'
     }`}>
       {/* Toggle Button */}
@@ -67,7 +66,7 @@ export const GlobalSidebar = () => {
         </Button>
       </div>
 
-      <nav className="px-2 sm:px-4 space-y-1">
+      <nav className="px-2 sm:px-4 space-y-1 pt-6">
         <div 
           onClick={() => handleNavigation('/feed')}
           className={`flex items-center px-2 sm:px-4 py-2 sm:py-2.5 rounded-xl cursor-pointer transition-all duration-300 ${

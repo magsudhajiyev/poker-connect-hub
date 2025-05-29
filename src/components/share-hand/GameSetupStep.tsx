@@ -4,7 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Check } from 'lucide-react';
+import { Check, AlertCircle } from 'lucide-react';
+import { validateCurrentStep } from '@/utils/shareHandValidation';
 
 interface GameSetupStepProps {
   formData: any;
@@ -12,6 +13,11 @@ interface GameSetupStepProps {
 }
 
 const GameSetupStep = ({ formData, setFormData }: GameSetupStepProps) => {
+  // Check validation to determine if positions should be highlighted
+  const validation = validateCurrentStep(0, formData);
+  const shouldHighlightHero = !formData.heroPosition && !validation.isValid;
+  const shouldHighlightVillain = !formData.villainPosition && !validation.isValid;
+
   const getStackSizeLabel = () => {
     return formData.gameFormat === 'cash' ? 'Stack Size ($)' : 'Stack Size (BB)';
   };
@@ -121,13 +127,21 @@ const GameSetupStep = ({ formData, setFormData }: GameSetupStepProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Hero Position and Stack */}
         <div className="space-y-3">
-          <div>
-            <Label htmlFor="hero-position" className="text-slate-300 text-sm">Hero Position</Label>
+          <div className={`${shouldHighlightHero ? 'ring-2 ring-red-500 rounded-md p-2' : ''}`}>
+            <div className="flex items-center gap-2 mb-1">
+              <Label htmlFor="hero-position" className="text-slate-300 text-sm">Hero Position</Label>
+              {shouldHighlightHero && <AlertCircle className="w-4 h-4 text-red-500" />}
+            </div>
+            {shouldHighlightHero && (
+              <p className="text-red-400 text-xs mb-2">Please select Hero position</p>
+            )}
             <Select 
               value={formData.heroPosition} 
               onValueChange={(value) => setFormData({...formData, heroPosition: value})}
             >
-              <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200 h-9">
+              <SelectTrigger className={`bg-slate-900/50 border-slate-700/50 text-slate-200 h-9 ${
+                shouldHighlightHero ? 'border-red-500' : ''
+              }`}>
                 <SelectValue placeholder="Select position" />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
@@ -161,13 +175,21 @@ const GameSetupStep = ({ formData, setFormData }: GameSetupStepProps) => {
         
         {/* Villain Position and Stack */}
         <div className="space-y-3">
-          <div>
-            <Label htmlFor="villain-position" className="text-slate-300 text-sm">Villain Position</Label>
+          <div className={`${shouldHighlightVillain ? 'ring-2 ring-red-500 rounded-md p-2' : ''}`}>
+            <div className="flex items-center gap-2 mb-1">
+              <Label htmlFor="villain-position" className="text-slate-300 text-sm">Villain Position</Label>
+              {shouldHighlightVillain && <AlertCircle className="w-4 h-4 text-red-500" />}
+            </div>
+            {shouldHighlightVillain && (
+              <p className="text-red-400 text-xs mb-2">Please select Villain position</p>
+            )}
             <Select 
               value={formData.villainPosition} 
               onValueChange={(value) => setFormData({...formData, villainPosition: value})}
             >
-              <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200 h-9">
+              <SelectTrigger className={`bg-slate-900/50 border-slate-700/50 text-slate-200 h-9 ${
+                shouldHighlightVillain ? 'border-red-500' : ''
+              }`}>
                 <SelectValue placeholder="Select position" />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
