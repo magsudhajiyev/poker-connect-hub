@@ -1,8 +1,14 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Play, UserPlus } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import Auth from '@/pages/Auth';
+import FeaturesSection from '@/components/FeaturesSection';
+import TestimonialsSection from '@/components/TestimonialsSection';
+import StatsSection from '@/components/StatsSection';
+import PricingSection from '@/components/PricingSection';
+import Footer from '@/components/Footer';
 
 const HeroSection = () => {
   const [isGateOpen, setIsGateOpen] = useState(false);
@@ -27,14 +33,15 @@ const HeroSection = () => {
 
       {/* Landing page gate - Left half */}
       <div 
-        className={`fixed top-0 left-0 w-1/2 h-full bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 z-10 transition-transform duration-2000 ease-in-out ${
+        className={`fixed top-0 left-0 w-1/2 h-full bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 z-10 transition-transform duration-2000 ease-in-out overflow-y-auto ${
           isGateOpen ? '-translate-x-full' : 'translate-x-0'
         }`}
       >
-        <section className="pt-24 sm:pt-32 md:pt-40 pb-12 sm:pb-16 md:pb-24 px-4 sm:px-6 lg:px-8 h-full overflow-hidden">
-          <div className="container mx-auto max-w-6xl h-full">
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-8 sm:gap-12 lg:gap-16 h-full">
-              <div className="w-full lg:w-1/2 text-center lg:text-left animate-fade-in">
+        <div className="min-h-full">
+          {/* Hero Content - Left Side */}
+          <section className="pt-24 sm:pt-32 md:pt-40 pb-12 sm:pb-16 md:pb-24 px-4 sm:px-6 lg:px-8 min-h-screen flex items-center">
+            <div className="container mx-auto max-w-3xl">
+              <div className="text-center lg:text-left animate-fade-in">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 sm:mb-6 md:mb-8 leading-tight">
                   <span className="bg-gradient-to-r from-emerald-500 via-blue-500 to-pink-500 bg-clip-text text-transparent">
                     Connect, Share & Improve
@@ -83,24 +90,35 @@ const HeroSection = () => {
                 </div>
               </div>
             </div>
+          </section>
+
+          {/* Features Section - Left Side */}
+          <div className="transform scale-75 origin-left">
+            <FeaturesSection />
           </div>
-        </section>
+
+          {/* Stats Section - Left Side */}
+          <div className="transform scale-75 origin-left">
+            <StatsSection />
+          </div>
+        </div>
       </div>
 
       {/* Landing page gate - Right half */}
       <div 
-        className={`fixed top-0 right-0 w-1/2 h-full bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 z-10 transition-transform duration-2000 ease-in-out ${
+        className={`fixed top-0 right-0 w-1/2 h-full bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 z-10 transition-transform duration-2000 ease-in-out overflow-y-auto ${
           isGateOpen ? 'translate-x-full' : 'translate-x-0'
         }`}
       >
-        <section className="pt-24 sm:pt-32 md:pt-40 pb-12 sm:pb-16 md:pb-24 px-4 sm:px-6 lg:px-8 h-full overflow-hidden">
-          <div className="container mx-auto max-w-6xl h-full">
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-8 sm:gap-12 lg:gap-16 h-full">
-              <div className="w-full lg:w-1/2 relative">
+        <div className="min-h-full">
+          {/* Visual Elements - Right Side */}
+          <section className="pt-24 sm:pt-32 md:pt-40 pb-12 sm:pb-16 md:pb-24 px-4 sm:px-6 lg:px-8 min-h-screen flex items-center">
+            <div className="container mx-auto max-w-3xl">
+              <div className="relative">
                 <div className="absolute -top-10 -left-10 w-32 h-32 sm:w-40 sm:h-40 bg-emerald-500/20 rounded-full blur-3xl"></div>
                 <div className="absolute -bottom-10 -right-10 w-32 h-32 sm:w-40 sm:h-40 bg-violet-500/20 rounded-full blur-3xl"></div>
                 
-                {/* Pile of overlapping screenshots - made bigger */}
+                {/* Pile of overlapping screenshots */}
                 <div className="relative z-10 max-w-lg mx-auto h-96 sm:h-[26rem] lg:h-[28rem]">
                   {/* Feed page screenshot - bottom layer */}
                   <div className="absolute top-8 left-2 w-80 h-60 sm:w-96 sm:h-72 transform rotate-[-8deg] transition-transform duration-300 hover:rotate-[-4deg] hover:scale-105">
@@ -217,8 +235,23 @@ const HeroSection = () => {
                 </div>
               </div>
             </div>
+          </section>
+
+          {/* Testimonials Section - Right Side */}
+          <div className="transform scale-75 origin-right">
+            <TestimonialsSection />
           </div>
-        </section>
+
+          {/* Pricing Section - Right Side */}
+          <div className="transform scale-75 origin-right">
+            <PricingSection />
+          </div>
+
+          {/* Footer - Right Side */}
+          <div className="transform scale-75 origin-right">
+            <Footer />
+          </div>
+        </div>
       </div>
 
       {/* Gate opening overlay for dramatic effect */}
