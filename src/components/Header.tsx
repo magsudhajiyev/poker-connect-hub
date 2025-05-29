@@ -3,25 +3,27 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Menu, UserPlus, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import PokerChipConfetti from './PokerChipConfetti';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isGateOpen, setIsGateOpen] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const navigate = useNavigate();
 
   const handleGetStartedClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsMenuOpen(false);
-    setIsGateOpen(true);
-    
-    // After the animation completes, navigate to auth page
-    setTimeout(() => {
-      navigate('/auth');
-    }, 2000);
+    setShowConfetti(true);
+  };
+
+  const handleConfettiComplete = () => {
+    setShowConfetti(false);
+    navigate('/auth');
   };
 
   return (
     <>
+      <PokerChipConfetti isActive={showConfetti} onComplete={handleConfettiComplete} />
       <header className="fixed top-0 w-full z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">

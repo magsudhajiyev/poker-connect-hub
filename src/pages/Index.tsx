@@ -5,6 +5,11 @@ import { ArrowRight, Menu } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
+import FeaturesSection from '@/components/FeaturesSection';
+import TestimonialsSection from '@/components/TestimonialsSection';
+import StatsSection from '@/components/StatsSection';
+import PricingSection from '@/components/PricingSection';
+import Footer from '@/components/Footer';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
 import {
   Sheet,
@@ -38,7 +43,12 @@ const IndexContent = () => {
       <Header />
       <main className="pt-16 sm:pt-20">
         <HeroSection />
+        <FeaturesSection />
+        <TestimonialsSection />
+        <StatsSection />
+        <PricingSection />
       </main>
+      <Footer />
     </div>
   );
 };
