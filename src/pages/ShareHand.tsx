@@ -33,35 +33,34 @@ const ShareHandContent = () => {
   const { isCollapsed } = useSidebar();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
-      {/* Fixed Header */}
-      <div className="fixed top-0 w-full z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50">
-        <div className="flex items-center justify-between h-16 px-4">
-          <div className="flex items-center space-x-4">
-            <MobileSidebar />
-            <h1 className="text-lg font-semibold text-slate-200 lg:hidden">Share Hand</h1>
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex">
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block">
+        <GlobalSidebar />
+      </div>
+
+      {/* Main Content Container */}
+      <div className="flex-1 flex flex-col min-h-screen">
+        {/* Fixed Header */}
+        <div className="fixed top-0 right-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50 transition-all duration-300 ease-in-out"
+             style={{
+               left: window.innerWidth >= 1024 ? (isCollapsed ? '3rem' : '16rem') : '0',
+             }}>
+          <div className="flex items-center justify-between h-16 px-4">
+            <div className="flex items-center space-x-4">
+              <MobileSidebar />
+              <h1 className="text-lg font-semibold text-slate-200 lg:hidden">Share Hand</h1>
+            </div>
           </div>
         </div>
-      </div>
-      
-      {/* Desktop Profile Top Bar */}
-      <div className="hidden lg:block">
-        <ProfileTopBar />
-      </div>
-      
-      {/* Main Layout Container */}
-      <div className="flex min-h-screen pt-16">
-        {/* Desktop Sidebar */}
+        
+        {/* Desktop Profile Top Bar */}
         <div className="hidden lg:block">
-          <GlobalSidebar />
+          <ProfileTopBar />
         </div>
-
-        {/* Main Content with Responsive Margins */}
-        <main className={`flex-1 transition-all duration-300 ease-in-out ${
-          isCollapsed 
-            ? 'lg:ml-12 xl:ml-16' // Collapsed sidebar width
-            : 'lg:ml-48 xl:ml-64' // Expanded sidebar width
-        }`}>
+        
+        {/* Main Content */}
+        <main className="flex-1 pt-16">
           <div className="w-full px-2 sm:px-3 md:px-4 py-3 sm:py-4 md:py-6">
             <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4 md:space-y-6">
               <ShareHandProvider>

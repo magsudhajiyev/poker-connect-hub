@@ -1,9 +1,10 @@
+
 import { useState, createContext, useContext } from 'react';
-import { Button } from '@/components/ui/button';
 import { 
-  Rss, Flame, Share2, User, Users, HelpCircle, ChevronLeft, ChevronRight
+  Rss, Flame, Share2, User, Users, HelpCircle
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 interface SidebarContextType {
   isCollapsed: boolean;
@@ -21,10 +22,15 @@ export const useSidebar = () => {
 };
 
 export const SidebarProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const saved = localStorage.getItem('sidebar-collapsed');
+    return saved ? JSON.parse(saved) : false;
+  });
 
   const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
+    const newState = !isCollapsed;
+    setIsCollapsed(newState);
+    localStorage.setItem('sidebar-collapsed', JSON.stringify(newState));
   };
 
   return (
@@ -35,7 +41,7 @@ export const SidebarProvider = ({ children }: { children: React.ReactNode }) => 
 };
 
 export const GlobalSidebar = () => {
-  const { isCollapsed, toggleSidebar } = useSidebar();
+  const { isCollapsed } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -52,20 +58,8 @@ export const GlobalSidebar = () => {
 
   return (
     <aside className={`hidden lg:block fixed left-0 top-16 h-[calc(100vh-4rem)] z-40 bg-slate-950 border-r border-zinc-700/20 transition-all duration-300 ease-in-out ${
-      isCollapsed ? 'w-12 sm:w-16' : 'w-48 sm:w-56 md:w-64'
+      isCollapsed ? 'w-12' : 'w-64'
     }`}>
-      {/* Toggle Button */}
-      <div className="absolute top-4 right-2 z-10">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={toggleSidebar}
-          className="h-6 w-6 sm:h-8 sm:w-8 p-0 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40 transition-colors"
-        >
-          {isCollapsed ? <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" /> : <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />}
-        </Button>
-      </div>
-
       <nav className="px-2 sm:px-4 space-y-1 pt-6">
         <div 
           onClick={() => handleNavigation('/feed')}

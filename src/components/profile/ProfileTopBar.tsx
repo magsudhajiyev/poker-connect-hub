@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Home, Share, Bell, User, Settings, LogOut } from 'lucide-react';
+import { Search, Home, Share, Bell, User, Settings, LogOut, Menu } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -12,10 +12,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
+import { useSidebar } from '@/components/GlobalSidebar';
 
 export const ProfileTopBar = () => {
   const [searchValue, setSearchValue] = useState('');
   const navigate = useNavigate();
+  const { toggleSidebar } = useSidebar();
 
   const handleProfileClick = () => {
     navigate('/profile');
@@ -34,8 +36,16 @@ export const ProfileTopBar = () => {
     <header className="fixed top-0 left-0 right-0 bg-slate-900/80 backdrop-blur-lg border-b border-slate-700/20 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+          {/* Logo and Hamburger Menu */}
           <div className="flex items-center space-x-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleSidebar}
+              className="hidden lg:flex text-slate-400 hover:text-slate-200 p-2"
+            >
+              <Menu className="w-5 h-5" />
+            </Button>
             <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-violet-500 rounded-lg flex items-center justify-center">
               <span className="text-slate-800 text-lg font-bold">♦</span>
             </div>
