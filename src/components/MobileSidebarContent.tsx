@@ -1,8 +1,9 @@
 
 import { 
-  Rss, Flame, Share2, User, Users, HelpCircle
+  Rss, Flame, Share2, User, Users, HelpCircle, X
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 export const MobileSidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
   const location = useLocation();
@@ -22,7 +23,18 @@ export const MobileSidebarContent = ({ onNavigate }: { onNavigate?: () => void }
 
   return (
     <div className="h-full bg-slate-950 text-slate-200">
-      <nav className="px-3 space-y-1 pt-6">
+      <div className="flex justify-end p-4 pb-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onNavigate}
+          className="text-white hover:bg-slate-800/60"
+        >
+          <X className="h-5 w-5" />
+        </Button>
+      </div>
+      
+      <nav className="px-3 space-y-1 pt-4">
         <div 
           onClick={() => handleNavigation('/feed')}
           className={`flex items-center px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-300 ${

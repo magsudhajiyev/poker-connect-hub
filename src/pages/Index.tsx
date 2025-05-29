@@ -21,7 +21,7 @@ const MobileSidebar = () => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="lg:hidden fixed top-4 left-4 z-50 bg-slate-900/80 backdrop-blur-xl border border-slate-700/50">
+        <Button variant="ghost" size="icon" className="lg:hidden fixed top-4 left-4 z-50 bg-slate-900/80 backdrop-blur-xl border border-slate-700/50 text-white hover:bg-slate-800/80">
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>

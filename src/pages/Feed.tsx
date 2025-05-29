@@ -25,7 +25,7 @@ const MobileSidebar = () => {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="lg:hidden">
+        <Button variant="ghost" size="icon" className="lg:hidden text-white hover:bg-slate-800/60">
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
@@ -173,15 +173,6 @@ const FeedContent = () => {
                       </CardContent>
                     </Card>
                   ))}
-
-                  {sharedHands.length === 0 && (
-                    <div className="text-center py-12">
-                      <p className="text-slate-400 mb-4 text-sm sm:text-base">No hands shared yet</p>
-                      <Button onClick={() => navigate('/share-hand')} className="bg-gradient-to-r from-emerald-500 to-violet-500 text-slate-900 text-sm sm:text-base">
-                        Share Your First Hand
-                      </Button>
-                    </div>
-                  )}
 
                   {/* Sample static posts for demo */}
                   {[1, 2].map((item) => (
