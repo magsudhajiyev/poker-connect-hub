@@ -8,6 +8,7 @@ import HeroSection from '@/components/HeroSection';
 import FeaturesSection from '@/components/FeaturesSection';
 import TestimonialsSection from '@/components/TestimonialsSection';
 import StatsSection from '@/components/StatsSection';
+import Footer from '@/components/Footer';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
 import {
   Sheet,
@@ -45,6 +46,7 @@ const IndexContent = () => {
         <TestimonialsSection />
         <StatsSection />
       </main>
+      <Footer />
     </div>
   );
 };
