@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Play, UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -41,26 +40,18 @@ const HeroSection = () => {
             </div>
             <div className="mt-6 sm:mt-8 md:mt-10 flex items-center justify-center lg:justify-start space-x-3">
               <div className="flex -space-x-3 sm:-space-x-4">
-                <img 
-                  src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=48&h=48&fit=crop&crop=face" 
-                  alt="User 1" 
-                  className="w-8 h-8 sm:w-12 sm:h-12 rounded-full border-3 border-slate-900 object-cover shadow-lg"
-                />
-                <img 
-                  src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=48&h=48&fit=crop&crop=face" 
-                  alt="User 2" 
-                  className="w-8 h-8 sm:w-12 sm:h-12 rounded-full border-3 border-slate-900 object-cover shadow-lg"
-                />
-                <img 
-                  src="https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=48&h=48&fit=crop&crop=face" 
-                  alt="User 3" 
-                  className="w-8 h-8 sm:w-12 sm:h-12 rounded-full border-3 border-slate-900 object-cover shadow-lg"
-                />
-                <img 
-                  src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=48&h=48&fit=crop&crop=face" 
-                  alt="User 4" 
-                  className="w-8 h-8 sm:w-12 sm:h-12 rounded-full border-3 border-slate-900 object-cover shadow-lg"
-                />
+                <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full border-3 border-slate-900 bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-xs sm:text-sm shadow-lg">
+                  JD
+                </div>
+                <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full border-3 border-slate-900 bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold text-xs sm:text-sm shadow-lg">
+                  SM
+                </div>
+                <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full border-3 border-slate-900 bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white font-semibold text-xs sm:text-sm shadow-lg">
+                  AL
+                </div>
+                <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full border-3 border-slate-900 bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-semibold text-xs sm:text-sm shadow-lg">
+                  MR
+                </div>
               </div>
               <span className="text-slate-400 text-sm sm:text-[15px]">Join 10,000+ poker players</span>
             </div>
