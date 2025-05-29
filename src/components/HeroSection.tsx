@@ -77,44 +77,62 @@ const HeroSection = () => {
               <div className="absolute -top-10 -left-10 w-32 h-32 sm:w-40 sm:h-40 bg-emerald-500/20 rounded-full blur-3xl"></div>
               <div className="absolute -bottom-10 -right-10 w-32 h-32 sm:w-40 sm:h-40 bg-violet-500/20 rounded-full blur-3xl"></div>
               
-              {/* Pile of overlapping screenshots - made bigger */}
+              {/* Pile of overlapping screenshots - made bigger with feed page added */}
               <div className="relative z-10 max-w-lg mx-auto h-96 sm:h-[26rem] lg:h-[28rem]">
-                {/* Feed page screenshot - bottom layer */}
-                <div className="absolute top-8 left-2 w-80 h-60 sm:w-96 sm:h-72 transform rotate-[-8deg] transition-transform duration-300 hover:rotate-[-4deg] hover:scale-105">
+                {/* Feed page screenshot - bottom layer (new addition) */}
+                <div className="absolute top-16 left-8 w-72 h-52 sm:w-80 sm:h-60 transform rotate-[-12deg] transition-transform duration-300 hover:rotate-[-8deg] hover:scale-105">
                   <div className="w-full h-full bg-slate-900/90 rounded-xl border border-slate-700/30 shadow-2xl overflow-hidden">
-                    <div className="bg-slate-950/80 h-10 flex items-center px-4 border-b border-slate-700/30">
-                      <div className="flex space-x-1.5">
-                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                        <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <div className="bg-slate-950/80 h-8 flex items-center px-3 border-b border-slate-700/30">
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       </div>
-                      <span className="ml-3 text-sm text-slate-400">Feed</span>
+                      <span className="ml-2 text-xs text-slate-400">Feed</span>
                     </div>
-                    <div className="p-4 space-y-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-500 rounded-full"></div>
-                        <div className="h-3 bg-slate-700 rounded w-24"></div>
-                        <div className="h-2 bg-emerald-500 rounded w-12"></div>
+                    <div className="p-3 space-y-2">
+                      {/* Post header */}
+                      <div className="flex items-center space-x-2">
+                        <div className="w-6 h-6 bg-blue-500 rounded-full"></div>
+                        <div className="h-2 bg-slate-700 rounded w-16"></div>
+                        <div className="h-1 bg-emerald-500 rounded w-8 text-xs"></div>
                       </div>
-                      <div className="h-2 bg-slate-700 rounded w-full"></div>
-                      <div className="h-2 bg-slate-700 rounded w-3/4"></div>
-                      <div className="flex space-x-2 mt-3">
-                        <div className="h-1.5 bg-violet-500 rounded w-12"></div>
-                        <div className="h-1.5 bg-emerald-500 rounded w-12"></div>
+                      {/* Post content */}
+                      <div className="h-1.5 bg-slate-700 rounded w-full"></div>
+                      <div className="h-1.5 bg-slate-700 rounded w-2/3"></div>
+                      {/* Cards display */}
+                      <div className="flex space-x-1 my-2">
+                        <div className="w-4 h-6 bg-white rounded text-xs flex items-center justify-center text-black font-bold">A♠</div>
+                        <div className="w-4 h-6 bg-white rounded text-xs flex items-center justify-center text-red-500 font-bold">K♥</div>
                       </div>
-                      <div className="flex justify-between items-center mt-4">
+                      {/* Like and comment section */}
+                      <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-700/30">
                         <div className="flex space-x-3">
-                          <div className="w-6 h-6 bg-slate-600 rounded"></div>
-                          <div className="w-6 h-6 bg-slate-600 rounded"></div>
+                          <div className="flex items-center space-x-1">
+                            <div className="w-3 h-3 bg-red-500 rounded"></div>
+                            <span className="text-xs text-slate-400">24</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <div className="w-3 h-3 bg-blue-500 rounded"></div>
+                            <span className="text-xs text-slate-400">8</span>
+                          </div>
                         </div>
-                        <div className="w-6 h-6 bg-slate-600 rounded"></div>
+                        <div className="w-3 h-3 bg-slate-600 rounded"></div>
+                      </div>
+                      {/* Comments preview */}
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-1">
+                          <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                          <div className="h-1 bg-slate-600 rounded w-12"></div>
+                        </div>
+                        <div className="h-1 bg-slate-600 rounded w-20 ml-4"></div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Hand sharing page screenshot - middle layer */}
-                <div className="absolute top-0 right-0 w-80 h-60 sm:w-96 sm:h-72 transform rotate-[6deg] transition-transform duration-300 hover:rotate-[3deg] hover:scale-105">
+                {/* Hand sharing page screenshot - second layer */}
+                <div className="absolute top-8 left-2 w-80 h-60 sm:w-96 sm:h-72 transform rotate-[-8deg] transition-transform duration-300 hover:rotate-[-4deg] hover:scale-105">
                   <div className="w-full h-full bg-slate-900/90 rounded-xl border border-slate-700/30 shadow-2xl overflow-hidden">
                     <div className="bg-slate-950/80 h-10 flex items-center px-4 border-b border-slate-700/30">
                       <div className="flex space-x-1.5">
@@ -160,8 +178,8 @@ const HeroSection = () => {
                   </div>
                 </div>
 
-                {/* Hand analysis screenshot - top layer */}
-                <div className="absolute top-12 left-6 w-76 h-56 sm:w-88 sm:h-68 transform rotate-[2deg] transition-transform duration-300 hover:rotate-[1deg] hover:scale-105">
+                {/* Hand analysis screenshot - third layer */}
+                <div className="absolute top-0 right-0 w-80 h-60 sm:w-96 sm:h-72 transform rotate-[6deg] transition-transform duration-300 hover:rotate-[3deg] hover:scale-105">
                   <div className="w-full h-full bg-slate-900/90 rounded-xl border border-slate-700/30 shadow-2xl overflow-hidden">
                     <div className="bg-slate-950/80 h-10 flex items-center px-4 border-b border-slate-700/30">
                       <div className="flex space-x-1.5">
@@ -186,6 +204,62 @@ const HeroSection = () => {
                           <div className="h-1.5 bg-violet-500 rounded w-8"></div>
                           <div className="h-1.5 bg-emerald-500 rounded w-8"></div>
                           <div className="h-1.5 bg-blue-500 rounded w-8"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Enhanced feed detail screenshot - top layer */}
+                <div className="absolute top-12 left-6 w-76 h-56 sm:w-88 sm:h-68 transform rotate-[2deg] transition-transform duration-300 hover:rotate-[1deg] hover:scale-105">
+                  <div className="w-full h-full bg-slate-900/90 rounded-xl border border-slate-700/30 shadow-2xl overflow-hidden">
+                    <div className="bg-slate-950/80 h-10 flex items-center px-4 border-b border-slate-700/30">
+                      <div className="flex space-x-1.5">
+                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                        <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      </div>
+                      <span className="ml-3 text-sm text-slate-400">Social Feed</span>
+                    </div>
+                    <div className="p-3">
+                      {/* Post header */}
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="w-6 h-6 bg-emerald-500 rounded-full"></div>
+                        <div className="text-xs text-slate-300 font-medium">ProPlayer23</div>
+                        <div className="text-xs text-slate-500">2h ago</div>
+                      </div>
+                      {/* Post content */}
+                      <div className="text-xs text-slate-200 mb-2">Sick bluff with 72o! Sometimes you gotta trust your reads 🎯</div>
+                      {/* Engagement */}
+                      <div className="flex items-center space-x-4 py-2 border-y border-slate-700/20">
+                        <div className="flex items-center space-x-1">
+                          <div className="w-3 h-3">❤️</div>
+                          <span className="text-xs text-slate-400">156</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <div className="w-3 h-3">💬</div>
+                          <span className="text-xs text-slate-400">23</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <div className="w-3 h-3">🔄</div>
+                          <span className="text-xs text-slate-400">8</span>
+                        </div>
+                      </div>
+                      {/* Comments */}
+                      <div className="space-y-1 mt-2">
+                        <div className="flex items-start space-x-2">
+                          <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                          <div className="flex-1">
+                            <div className="text-xs text-slate-300 font-medium">PokerAce</div>
+                            <div className="text-xs text-slate-400">Nice read! What gave it away?</div>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                          <div className="w-4 h-4 bg-purple-500 rounded-full"></div>
+                          <div className="flex-1">
+                            <div className="text-xs text-slate-300 font-medium">ChipLeader</div>
+                            <div className="text-xs text-slate-400">7-2 is my favorite hand now! 😂</div>
+                          </div>
                         </div>
                       </div>
                     </div>
