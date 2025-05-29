@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProfileTopBar } from '@/components/profile/ProfileTopBar';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
 import { MobileSidebarContent } from '@/components/MobileSidebarContent';
+import { PostComposer } from '@/components/feed/PostComposer';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -77,9 +77,6 @@ const FeedContent = () => {
             <MobileSidebar />
             <h1 className="text-lg font-semibold text-slate-200 lg:hidden">Feed</h1>
           </div>
-          <div className="lg:hidden">
-            {/* Add any additional mobile header content here */}
-          </div>
         </div>
       </div>
       
@@ -100,6 +97,9 @@ const FeedContent = () => {
               <h1 className="text-2xl sm:text-3xl font-bold text-slate-200 mb-2">Your Poker Feed</h1>
               <p className="text-slate-400 text-sm sm:text-base">Stay updated with the latest hands from your community</p>
             </div>
+
+            {/* Post Composer */}
+            <PostComposer />
 
             <div className="space-y-4 sm:space-y-6">
               {sharedHands.map((hand) => (
