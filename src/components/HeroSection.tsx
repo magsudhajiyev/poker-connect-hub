@@ -122,14 +122,24 @@ const HeroSection = () => {
                       {/* Comments preview */}
                       <div className="space-y-2 mt-3">
                         <div className="flex items-start space-x-2">
-                          <div className="w-3 h-3 bg-purple-500 rounded-full flex-shrink-0 mt-0.5"></div>
+                          <div className="w-3 h-3 flex-shrink-0 mt-0.5">
+                            <svg viewBox="0 0 16 16" className="w-full h-full text-blue-400" fill="none" stroke="currentColor" strokeWidth="1.5">
+                              <circle cx="8" cy="5" r="2"/>
+                              <path d="M4 12c0-2.5 1.8-4 4-4s4 1.5 4 4"/>
+                            </svg>
+                          </div>
                           <div className="flex-1">
                             <div className="h-1 bg-slate-600 rounded w-12 mb-1"></div>
                             <div className="h-1 bg-slate-600 rounded w-16"></div>
                           </div>
                         </div>
                         <div className="flex items-start space-x-2">
-                          <div className="w-3 h-3 bg-emerald-500 rounded-full flex-shrink-0 mt-0.5"></div>
+                          <div className="w-3 h-3 flex-shrink-0 mt-0.5">
+                            <svg viewBox="0 0 16 16" className="w-full h-full text-emerald-400" fill="none" stroke="currentColor" strokeWidth="1.5">
+                              <circle cx="8" cy="5" r="2"/>
+                              <path d="M4 12c0-2.5 1.8-4 4-4s4 1.5 4 4"/>
+                            </svg>
+                          </div>
                           <div className="flex-1">
                             <div className="h-1 bg-slate-600 rounded w-10 mb-1"></div>
                             <div className="h-1 bg-slate-600 rounded w-14"></div>
@@ -257,14 +267,24 @@ const HeroSection = () => {
                       {/* Comments */}
                       <div className="space-y-2.5 mt-2">
                         <div className="flex items-start space-x-2">
-                          <div className="w-4 h-4 bg-blue-500 rounded-full flex-shrink-0 mt-0.5"></div>
+                          <div className="w-4 h-4 flex-shrink-0 mt-0.5">
+                            <svg viewBox="0 0 16 16" className="w-full h-full text-blue-400" fill="none" stroke="currentColor" strokeWidth="1.5">
+                              <circle cx="8" cy="5" r="2"/>
+                              <path d="M4 12c0-2.5 1.8-4 4-4s4 1.5 4 4"/>
+                            </svg>
+                          </div>
                           <div className="flex-1">
                             <div className="text-xs text-slate-300 font-medium">PokerAce</div>
                             <div className="text-xs text-slate-400">Nice read! What gave it away?</div>
                           </div>
                         </div>
                         <div className="flex items-start space-x-2">
-                          <div className="w-4 h-4 bg-purple-500 rounded-full flex-shrink-0 mt-0.5"></div>
+                          <div className="w-4 h-4 flex-shrink-0 mt-0.5">
+                            <svg viewBox="0 0 16 16" className="w-full h-full text-purple-400" fill="none" stroke="currentColor" strokeWidth="1.5">
+                              <circle cx="8" cy="5" r="2"/>
+                              <path d="M4 12c0-2.5 1.8-4 4-4s4 1.5 4 4"/>
+                            </svg>
+                          </div>
                           <div className="flex-1">
                             <div className="text-xs text-slate-300 font-medium">ChipLeader</div>
                             <div className="text-xs text-slate-400">7-2 is my favorite hand now! 😂</div>
