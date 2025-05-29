@@ -42,11 +42,11 @@ export const ProfileTopBar = () => {
               variant="ghost" 
               size="icon" 
               onClick={toggleSidebar}
-              className="hidden lg:flex text-slate-400 hover:text-slate-200 p-2"
+              className="hidden lg:flex text-slate-400 hover:text-slate-200 w-10 h-10 flex-shrink-0"
             >
               <Menu className="w-5 h-5" />
             </Button>
-            <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-violet-500 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-violet-500 rounded-lg flex items-center justify-center flex-shrink-0">
               <span className="text-slate-800 text-lg font-bold">♦</span>
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-emerald-500 via-blue-500 to-pink-500 bg-clip-text text-transparent">
@@ -70,13 +70,13 @@ export const ProfileTopBar = () => {
           
           {/* Navigation Icons */}
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200 p-2">
+            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200 w-10 h-10 flex-shrink-0">
               <Home className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200 p-2">
+            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200 w-10 h-10 flex-shrink-0">
               <Share className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200 p-2 relative">
+            <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200 w-10 h-10 flex-shrink-0 relative">
               <Bell className="w-5 h-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full"></span>
             </Button>
@@ -84,7 +84,7 @@ export const ProfileTopBar = () => {
             {/* Profile Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-violet-500/50">
+                <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-violet-500/50 flex-shrink-0">
                   <Avatar className="w-8 h-8 border border-slate-700/50 hover:border-slate-600/50 transition-colors">
                     <AvatarImage src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" />
                     <AvatarFallback>MJ</AvatarFallback>

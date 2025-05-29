@@ -5,18 +5,17 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Check, AlertCircle } from 'lucide-react';
-import { validateCurrentStep } from '@/utils/shareHandValidation';
 
 interface GameSetupStepProps {
   formData: any;
   setFormData: (data: any) => void;
+  showValidationErrors?: boolean;
 }
 
-const GameSetupStep = ({ formData, setFormData }: GameSetupStepProps) => {
-  // Check validation to determine if positions should be highlighted
-  const validation = validateCurrentStep(0, formData);
-  const shouldHighlightHero = !formData.heroPosition && !validation.isValid;
-  const shouldHighlightVillain = !formData.villainPosition && !validation.isValid;
+const GameSetupStep = ({ formData, setFormData, showValidationErrors = false }: GameSetupStepProps) => {
+  // Only highlight if validation errors should be shown AND the field is empty
+  const shouldHighlightHero = showValidationErrors && !formData.heroPosition;
+  const shouldHighlightVillain = showValidationErrors && !formData.villainPosition;
 
   const getStackSizeLabel = () => {
     return formData.gameFormat === 'cash' ? 'Stack Size ($)' : 'Stack Size (BB)';

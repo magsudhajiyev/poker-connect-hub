@@ -8,8 +8,11 @@ import PreflopStep from './PreflopStep';
 import FlopStep from './FlopStep';
 import TurnStep from './TurnStep';
 import RiverStep from './RiverStep';
+import { useState } from 'react';
 
 const ShareHandForm = () => {
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
+  
   const {
     currentStep,
     formData,
@@ -45,7 +48,7 @@ const ShareHandForm = () => {
 
     switch (currentStep) {
       case 0:
-        return <GameSetupStep {...commonProps} />;
+        return <GameSetupStep {...commonProps} showValidationErrors={showValidationErrors} />;
       case 1:
         return <PreflopStep {...commonProps} showPot={showPot} />;
       case 2:
@@ -73,7 +76,7 @@ const ShareHandForm = () => {
           <div className="w-full overflow-x-hidden">
             {renderStepContent()}
           </div>
-          <ShareHandNavigation />
+          <ShareHandNavigation onValidationError={() => setShowValidationErrors(true)} />
         </CardContent>
       </Card>
     </div>
