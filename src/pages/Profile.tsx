@@ -66,9 +66,9 @@ const ProfileContent_Internal = () => {
         </div>
         
         {/* Main Content */}
-        <main className="flex-1 pt-14 lg:pt-0 overflow-hidden">
+        <main className="flex-1 pt-14 lg:pt-16 overflow-hidden">
           <div className="w-full h-full overflow-y-auto">
-            <div className="px-4 lg:px-6 py-4 lg:py-6">
+            <div className="px-4 lg:px-6 py-6 lg:py-8">
               <div className="max-w-6xl mx-auto space-y-4 lg:space-y-6">
                 <ProfileHeader />
                 <ProfileNav activeTab={activeTab} onTabChange={setActiveTab} />
