@@ -52,8 +52,8 @@ const ShareHandContent = () => {
           <GlobalSidebar />
         </div>
 
-        <main className={`flex-1 px-2 sm:px-3 md:px-4 py-3 sm:py-4 md:py-6 transition-all duration-300 overflow-x-hidden ${
-          isCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+        <main className={`w-full px-2 sm:px-3 md:px-4 py-3 sm:py-4 md:py-6 transition-all duration-300 overflow-x-hidden ${
+          isCollapsed ? 'lg:pl-20' : 'lg:pl-68'
         }`}>
           <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4 md:space-y-6 w-full">
             <ShareHandProvider>
