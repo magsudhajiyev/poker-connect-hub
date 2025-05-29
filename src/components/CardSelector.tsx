@@ -20,6 +20,18 @@ const CardSelector = ({ label, value, onChange, disabledCards = [] }: CardSelect
     return disabledCards.includes(card);
   };
 
+  const getSuitColor = (suitSymbol: string, isSelected: boolean) => {
+    const isRedSuit = suitSymbol === '♥' || suitSymbol === '♦';
+    if (isSelected) {
+      return 'bg-emerald-500 text-slate-900';
+    }
+    return isRedSuit ? 'border-slate-700/50 text-red-500' : 'border-slate-700/50 text-slate-300';
+  };
+
+  const getCardDisplayColor = () => {
+    return suit === '♥' || suit === '♦' ? 'text-red-500' : 'text-white';
+  };
+
   return (
     <div className="space-y-3">
       <Label className="text-slate-300">{label}</Label>
@@ -37,7 +49,7 @@ const CardSelector = ({ label, value, onChange, disabledCards = [] }: CardSelect
                 const newCard = card + (suit || '♠');
                 onChange(newCard);
               }}
-              className={`aspect-square ${
+              className={`aspect-square text-lg font-bold ${
                 rank === card 
                   ? 'bg-emerald-500 text-slate-900' 
                   : 'border-slate-700/50 text-slate-300'
@@ -56,7 +68,6 @@ const CardSelector = ({ label, value, onChange, disabledCards = [] }: CardSelect
           {suits.map((suitSymbol) => {
             const potentialCard = (rank || 'A') + suitSymbol;
             const isDisabled = isCardDisabled(potentialCard);
-            const isRedSuit = suitSymbol === '♥' || suitSymbol === '♦';
             
             return (
               <Button
@@ -70,13 +81,7 @@ const CardSelector = ({ label, value, onChange, disabledCards = [] }: CardSelect
                     onChange(newCard);
                   }
                 }}
-                className={`aspect-square ${
-                  suit === suitSymbol 
-                    ? 'bg-emerald-500 text-slate-900' 
-                    : 'border-slate-700/50 text-slate-300'
-                } ${
-                  isRedSuit && suit !== suitSymbol ? 'text-red-500' : ''
-                } ${
+                className={`aspect-square text-2xl font-bold ${getSuitColor(suitSymbol, suit === suitSymbol)} ${
                   isDisabled ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
@@ -90,9 +95,7 @@ const CardSelector = ({ label, value, onChange, disabledCards = [] }: CardSelect
       {/* Selected Card Display */}
       {currentCard && (
         <div className="mt-3">
-          <div className={`inline-flex items-center justify-center w-16 h-20 bg-slate-800 border-2 border-slate-600 rounded-lg text-xl font-bold ${
-            suit === '♥' || suit === '♦' ? 'text-red-500' : 'text-white'
-          }`}>
+          <div className={`inline-flex items-center justify-center w-16 h-20 bg-slate-800 border-2 border-slate-600 rounded-lg text-2xl font-bold ${getCardDisplayColor()}`}>
             {currentCard}
           </div>
         </div>

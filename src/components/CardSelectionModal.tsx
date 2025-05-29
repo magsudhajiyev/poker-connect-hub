@@ -60,6 +60,25 @@ const CardSelectionModal = ({
     return selectedCards.includes(card);
   };
 
+  const getButtonColor = (suit: string, isSelected: boolean, isDisabled: boolean) => {
+    const isRedSuit = suit === '♥' || suit === '♦';
+    
+    if (isDisabled) {
+      return 'bg-slate-700 text-slate-500 border-slate-600 cursor-not-allowed';
+    }
+    
+    if (isSelected) {
+      return isRedSuit ? 'bg-emerald-500 text-red-700 border-emerald-500' : 'bg-emerald-500 text-slate-900 border-emerald-500';
+    }
+    
+    return isRedSuit ? 'border-slate-700/50 text-red-500 hover:bg-slate-800/50' : 'border-slate-700/50 text-slate-300 hover:bg-slate-800/50';
+  };
+
+  const getCardColor = (card: string) => {
+    const suit = card.slice(-1);
+    return suit === '♥' || suit === '♦' ? 'text-red-500' : 'text-white';
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl bg-slate-800 border-slate-700">
@@ -81,7 +100,6 @@ const CardSelectionModal = ({
                     const card = rank + suit;
                     const isSelected = isCardSelected(card);
                     const isDisabled = isCardDisabled(card);
-                    const isRedSuit = suit === '♥' || suit === '♦';
                     
                     return (
                       <Button
@@ -90,17 +108,7 @@ const CardSelectionModal = ({
                         size="sm"
                         onClick={() => handleCardClick(rank, suit)}
                         disabled={isDisabled}
-                        className={`w-8 h-10 text-sm font-bold ${
-                          isSelected 
-                            ? 'bg-emerald-500 text-slate-900 border-emerald-500' 
-                            : isDisabled
-                            ? 'bg-slate-700 text-slate-500 border-slate-600 cursor-not-allowed'
-                            : 'border-slate-700/50 text-slate-300 hover:bg-slate-800/50'
-                        } ${
-                          isRedSuit && !isSelected && !isDisabled ? 'text-red-500' : ''
-                        } ${
-                          isSelected && isRedSuit ? 'text-red-700' : ''
-                        }`}
+                        className={`w-8 h-10 text-lg font-bold ${getButtonColor(suit, isSelected, isDisabled)}`}
                       >
                         {card}
                       </Button>
@@ -111,15 +119,13 @@ const CardSelectionModal = ({
             </div>
           </div>
 
-          {/* Selected Cards Display - Only show actually selected cards, not disabled ones */}
+          {/* Selected Cards Display */}
           {selectedCards.length > 0 && (
             <div className="space-y-2">
               <Label className="text-slate-300">Selected Cards:</Label>
               <div className="flex flex-wrap gap-2">
                 {selectedCards.map((card, index) => (
-                  <div key={index} className={`w-10 h-12 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-sm ${
-                    card.includes('♥') || card.includes('♦') ? 'text-red-500' : 'text-white'
-                  }`}>
+                  <div key={index} className={`w-10 h-12 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-lg ${getCardColor(card)}`}>
                     {card}
                   </div>
                 ))}

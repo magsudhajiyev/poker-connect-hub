@@ -21,6 +21,19 @@ const SingleCardBoard = ({ selectedCards, onCardSelect, title }: SingleCardBoard
     onCardSelect(card);
   };
 
+  const getCardColor = (card: string) => {
+    const suit = card.slice(-1);
+    return suit === '♥' || suit === '♦' ? 'text-red-500' : 'text-white';
+  };
+
+  const getButtonColor = (suit: string, isSelected: boolean) => {
+    const isRedSuit = suit === '♥' || suit === '♦';
+    if (isSelected) {
+      return isRedSuit ? 'bg-emerald-500 text-red-700' : 'bg-emerald-500 text-slate-900';
+    }
+    return isRedSuit ? 'border-slate-700/50 text-red-500 hover:bg-slate-800/50' : 'border-slate-700/50 text-slate-300 hover:bg-slate-800/50';
+  };
+
   return (
     <div className="space-y-4">
       <Label className="text-slate-300 text-lg font-medium">{title}</Label>
@@ -33,7 +46,6 @@ const SingleCardBoard = ({ selectedCards, onCardSelect, title }: SingleCardBoard
               {ranks.map((rank) => {
                 const card = rank + suit;
                 const isSelected = isCardSelected(card);
-                const isRedSuit = suit === '♥' || suit === '♦';
                 
                 return (
                   <Button
@@ -41,15 +53,7 @@ const SingleCardBoard = ({ selectedCards, onCardSelect, title }: SingleCardBoard
                     variant={isSelected ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => handleCardClick(rank, suit)}
-                    className={`w-10 h-12 text-sm font-bold ${
-                      isSelected 
-                        ? 'bg-emerald-500 text-slate-900 border-emerald-500' 
-                        : 'border-slate-700/50 text-slate-300 hover:bg-slate-800/50'
-                    } ${
-                      isRedSuit && !isSelected ? 'text-red-500' : ''
-                    } ${
-                      isSelected && isRedSuit ? 'text-red-700' : ''
-                    }`}
+                    className={`w-10 h-12 text-lg font-bold ${getButtonColor(suit, isSelected)}`}
                   >
                     {card}
                   </Button>
@@ -66,9 +70,7 @@ const SingleCardBoard = ({ selectedCards, onCardSelect, title }: SingleCardBoard
           <Label className="text-slate-300">Selected Cards:</Label>
           <div className="flex flex-wrap gap-2">
             {selectedCards.map((card, index) => (
-              <div key={index} className={`w-12 h-16 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-base ${
-                card.includes('♥') || card.includes('♦') ? 'text-red-500' : 'text-white'
-              }`}>
+              <div key={index} className={`w-12 h-16 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-xl ${getCardColor(card)}`}>
                 {card}
               </div>
             ))}
