@@ -4,11 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Check } from 'lucide-react';
 
-interface PricingSectionProps {
-  onGetStartedClick: () => void;
-}
-
-const PricingSection = ({ onGetStartedClick }: PricingSectionProps) => {
+const PricingSection = () => {
   const [isAnnual, setIsAnnual] = useState(false);
 
   const plans = [
@@ -135,7 +131,6 @@ const PricingSection = ({ onGetStartedClick }: PricingSectionProps) => {
               
               <CardContent className="pt-0">
                 <Button 
-                  onClick={onGetStartedClick}
                   className={`w-full mb-6 ${
                     plan.popular 
                       ? 'bg-gradient-to-r from-emerald-500 to-violet-500 hover:from-emerald-600 hover:to-violet-600 text-slate-900' 

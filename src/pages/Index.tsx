@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Menu } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import FeaturesSection from '@/components/FeaturesSection';
@@ -10,7 +10,6 @@ import TestimonialsSection from '@/components/TestimonialsSection';
 import StatsSection from '@/components/StatsSection';
 import PricingSection from '@/components/PricingSection';
 import Footer from '@/components/Footer';
-import PokerChipConfetti from '@/components/PokerChipConfetti';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
 import {
   Sheet,
@@ -37,34 +36,19 @@ const MobileSidebar = () => {
 
 const IndexContent = () => {
   const { isCollapsed } = useSidebar();
-  const [showConfetti, setShowConfetti] = useState(false);
-  const navigate = useNavigate();
-
-  const handleGetStartedClick = () => {
-    setShowConfetti(true);
-  };
-
-  const handleConfettiComplete = () => {
-    setShowConfetti(false);
-    navigate('/auth');
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       <MobileSidebar />
-      <Header onGetStartedClick={handleGetStartedClick} />
+      <Header />
       <main className="pt-16 sm:pt-20">
-        <HeroSection onGetStartedClick={handleGetStartedClick} />
+        <HeroSection />
         <FeaturesSection />
         <TestimonialsSection />
         <StatsSection />
-        <PricingSection onGetStartedClick={handleGetStartedClick} />
+        <PricingSection />
       </main>
       <Footer />
-      <PokerChipConfetti 
-        isActive={showConfetti} 
-        onComplete={handleConfettiComplete} 
-      />
     </div>
   );
 };
