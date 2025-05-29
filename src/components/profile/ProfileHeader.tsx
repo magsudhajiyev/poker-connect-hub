@@ -2,8 +2,15 @@
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Edit3, Settings, Check, Share, Users, UserPlus, ThumbsUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export const ProfileHeader = () => {
+  const navigate = useNavigate();
+
+  const handleSettingsClick = () => {
+    navigate('/settings');
+  };
+
   return (
     <section className="bg-slate-900/60 rounded-xl border border-slate-700/20 p-4 lg:p-6 overflow-hidden">
       <div className="flex flex-col space-y-4 lg:space-y-6">
@@ -35,7 +42,12 @@ export const ProfileHeader = () => {
                   <Edit3 className="w-4 h-4 mr-2" />
                   Edit Profile
                 </Button>
-                <Button variant="outline" size="icon" className="border-slate-700/30 bg-slate-800/40 self-center sm:self-auto flex-shrink-0">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={handleSettingsClick}
+                  className="border-slate-700/30 bg-slate-800/40 self-center sm:self-auto flex-shrink-0"
+                >
                   <Settings className="w-4 h-4" />
                 </Button>
               </div>

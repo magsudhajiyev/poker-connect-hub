@@ -16,6 +16,8 @@ import ShareHand from "./pages/ShareHand";
 import HandView from "./pages/HandView";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import Error404 from "./pages/Error404";
+import Error500 from "./pages/Error500";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +39,8 @@ const App = () => (
           <Route path="/share-hand" element={<ShareHand />} />
           <Route path="/hand-view" element={<HandView />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/404" element={<Error404 />} />
+          <Route path="/500" element={<Error500 />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

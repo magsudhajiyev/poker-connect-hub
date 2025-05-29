@@ -14,7 +14,36 @@ interface SharedHand {
 }
 
 class SharedHandsStore {
-  private hands: SharedHand[] = [];
+  private hands: SharedHand[] = [
+    {
+      id: 'dummy-hand-1',
+      formData: {
+        title: 'Tricky River Decision with Top Pair',
+        description: 'Had top pair on the river facing a large bet. Villain had been playing tight all session. What would you do in this spot?',
+        gameType: 'nlhe',
+        gameFormat: 'cash',
+        smallBlind: '$1',
+        bigBlind: '$2',
+        heroPosition: 'BB',
+        villainPosition: 'BTN',
+        tableSize: '6-max',
+        stackSize: '100',
+        heroCards: ['As', 'Kh'],
+        board: ['Ah', '7c', '2d', '9s', 'Qh'],
+        preflopAction: 'Call',
+        flopAction: 'Check-Call',
+        turnAction: 'Check-Check',
+        riverAction: 'Check-Bet'
+      },
+      tags: ['Top Pair', 'River Decision', 'Value Bet', 'Bluff Catcher'],
+      authorName: 'Sarah Chen',
+      authorUsername: '@sarahpoker',
+      authorAvatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg',
+      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+      likes: 15,
+      comments: 8
+    }
+  ];
   private listeners: (() => void)[] = [];
 
   addHand(formData: ShareHandFormData, tags: string[]): string {
