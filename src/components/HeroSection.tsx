@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Play, UserPlus } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -59,36 +60,106 @@ const HeroSection = () => {
           <div className="w-full lg:w-1/2 relative">
             <div className="absolute -top-10 -left-10 w-32 h-32 sm:w-40 sm:h-40 bg-emerald-500/20 rounded-full blur-3xl"></div>
             <div className="absolute -bottom-10 -right-10 w-32 h-32 sm:w-40 sm:h-40 bg-violet-500/20 rounded-full blur-3xl"></div>
-            <div className="relative z-10 bg-slate-900/60 rounded-2xl border border-slate-700/20 shadow-2xl overflow-hidden max-w-md mx-auto">
-              <div className="p-4 sm:p-6">
-                <div className="bg-slate-800/50 rounded-xl p-3 sm:p-4 mb-3 sm:mb-4">
-                  <div className="flex items-center justify-between mb-2 sm:mb-3">
-                    <span className="text-xs sm:text-sm text-slate-400">Recent Hand</span>
-                    <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">+$245</span>
+            
+            {/* Pile of overlapping screenshots */}
+            <div className="relative z-10 max-w-md mx-auto h-80 sm:h-96">
+              {/* Feed page screenshot - bottom layer */}
+              <div className="absolute top-8 left-4 w-64 h-48 sm:w-72 sm:h-56 transform rotate-[-8deg] transition-transform duration-300 hover:rotate-[-4deg] hover:scale-105">
+                <div className="w-full h-full bg-slate-900/90 rounded-xl border border-slate-700/30 shadow-2xl overflow-hidden">
+                  <div className="bg-slate-950/80 h-8 flex items-center px-3 border-b border-slate-700/30">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    </div>
+                    <span className="ml-3 text-xs text-slate-400">Feed</span>
                   </div>
-                  <div className="flex justify-center space-x-1 sm:space-x-2 mb-3 sm:mb-4">
-                    <div className="w-10 h-12 sm:w-12 sm:h-16 bg-gradient-to-b from-white to-slate-100 rounded-lg flex items-center justify-center text-slate-900 font-bold text-xs sm:text-sm">A♠</div>
-                    <div className="w-10 h-12 sm:w-12 sm:h-16 bg-gradient-to-b from-white to-slate-100 rounded-lg flex items-center justify-center text-red-500 font-bold text-xs sm:text-sm">K♥</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-xs text-slate-400 mb-2">Board</div>
-                    <div className="flex justify-center space-x-1">
-                      <div className="w-6 h-8 sm:w-8 sm:h-10 bg-gradient-to-b from-white to-slate-100 rounded text-slate-900 text-xs flex items-center justify-center">A♣</div>
-                      <div className="w-6 h-8 sm:w-8 sm:h-10 bg-gradient-to-b from-white to-slate-100 rounded text-red-500 text-xs flex items-center justify-center">K♦</div>
-                      <div className="w-6 h-8 sm:w-8 sm:h-10 bg-gradient-to-b from-white to-slate-100 rounded text-slate-900 text-xs flex items-center justify-center">2♠</div>
-                      <div className="w-6 h-8 sm:w-8 sm:h-10 bg-gradient-to-b from-white to-slate-100 rounded text-red-500 text-xs flex items-center justify-center">7♥</div>
-                      <div className="w-6 h-8 sm:w-8 sm:h-10 bg-gradient-to-b from-white to-slate-100 rounded text-slate-900 text-xs flex items-center justify-center">3♣</div>
+                  <div className="p-3 space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-6 h-6 bg-blue-500 rounded-full"></div>
+                      <div className="h-2 bg-slate-700 rounded w-20"></div>
+                      <div className="h-1.5 bg-emerald-500 rounded w-8"></div>
+                    </div>
+                    <div className="h-1.5 bg-slate-700 rounded w-full"></div>
+                    <div className="h-1.5 bg-slate-700 rounded w-3/4"></div>
+                    <div className="flex space-x-1 mt-2">
+                      <div className="h-1 bg-violet-500 rounded w-8"></div>
+                      <div className="h-1 bg-emerald-500 rounded w-8"></div>
+                    </div>
+                    <div className="flex justify-between items-center mt-3">
+                      <div className="flex space-x-2">
+                        <div className="w-4 h-4 bg-slate-600 rounded"></div>
+                        <div className="w-4 h-4 bg-slate-600 rounded"></div>
+                      </div>
+                      <div className="w-4 h-4 bg-slate-600 rounded"></div>
                     </div>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs sm:text-sm">
-                    <span className="text-slate-400">Position</span>
-                    <span className="text-slate-200">Button</span>
+              </div>
+
+              {/* Hand sharing page screenshot - middle layer */}
+              <div className="absolute top-0 right-2 w-64 h-48 sm:w-72 sm:h-56 transform rotate-[6deg] transition-transform duration-300 hover:rotate-[3deg] hover:scale-105">
+                <div className="w-full h-full bg-slate-900/90 rounded-xl border border-slate-700/30 shadow-2xl overflow-hidden">
+                  <div className="bg-slate-950/80 h-8 flex items-center px-3 border-b border-slate-700/30">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    </div>
+                    <span className="ml-3 text-xs text-slate-400">Share Hand</span>
                   </div>
-                  <div className="flex items-center justify-between text-xs sm:text-sm">
-                    <span className="text-slate-400">Action</span>
-                    <span className="text-emerald-400">Bet $50</span>
+                  <div className="p-3">
+                    <div className="flex justify-center space-x-1 mb-3">
+                      <div className="w-6 h-8 bg-white rounded text-xs flex items-center justify-center text-slate-900">A♠</div>
+                      <div className="w-6 h-8 bg-white rounded text-xs flex items-center justify-center text-red-500">K♥</div>
+                    </div>
+                    <div className="flex justify-center space-x-1 mb-3">
+                      <div className="w-4 h-5 bg-white rounded text-xs flex items-center justify-center">A♣</div>
+                      <div className="w-4 h-5 bg-white rounded text-xs flex items-center justify-center">K♦</div>
+                      <div className="w-4 h-5 bg-white rounded text-xs flex items-center justify-center">2♠</div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex justify-between">
+                        <span className="text-xs text-slate-400">Position</span>
+                        <span className="text-xs text-slate-300">Button</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-xs text-slate-400">Action</span>
+                        <span className="text-xs text-emerald-400">Bet $50</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Third screenshot - top layer */}
+              <div className="absolute top-12 left-8 w-60 h-44 sm:w-68 sm:h-52 transform rotate-[2deg] transition-transform duration-300 hover:rotate-[1deg] hover:scale-105">
+                <div className="w-full h-full bg-slate-900/90 rounded-xl border border-slate-700/30 shadow-2xl overflow-hidden">
+                  <div className="bg-slate-950/80 h-8 flex items-center px-3 border-b border-slate-700/30">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    </div>
+                    <span className="ml-3 text-xs text-slate-400">Hand Analysis</span>
+                  </div>
+                  <div className="p-3">
+                    <div className="bg-slate-800/50 rounded p-2 mb-2">
+                      <div className="text-xs text-emerald-400 mb-1">Recent Hand Analysis</div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-300">Two Pair, Aces up</span>
+                        <span className="text-xs bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">+$245</span>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="h-1.5 bg-slate-700 rounded w-full"></div>
+                      <div className="h-1.5 bg-slate-700 rounded w-2/3"></div>
+                      <div className="flex space-x-1 mt-2">
+                        <div className="h-1 bg-violet-500 rounded w-6"></div>
+                        <div className="h-1 bg-emerald-500 rounded w-6"></div>
+                        <div className="h-1 bg-blue-500 rounded w-6"></div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
