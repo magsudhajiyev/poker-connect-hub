@@ -3,7 +3,11 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Share2 } from 'lucide-react';
 import { useShareHandContext } from './ShareHandProvider';
 
-const ShareHandNavigation = () => {
+interface ShareHandNavigationProps {
+  onValidationError: () => void;
+}
+
+const ShareHandNavigation = ({ onValidationError }: ShareHandNavigationProps) => {
   const { currentStep, steps, prevStep, nextStep, handleSubmit } = useShareHandContext();
 
   return (
@@ -32,7 +36,15 @@ const ShareHandNavigation = () => {
         
         {currentStep < steps.length - 1 ? (
           <Button
-            onClick={nextStep}
+            onClick={() => {
+              // Check if we need to trigger validation error
+              // For now, just call nextStep - validation logic will be in the context
+              try {
+                nextStep();
+              } catch (error) {
+                onValidationError();
+              }
+            }}
             className="bg-gradient-to-r from-emerald-500 to-violet-500 text-slate-900 w-full sm:w-auto h-9"
           >
             Next Step
