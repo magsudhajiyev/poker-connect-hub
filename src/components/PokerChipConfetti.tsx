@@ -1,6 +1,5 @@
 
 import React, { useEffect, useState } from 'react';
-import { PokerChip } from './PokerChips';
 
 interface PokerChipConfettiProps {
   isActive: boolean;
