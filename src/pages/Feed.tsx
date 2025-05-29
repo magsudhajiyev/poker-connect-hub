@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ProfileTopBar } from '@/components/profile/ProfileTopBar';
@@ -11,19 +10,10 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Heart, MessageCircle, Share2, Bookmark, TrendingUp, Menu } from 'lucide-react';
 import { sharedHandsStore, SharedHand } from '@/stores/sharedHandsStore';
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet';
-
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 const MobileSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+  return <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="lg:hidden text-white hover:bg-slate-800/60">
           <Menu className="h-5 w-5" />
@@ -34,53 +24,44 @@ const MobileSidebar = () => {
         <SheetDescription className="sr-only">Main navigation menu for the application</SheetDescription>
         <MobileSidebarContent onNavigate={() => setIsOpen(false)} />
       </SheetContent>
-    </Sheet>
-  );
+    </Sheet>;
 };
-
 const FeedContent = () => {
-  const { isCollapsed } = useSidebar();
+  const {
+    isCollapsed
+  } = useSidebar();
   const navigate = useNavigate();
   const [sharedHands, setSharedHands] = useState<SharedHand[]>([]);
-
   useEffect(() => {
     // Initial load
     setSharedHands(sharedHandsStore.getHands());
-    
+
     // Subscribe to updates
     const unsubscribe = sharedHandsStore.subscribe(() => {
       setSharedHands(sharedHandsStore.getHands());
     });
-
     return unsubscribe;
   }, []);
-
   const handleHandClick = (handId: string) => {
     navigate(`/hand-view?id=${handId}`);
   };
-
   const formatTimeAgo = (date: Date) => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / (1000 * 60));
-    
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
     return `${Math.floor(diffMins / 1440)}d ago`;
   };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex overflow-hidden">
+  return <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex overflow-hidden">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <GlobalSidebar />
       </div>
 
       {/* Main Content Container */}
-      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out overflow-hidden ${
-        isCollapsed ? 'lg:ml-12' : 'lg:ml-64'
-      }`}>
+      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'lg:ml-12' : 'lg:ml-64'}`}>
         {/* Mobile Header */}
         <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/50">
           <div className="flex items-center justify-between h-14 px-4">
@@ -103,19 +84,14 @@ const FeedContent = () => {
               <div className="max-w-4xl mx-auto space-y-4 lg:space-y-6">
                 <div className="text-center mb-6 sm:mb-8">
                   <h1 className="text-2xl sm:text-3xl font-bold text-slate-200 mb-2">Your Poker Feed</h1>
-                  <p className="text-slate-400 text-sm sm:text-base">Stay updated with the latest hands from your community</p>
+                  
                 </div>
 
                 {/* Post Composer */}
                 <PostComposer />
 
                 <div className="space-y-4 sm:space-y-6">
-                  {sharedHands.map((hand) => (
-                    <Card 
-                      key={hand.id} 
-                      className="bg-slate-800/40 border-slate-700/30 cursor-pointer hover:bg-slate-800/60 transition-colors"
-                      onClick={() => handleHandClick(hand.id)}
-                    >
+                  {sharedHands.map(hand => <Card key={hand.id} className="bg-slate-800/40 border-slate-700/30 cursor-pointer hover:bg-slate-800/60 transition-colors" onClick={() => handleHandClick(hand.id)}>
                       <CardHeader className="flex flex-row items-center space-y-0 pb-3">
                         <Avatar className="w-8 h-8 sm:w-10 sm:h-10 mr-2 sm:mr-3 flex-shrink-0">
                           <AvatarImage src={hand.authorAvatar} />
@@ -140,16 +116,12 @@ const FeedContent = () => {
                             {hand.formData.description || `${hand.formData.gameType} hand from ${hand.formData.heroPosition} vs ${hand.formData.villainPosition}`}
                           </p>
                           <div className="flex flex-wrap gap-1 sm:gap-2 mb-3">
-                            {hand.tags.slice(0, 2).map((tag) => (
-                              <Badge key={tag} variant="secondary" className="bg-violet-500/20 text-violet-400 text-xs">
+                            {hand.tags.slice(0, 2).map(tag => <Badge key={tag} variant="secondary" className="bg-violet-500/20 text-violet-400 text-xs">
                                 {tag}
-                              </Badge>
-                            ))}
-                            {hand.tags.length > 2 && (
-                              <Badge variant="secondary" className="bg-slate-500/20 text-slate-400 text-xs">
+                              </Badge>)}
+                            {hand.tags.length > 2 && <Badge variant="secondary" className="bg-slate-500/20 text-slate-400 text-xs">
                                 +{hand.tags.length - 2}
-                              </Badge>
-                            )}
+                              </Badge>}
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
@@ -171,12 +143,10 @@ const FeedContent = () => {
                           </Button>
                         </div>
                       </CardContent>
-                    </Card>
-                  ))}
+                    </Card>)}
 
                   {/* Sample static posts for demo */}
-                  {[1, 2].map((item) => (
-                    <Card key={`sample-${item}`} className="bg-slate-800/40 border-slate-700/30">
+                  {[1, 2].map(item => <Card key={`sample-${item}`} className="bg-slate-800/40 border-slate-700/30">
                       <CardHeader className="flex flex-row items-center space-y-0 pb-3">
                         <Avatar className="w-8 h-8 sm:w-10 sm:h-10 mr-2 sm:mr-3 flex-shrink-0">
                           <AvatarImage src={`https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-${item + 1}.jpg`} />
@@ -215,24 +185,18 @@ const FeedContent = () => {
                           </Button>
                         </div>
                       </CardContent>
-                    </Card>
-                  ))}
+                    </Card>)}
                 </div>
               </div>
             </div>
           </div>
         </main>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 const Feed = () => {
-  return (
-    <SidebarProvider>
+  return <SidebarProvider>
       <FeedContent />
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 };
-
 export default Feed;
