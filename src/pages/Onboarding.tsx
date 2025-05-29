@@ -191,7 +191,7 @@ const Onboarding = () => {
       case 3:
         return <div className="space-y-4 lg:space-y-6">
             <div className="text-center">
-              <div className="text-3xl lg:text-5xl mb-2">{steps[currentStep].emoji}</div>
+              
             </div>
             <div className="grid gap-3 lg:gap-4">
               <div>
