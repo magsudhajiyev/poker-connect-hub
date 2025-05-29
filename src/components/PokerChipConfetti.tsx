@@ -36,10 +36,10 @@ const PokerChipConfetti: React.FC<PokerChipConfettiProps> = ({ isActive, onCompl
         value: chipValues[Math.floor(Math.random() * chipValues.length)],
         x: window.innerWidth / 2,
         y: window.innerHeight / 2,
-        vx: (Math.random() - 0.5) * 20,
-        vy: Math.random() * -15 - 5,
+        vx: (Math.random() - 0.5) * 12, // Reduced from 20 to 12
+        vy: Math.random() * -10 - 3, // Reduced from -15 - 5 to -10 - 3
         rotation: 0,
-        rotationSpeed: (Math.random() - 0.5) * 10,
+        rotationSpeed: (Math.random() - 0.5) * 6, // Reduced from 10 to 6
       });
     }
     
@@ -53,7 +53,7 @@ const PokerChipConfetti: React.FC<PokerChipConfettiProps> = ({ isActive, onCompl
           ...chip,
           x: chip.x + chip.vx,
           y: chip.y + chip.vy,
-          vy: chip.vy + 0.5, // gravity
+          vy: chip.vy + 0.3, // Reduced gravity from 0.5 to 0.3
           rotation: chip.rotation + chip.rotationSpeed,
         }))
       );
@@ -62,12 +62,12 @@ const PokerChipConfetti: React.FC<PokerChipConfettiProps> = ({ isActive, onCompl
 
     animationId = requestAnimationFrame(animate);
 
-    // Clean up after 3 seconds
+    // Clean up after 1.5 seconds (reduced from 3 seconds)
     const timer = setTimeout(() => {
       cancelAnimationFrame(animationId);
       setChips([]);
       onComplete();
-    }, 3000);
+    }, 1500);
 
     return () => {
       cancelAnimationFrame(animationId);
