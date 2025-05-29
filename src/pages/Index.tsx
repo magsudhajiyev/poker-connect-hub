@@ -21,12 +21,12 @@ const MobileSidebar = () => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="lg:hidden fixed top-4 left-4 z-50 bg-slate-950/80 backdrop-blur-xl border border-slate-800/50">
+        <Button variant="ghost" size="icon" className="lg:hidden fixed top-4 left-4 z-50 bg-slate-900/80 backdrop-blur-xl border border-slate-700/50">
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="p-0 w-64">
-        <div className="h-full bg-slate-950">
+        <div className="h-full bg-slate-900">
           <GlobalSidebar />
         </div>
       </SheetContent>
@@ -38,7 +38,7 @@ const IndexContent = () => {
   const { isCollapsed } = useSidebar();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
       <MobileSidebar />
       <Header />
       <main className="pt-16 sm:pt-20">

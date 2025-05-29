@@ -35,7 +35,7 @@ const Header = () => {
   return (
     <>
       <PokerChipConfetti isActive={showConfetti} onComplete={handleConfettiComplete} />
-      <header className="fixed top-0 w-full z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50">
+      <header className="fixed top-0 w-full z-50 bg-slate-900/80 backdrop-blur-xl border-b border-slate-700/50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
             {/* Logo */}
@@ -86,7 +86,7 @@ const Header = () => {
           
           {/* Mobile Menu */}
           {isMenuOpen && (
-            <div className="md:hidden py-4 border-t border-slate-800/50">
+            <div className="md:hidden py-4 border-t border-slate-700/50">
               <nav className="flex flex-col space-y-4">
                 <button onClick={() => handleNavClick('features')} className="text-slate-400 hover:text-slate-200 transition-colors py-2 text-left">Features</button>
                 <button onClick={() => handleNavClick('testimonials')} className="text-slate-400 hover:text-slate-200 transition-colors py-2 text-left">Community</button>
