@@ -11,6 +11,7 @@ export const SidebarNavigation = () => {
   const navigate = useNavigate();
 
   const isActive = (path: string) => {
+    console.log('Checking isActive for path:', path, 'current location:', location.pathname);
     if (path === '/feed' && location.pathname === '/feed') return true;
     if (path === '/profile' && location.pathname === '/profile') return true;
     if (path === '/share-hand' && location.pathname === '/share-hand') return true;
@@ -18,24 +19,27 @@ export const SidebarNavigation = () => {
   };
 
   const handleNavigation = (path: string) => {
+    console.log('Navigating to:', path);
     navigate(path);
   };
+
+  const feedIsActive = isActive('/feed');
+  console.log('Feed is active:', feedIsActive, 'isCollapsed:', isCollapsed);
 
   return (
     <nav className="px-3 space-y-1 pt-6">
       <div 
         onClick={() => handleNavigation('/feed')}
         className={`flex items-center px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-300 ${
-          isActive('/feed') 
+          feedIsActive 
             ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
-            : isCollapsed 
-              ? 'text-zinc-400 hover:bg-zinc-800/40'
-              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
         } ${isCollapsed ? 'justify-center px-2' : ''}`}
+        style={{ display: 'flex' }}
       >
         <Rss className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${
           isCollapsed ? '' : 'mr-3'
-        } ${isActive('/feed') ? 'text-emerald-500' : ''}`} />
+        } ${feedIsActive ? 'text-emerald-500' : ''}`} />
         <span className={`transition-all duration-300 text-sm ${
           isCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
         }`}>Feed</span>
@@ -57,9 +61,7 @@ export const SidebarNavigation = () => {
         className={`flex items-center px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-300 ${
           isActive('/share-hand') 
             ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
-            : isCollapsed 
-              ? 'text-zinc-400 hover:bg-zinc-800/40'
-              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
         } ${isCollapsed ? 'justify-center px-2' : ''}`}
       >
         <Share2 className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${
@@ -75,9 +77,7 @@ export const SidebarNavigation = () => {
         className={`flex items-center px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-300 ${
           isActive('/profile') 
             ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
-            : isCollapsed 
-              ? 'text-zinc-400 hover:bg-zinc-800/40'
-              : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
         } ${isCollapsed ? 'justify-center px-2' : ''}`}
       >
         <User className={`w-5 h-5 flex-shrink-0 transition-all duration-300 ${
