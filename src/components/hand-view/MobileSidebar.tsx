@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
-import { GlobalSidebar } from '@/components/GlobalSidebar';
+import { MobileSidebarContent } from '@/components/MobileSidebarContent';
 import {
   Sheet,
   SheetContent,
@@ -17,9 +17,7 @@ export const MobileSidebar = () => {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="p-0 w-64 overflow-y-auto">
-        <div className="h-full bg-slate-950">
-          <GlobalSidebar />
-        </div>
+        <MobileSidebarContent />
       </SheetContent>
     </Sheet>
   );
