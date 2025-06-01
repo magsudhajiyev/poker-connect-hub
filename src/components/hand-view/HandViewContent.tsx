@@ -69,7 +69,7 @@ export const HandViewContent = () => {
               />
             </div>
 
-            <HandViewComments />
+            <HandViewComments hand={hand} />
           </div>
         </main>
       </div>
