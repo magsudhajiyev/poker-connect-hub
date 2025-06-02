@@ -6,33 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Mail, Lock, User, Menu } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, User } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from '@/components/ui/sheet';
 
-const MobileSidebar = () => {
-  return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="lg:hidden fixed top-4 left-4 z-50 bg-slate-800/90 backdrop-blur-xl border border-slate-700/50 hover:bg-slate-700/90">
-          <Menu className="h-5 w-5" />
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="left" className="p-0 w-64">
-        <div className="h-full bg-slate-950">
-          <GlobalSidebar />
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
-};
-
-const AuthContent = () => {
+const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -54,8 +31,6 @@ const AuthContent = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
-      <MobileSidebar />
-      
       {/* Background Effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl"></div>
@@ -258,14 +233,6 @@ const AuthContent = () => {
         </p>
       </div>
     </div>
-  );
-};
-
-const Auth = () => {
-  return (
-    <SidebarProvider>
-      <AuthContent />
-    </SidebarProvider>
   );
 };
 
