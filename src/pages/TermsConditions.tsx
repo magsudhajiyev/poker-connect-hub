@@ -1,4 +1,3 @@
-
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -14,8 +13,7 @@ const TermsConditions = () => {
       <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-12 relative">
         {/* Back Button */}
         <Link to="/" className="inline-flex items-center text-slate-400 hover:text-slate-200 transition-colors mb-8">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
+          <ArrowLeft className="w-4 h-4" />
         </Link>
 
         {/* Header */}
