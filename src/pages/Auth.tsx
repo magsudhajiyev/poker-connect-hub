@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,8 +39,7 @@ const Auth = () => {
       <div className="w-full max-w-md space-y-6 relative">
         {/* Back Button */}
         <Link to="/" className="inline-flex items-center text-slate-400 hover:text-slate-200 transition-colors">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
+          <ArrowLeft className="w-4 h-4" />
         </Link>
 
         {/* Logo */}
