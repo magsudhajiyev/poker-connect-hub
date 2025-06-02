@@ -1,0 +1,22 @@
+{
+  "name": "PokerConnect - Social Platform for Poker Players",
+  "short_name": "PokerConnect",
+  "description": "Connect, share, and improve your poker game with the ultimate social platform built exclusively for poker players.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "16x16 32x32",
+      "type": "image/x-icon"
+    }
+  ],
+  "theme_color": "#10b981",
+  "background_color": "#0f172a",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
+}
