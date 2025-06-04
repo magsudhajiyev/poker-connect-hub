@@ -14,9 +14,11 @@ export const initializeActions = (
   
   const actionOrder: ActionStep[] = [];
   
-  // For preflop, action starts from UTG (lower position index)
+  // For preflop, action starts from UTG (earliest position = lowest index)
   if (street === 'preflopActions') {
+    // The player with the lower index (earlier position) acts first
     if (heroIndex < villainIndex) {
+      // Hero is in earlier position, acts first
       actionOrder.push({
         playerId: 'hero',
         playerName: 'Hero',
@@ -30,6 +32,7 @@ export const initializeActions = (
         completed: false
       });
     } else {
+      // Villain is in earlier position, acts first
       actionOrder.push({
         playerId: 'villain',
         playerName: 'Villain',
@@ -44,9 +47,10 @@ export const initializeActions = (
       });
     }
   } else {
-    // For post-flop streets (flop, turn, river), action starts from Small Blind
-    // Small Blind is later in the position order, so we need to reverse the logic
-    if (heroIndex > villainIndex) {
+    // For post-flop streets (flop, turn, river), action starts from Small Blind (earliest position = lowest index)
+    // Same logic applies - earliest position acts first
+    if (heroIndex < villainIndex) {
+      // Hero is in earlier position, acts first
       actionOrder.push({
         playerId: 'hero',
         playerName: 'Hero',
@@ -60,6 +64,7 @@ export const initializeActions = (
         completed: false
       });
     } else {
+      // Villain is in earlier position, acts first
       actionOrder.push({
         playerId: 'villain',
         playerName: 'Villain',
