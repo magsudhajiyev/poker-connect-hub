@@ -36,17 +36,29 @@ const ActionFlow = ({
     return formData.gameFormat === 'cash' ? 'Bet Size ($)' : 'Bet Size (BB)';
   };
 
+  // Helper function to get player position
+  const getPlayerPosition = (actionStep: any) => {
+    if (formData.players && formData.players.length > 0) {
+      const player = formData.players.find((p: any) => p.id === actionStep.playerId);
+      return player?.position || '';
+    }
+    
+    // Legacy fallback
+    return actionStep.isHero ? formData.heroPosition : formData.villainPosition;
+  };
+
   return (
     <div className="space-y-2 w-full overflow-x-hidden">
       <h4 className="text-sm font-medium text-slate-300">Action Flow</h4>
       {actions.map((actionStep: any, index: number) => {
         const availableActions = getAvailableActions(street, index);
+        const playerPosition = getPlayerPosition(actionStep);
         
         return (
           <div key={`${actionStep.playerId}-${index}`} className="border border-slate-700/50 rounded-lg p-2 w-full overflow-x-hidden">
             <div className="flex items-center justify-between mb-2">
               <span className={`font-medium text-xs truncate ${actionStep.isHero ? 'text-emerald-400' : 'text-violet-400'}`}>
-                {actionStep.playerName} ({getPositionName(actionStep.isHero ? formData.heroPosition : formData.villainPosition)})
+                {actionStep.playerName} ({getPositionName(playerPosition)})
               </span>
               {actionStep.completed && (
                 <Check className="w-3 h-3 text-emerald-400 shrink-0" />

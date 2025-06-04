@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShareHandFormData, StreetType, ActionStep } from '@/types/shareHand';
@@ -53,7 +54,7 @@ export const useShareHandLogic = () => {
     console.log(`Adding next action step after ${currentAction.action} by ${currentAction.playerName}`);
     
     if (shouldAddNextAction(currentAction.action!)) {
-      const nextActionStep = createNextActionStep(currentAction);
+      const nextActionStep = createNextActionStep(currentAction, formData.players);
       
       // Check if next action already exists
       const nextActionExists = actions.find((action, index) => 
@@ -130,7 +131,7 @@ export const useShareHandLogic = () => {
       
       // Add next action step if this is a bet or raise and it doesn't already exist
       if (shouldAddNextAction(currentAction.action!)) {
-        const nextActionStep = createNextActionStep(currentAction);
+        const nextActionStep = createNextActionStep(currentAction, prev.players);
         
         // Check if next action already exists
         const nextActionExists = updatedActions.find((action, actionIndex) => 
@@ -148,7 +149,26 @@ export const useShareHandLogic = () => {
   };
 
   useEffect(() => {
-    if (formData.heroPosition && formData.villainPosition) {
+    if (formData.players && formData.players.length > 0) {
+      const streets: StreetType[] = [
+        'preflopActions', 'flopActions', 'turnActions', 'riverActions'
+      ];
+      
+      const updatedFormData = { ...formData };
+      let hasChanges = false;
+      
+      streets.forEach(street => {
+        if (updatedFormData[street].length === 0) {
+          updatedFormData[street] = initializeActions(street, formData.heroPosition, formData.villainPosition, formData.players);
+          hasChanges = true;
+        }
+      });
+      
+      if (hasChanges) {
+        setFormData(updatedFormData);
+      }
+    } else if (formData.heroPosition && formData.villainPosition) {
+      // Legacy initialization for hero/villain only
       const streets: StreetType[] = [
         'preflopActions', 'flopActions', 'turnActions', 'riverActions'
       ];
@@ -167,7 +187,7 @@ export const useShareHandLogic = () => {
         setFormData(updatedFormData);
       }
     }
-  }, [formData.heroPosition, formData.villainPosition]);
+  }, [formData.heroPosition, formData.villainPosition, formData.players]);
 
   const addTag = (tag: string) => {
     if (tag && !tags.includes(tag)) {
@@ -226,7 +246,7 @@ export const useShareHandLogic = () => {
     setFormData,
     steps,
     getPositionName,
-    getAvailableActions,
+    getAvailableActions: (street: string, index: number) => getAvailableActions(street as StreetType, index, formData),
     getActionButtonClass,
     updateAction,
     handleBetSizeSelect,

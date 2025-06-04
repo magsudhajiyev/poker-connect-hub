@@ -35,17 +35,9 @@ const GameSetupStep = ({ formData, setFormData, showValidationErrors = false, in
     }
   }, [showValidationErrors, invalidPlayerId]);
 
-  const getStackSizeLabel = () => {
-    return formData.gameFormat === 'cash' ? 'Stack Size ($)' : 'Stack Size (BB)';
-  };
-
-  const getStackSizePlaceholder = () => {
-    return formData.gameFormat === 'cash' ? '200' : '100';
-  };
-
-  // Initialize players if not exists
-  const initializePlayers = () => {
-    if (!formData.players) {
+  // Initialize players if not exists - moved to useEffect to avoid render-time updates
+  useEffect(() => {
+    if (!formData.players || formData.players.length === 0) {
       const heroPlayer: Player = {
         id: 'hero',
         name: 'Hero',
@@ -66,13 +58,18 @@ const GameSetupStep = ({ formData, setFormData, showValidationErrors = false, in
         players: [heroPlayer, villainPlayer]
       });
     }
+  }, [formData.players]);
+
+  const getStackSizeLabel = () => {
+    return formData.gameFormat === 'cash' ? 'Stack Size ($)' : 'Stack Size (BB)';
   };
 
-  // Get players or initialize them
+  const getStackSizePlaceholder = () => {
+    return formData.gameFormat === 'cash' ? '200' : '100';
+  };
+
+  // Get players or return empty array if not initialized yet
   const players: Player[] = formData.players || [];
-  if (players.length === 0) {
-    initializePlayers();
-  }
 
   // Get all available positions (limited to 9 for max poker game size)
   const allPositions = [
@@ -143,7 +140,7 @@ const GameSetupStep = ({ formData, setFormData, showValidationErrors = false, in
     });
   };
 
-  // Check if this player should be highlighted
+  // Check if this player should be highlighted - fixed the logic
   const shouldHighlightPlayer = (playerId: string) => {
     return showValidationErrors && invalidPlayerId === playerId;
   };
