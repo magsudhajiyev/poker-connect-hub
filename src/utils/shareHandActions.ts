@@ -1,3 +1,4 @@
+
 import { ActionStep, StreetType, ShareHandFormData, Player } from '@/types/shareHand';
 import { positionOrder } from './shareHandConstants';
 import { createGameState, updateGameState, GameState } from './gameState';
@@ -283,20 +284,6 @@ export const processAction = (
   }
   
   return newState;
-};
-
-export const removeFoldedPlayerFromFutureStreets = (
-  formData: ShareHandFormData,
-  foldedPlayerId: string
-): ShareHandFormData => {
-  console.log(`Removing folded player ${foldedPlayerId} from future streets`);
-  
-  return {
-    ...formData,
-    flopActions: formData.flopActions.filter(action => action.playerId !== foldedPlayerId),
-    turnActions: formData.turnActions.filter(action => action.playerId !== foldedPlayerId),
-    riverActions: formData.riverActions.filter(action => action.playerId !== foldedPlayerId)
-  };
 };
 
 export const createGameStateFromFormData = (formData: ShareHandFormData, street: StreetType): GameState => {

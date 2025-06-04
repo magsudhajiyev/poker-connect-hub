@@ -6,7 +6,7 @@ import { Check } from 'lucide-react';
 import BetSizingButtons from '@/components/BetSizingButtons';
 import { useGameStateUI } from '@/hooks/useGameStateUI';
 import { GameState } from '@/utils/gameState';
-import { processAction, removeFoldedPlayerFromFutureStreets } from '@/utils/shareHandActions';
+import { processAction } from '@/utils/shareHandActions';
 import { useShareHandContext } from './ShareHandProvider';
 
 interface ActionFlowProps {
@@ -40,7 +40,7 @@ const ActionFlow = ({
   
   // Use game state UI updates
   const { isPlayerActive, isActionAvailable } = useGameStateUI(gameState);
-  const { gameStateUI, setFormData } = useShareHandContext();
+  const { gameStateUI } = useShareHandContext();
 
   const getBetSizeLabel = () => {
     return formData.gameFormat === 'cash' ? 'Bet Size ($)' : 'Bet Size (BB)';
@@ -82,13 +82,6 @@ const ActionFlow = ({
         // Update the game state in the UI hook
         if (gameStateUI.updateGameState) {
           gameStateUI.updateGameState(newState);
-        }
-
-        // If player folded, remove them from future streets
-        if (action === 'fold') {
-          console.log(`Player ${actionStep.playerId} folded, removing from future streets`);
-          const updatedFormData = removeFoldedPlayerFromFutureStreets(formData, actionStep.playerId);
-          setFormData(updatedFormData);
         }
       } catch (error) {
         console.error('Error processing action through game state:', error);
