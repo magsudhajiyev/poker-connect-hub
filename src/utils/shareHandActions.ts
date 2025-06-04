@@ -1,3 +1,4 @@
+
 import { ActionStep, StreetType, ShareHandFormData, Player } from '@/types/shareHand';
 import { positionOrder } from './shareHandConstants';
 import { createGameState, updateGameState, GameState } from './gameState';
@@ -107,26 +108,43 @@ export const getAvailableActions = (street: string, actionIndex: number, allActi
   const position = standardizePosition(currentAction.position || '');
   const round = street.replace('Actions', '');
   
+  // Create a mock game state to determine current bet and action history
   // Get all previous actions in this street to determine current bet state
   const previousActions = allActions.slice(0, actionIndex);
   
-  // Determine if there's been any betting/raising in this round
-  const hasBetting = previousActions.some(action => 
-    action.action === 'bet' || action.action === 'raise'
-  );
+  // Calculate current bet from previous actions
+  let currentBet = 0;
+  if (round === 'preflop') {
+    currentBet = 2; // Start with BB amount for preflop
+  }
   
-  const hasRaise = previousActions.some(action => action.action === 'raise');
+  // Update current bet based on previous actions
+  for (const action of previousActions) {
+    if (action.action === 'bet' || action.action === 'raise') {
+      const betAmount = parseFloat(action.betAmount || '0');
+      if (betAmount > currentBet) {
+        currentBet = betAmount;
+      }
+    }
+  }
+  
+  // Create mock action history for hasRaiseInRound check
+  const actionHistory = previousActions.map(action => ({
+    round,
+    action: action.action,
+    player: action.playerName
+  }));
   
   // Special case for BB preflop when no one has raised
   if (round === 'preflop' && 
       position === 'BB' && 
-      !hasRaise &&
-      !hasBetting) {
+      currentBet === 2 && // BB amount
+      !hasRaiseInRound(actionHistory, round)) {
     return ['check', 'bet'];
   }
   
   // No bet has been made in current round
-  if (!hasBetting) {
+  if (currentBet === 0) {
     return ['check', 'bet'];
   }
   
