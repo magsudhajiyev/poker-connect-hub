@@ -2,6 +2,7 @@
 import { ActionStep, StreetType, ShareHandFormData, Player } from '@/types/shareHand';
 import { positionOrder } from './shareHandConstants';
 import { createGameState, updateGameState, GameState } from './gameState';
+import { standardizePosition, getActionOrder } from './positionMapping';
 
 export const initializeActions = (
   street: StreetType,
@@ -13,22 +14,32 @@ export const initializeActions = (
   
   // If we have players data, use it to create action order for all players
   if (players && players.length > 0) {
-    // Sort players by position order (earliest position first)
-    const sortedPlayers = [...players]
-      .filter(player => player.position) // Only include players with positions
-      .sort((a, b) => {
-        const aIndex = positionOrder.indexOf(a.position);
-        const bIndex = positionOrder.indexOf(b.position);
-        return aIndex - bIndex;
-      });
+    // Filter players with positions and get their UI positions
+    const playersWithPositions = players.filter(player => player.position);
+    const uiPositions = playersWithPositions.map(player => player.position);
     
-    return sortedPlayers.map(player => ({
-      playerId: player.id,
-      playerName: player.name,
-      isHero: player.isHero || false,
-      completed: false,
-      position: player.position
-    }));
+    // Get proper action order using position mapping
+    const isPreflop = street === 'preflopActions';
+    const orderedPositions = getActionOrder(uiPositions, isPreflop);
+    
+    // Create action steps in the correct order
+    const actionSteps: ActionStep[] = [];
+    
+    for (const standardPos of orderedPositions) {
+      // Find the player with this position (convert back to UI position for lookup)
+      const player = playersWithPositions.find(p => standardizePosition(p.position) === standardPos);
+      if (player) {
+        actionSteps.push({
+          playerId: player.id,
+          playerName: player.name,
+          isHero: player.isHero || false,
+          completed: false,
+          position: player.position
+        });
+      }
+    }
+    
+    return actionSteps;
   }
   
   // Fallback to hero/villain only if no players data
