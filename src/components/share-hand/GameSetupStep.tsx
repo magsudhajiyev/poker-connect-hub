@@ -1,14 +1,23 @@
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Check, AlertCircle } from 'lucide-react';
+import { Check, AlertCircle, Plus, Trash2 } from 'lucide-react';
 
 interface GameSetupStepProps {
   formData: any;
   setFormData: (data: any) => void;
   showValidationErrors?: boolean;
+}
+
+interface Player {
+  id: string;
+  name: string;
+  position: string;
+  stackSize: number[];
+  isHero?: boolean;
 }
 
 const GameSetupStep = ({ formData, setFormData, showValidationErrors = false }: GameSetupStepProps) => {
@@ -24,32 +33,107 @@ const GameSetupStep = ({ formData, setFormData, showValidationErrors = false }: 
     return formData.gameFormat === 'cash' ? '200' : '100';
   };
 
-  // Get available positions for villain (exclude hero's position)
-  const getAvailableVillainPositions = () => {
-    const allPositions = [
-      { value: 'utg', label: 'UTG' },
-      { value: 'mp', label: 'Middle Position' },
-      { value: 'co', label: 'Cut Off' },
-      { value: 'btn', label: 'Button' },
-      { value: 'sb', label: 'Small Blind' },
-      { value: 'bb', label: 'Big Blind' }
-    ];
-    
-    return allPositions.filter(pos => pos.value !== formData.heroPosition);
+  // Initialize players if not exists
+  const initializePlayers = () => {
+    if (!formData.players) {
+      const heroPlayer: Player = {
+        id: 'hero',
+        name: 'Hero',
+        position: formData.heroPosition || '',
+        stackSize: formData.heroStackSize || [100],
+        isHero: true
+      };
+      
+      const villainPlayer: Player = {
+        id: 'villain',
+        name: 'Villain',
+        position: formData.villainPosition || '',
+        stackSize: formData.villainStackSize || [100]
+      };
+
+      setFormData({
+        ...formData,
+        players: [heroPlayer, villainPlayer]
+      });
+    }
   };
 
-  // Get available positions for hero (exclude villain's position)
-  const getAvailableHeroPositions = () => {
-    const allPositions = [
-      { value: 'utg', label: 'UTG' },
-      { value: 'mp', label: 'Middle Position' },
-      { value: 'co', label: 'Cut Off' },
-      { value: 'btn', label: 'Button' },
-      { value: 'sb', label: 'Small Blind' },
-      { value: 'bb', label: 'Big Blind' }
-    ];
+  // Get players or initialize them
+  const players: Player[] = formData.players || [];
+  if (players.length === 0) {
+    initializePlayers();
+  }
+
+  // Get all available positions
+  const allPositions = [
+    { value: 'utg', label: 'UTG' },
+    { value: 'utg1', label: 'UTG+1' },
+    { value: 'utg2', label: 'UTG+2' },
+    { value: 'mp', label: 'Middle Position' },
+    { value: 'mp1', label: 'MP+1' },
+    { value: 'mp2', label: 'MP+2' },
+    { value: 'lj', label: 'Lojack' },
+    { value: 'hj', label: 'Hijack' },
+    { value: 'co', label: 'Cut Off' },
+    { value: 'btn', label: 'Button' },
+    { value: 'sb', label: 'Small Blind' },
+    { value: 'bb', label: 'Big Blind' }
+  ];
+
+  // Get available positions for a player (exclude other players' positions)
+  const getAvailablePositions = (currentPlayerId: string) => {
+    const usedPositions = players
+      .filter(p => p.id !== currentPlayerId)
+      .map(p => p.position)
+      .filter(Boolean);
     
-    return allPositions.filter(pos => pos.value !== formData.villainPosition);
+    return allPositions.filter(pos => !usedPositions.includes(pos.value));
+  };
+
+  // Update a player
+  const updatePlayer = (playerId: string, updates: Partial<Player>) => {
+    const updatedPlayers = players.map(player => 
+      player.id === playerId ? { ...player, ...updates } : player
+    );
+    
+    // Also update legacy formData fields for backwards compatibility
+    const heroPlayer = updatedPlayers.find(p => p.isHero);
+    const villainPlayer = updatedPlayers.find(p => p.id === 'villain');
+    
+    setFormData({
+      ...formData,
+      players: updatedPlayers,
+      heroPosition: heroPlayer?.position || '',
+      villainPosition: villainPlayer?.position || '',
+      heroStackSize: heroPlayer?.stackSize || [100],
+      villainStackSize: villainPlayer?.stackSize || [100]
+    });
+  };
+
+  // Add a new player
+  const addPlayer = () => {
+    const newPlayer: Player = {
+      id: `player_${Date.now()}`,
+      name: `Player ${players.length + 1}`,
+      position: '',
+      stackSize: [100]
+    };
+    
+    setFormData({
+      ...formData,
+      players: [...players, newPlayer]
+    });
+  };
+
+  // Remove a player (except hero and villain)
+  const removePlayer = (playerId: string) => {
+    if (playerId === 'hero' || playerId === 'villain') return;
+    
+    const updatedPlayers = players.filter(p => p.id !== playerId);
+    setFormData({
+      ...formData,
+      players: updatedPlayers
+    });
   };
 
   return (
@@ -102,10 +186,10 @@ const GameSetupStep = ({ formData, setFormData, showValidationErrors = false }: 
               <SelectValue placeholder="Select game type" />
             </SelectTrigger>
             <SelectContent className="bg-slate-800 border-slate-700">
-              <SelectItem value="nlhe">No Limit Hold'em</SelectItem>
-              <SelectItem value="plo">Pot Limit Omaha</SelectItem>
-              <SelectItem value="stud">Seven Card Stud</SelectItem>
-              <SelectItem value="mixed">Mixed Games</SelectItem>
+              <SelectItem value="nlhe" className="text-white hover:bg-slate-700 focus:bg-slate-700">No Limit Hold'em</SelectItem>
+              <SelectItem value="plo" className="text-white hover:bg-slate-700 focus:bg-slate-700">Pot Limit Omaha</SelectItem>
+              <SelectItem value="stud" className="text-white hover:bg-slate-700 focus:bg-slate-700">Seven Card Stud</SelectItem>
+              <SelectItem value="mixed" className="text-white hover:bg-slate-700 focus:bg-slate-700">Mixed Games</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -122,101 +206,103 @@ const GameSetupStep = ({ formData, setFormData, showValidationErrors = false }: 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Hero Position and Stack */}
-        <div className="space-y-3">
-          <div className={`${shouldHighlightHero ? 'ring-2 ring-red-500 rounded-md p-2' : ''}`}>
-            <div className="flex items-center gap-2 mb-1">
-              <Label htmlFor="hero-position" className="text-slate-300 text-sm">Hero Position</Label>
-              {shouldHighlightHero && <AlertCircle className="w-4 h-4 text-red-500" />}
-            </div>
-            {shouldHighlightHero && (
-              <p className="text-red-400 text-xs mb-2">Please select Hero position</p>
-            )}
-            <Select 
-              value={formData.heroPosition} 
-              onValueChange={(value) => setFormData({...formData, heroPosition: value})}
-            >
-              <SelectTrigger className={`bg-slate-900/50 border-slate-700/50 text-slate-200 h-9 ${
-                shouldHighlightHero ? 'border-red-500' : ''
-              }`}>
-                <SelectValue placeholder="Select position" />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700">
-                {getAvailableHeroPositions().map((position) => (
-                  <SelectItem key={position.value} value={position.value}>
-                    {position.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <Label className="text-slate-300 mb-2 block text-sm">
-              Hero Stack Size: {formData.gameFormat === 'cash' ? '$' : ''}{formData.heroStackSize[0]}{formData.gameFormat === 'mtt' ? ' BB' : ''}
-            </Label>
-            <Slider
-              value={formData.heroStackSize}
-              onValueChange={(value) => setFormData({...formData, heroStackSize: value})}
-              max={formData.gameFormat === 'cash' ? 1000 : 200}
-              min={1}
-              step={formData.gameFormat === 'cash' ? 10 : 1}
-              className="w-full"
-            />
-            <div className="flex justify-between text-xs text-slate-400 mt-1">
-              <span>1{formData.gameFormat === 'cash' ? '0' : ''}</span>
-              <span>{formData.gameFormat === 'cash' ? '1000' : '200'}{formData.gameFormat === 'mtt' ? ' BB' : ''}</span>
-            </div>
-          </div>
+      {/* Players Section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h4 className="text-sm font-medium text-slate-200">Players</h4>
+          <Button
+            onClick={addPlayer}
+            variant="outline"
+            size="sm"
+            className="border-slate-700/50 text-slate-300 hover:bg-slate-800/50 hover:text-white bg-slate-900/30"
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            Add Player
+          </Button>
         </div>
-        
-        {/* Villain Position and Stack */}
+
         <div className="space-y-3">
-          <div className={`${shouldHighlightVillain ? 'ring-2 ring-red-500 rounded-md p-2' : ''}`}>
-            <div className="flex items-center gap-2 mb-1">
-              <Label htmlFor="villain-position" className="text-slate-300 text-sm">Villain Position</Label>
-              {shouldHighlightVillain && <AlertCircle className="w-4 h-4 text-red-500" />}
+          {players.map((player, index) => (
+            <div key={player.id} className="grid grid-cols-1 lg:grid-cols-3 gap-3 p-3 bg-slate-900/30 rounded-lg border border-slate-700/30">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-slate-300 text-xs">Player Name</Label>
+                  {!player.isHero && player.id !== 'villain' && (
+                    <Button
+                      onClick={() => removePlayer(player.id)}
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-slate-400 hover:text-red-400"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  )}
+                </div>
+                <Input
+                  value={player.name}
+                  onChange={(e) => updatePlayer(player.id, { name: e.target.value })}
+                  className="bg-slate-800/50 border-slate-700/50 text-slate-200 h-8 text-xs"
+                  disabled={player.isHero || player.id === 'villain'}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className={`${
+                  (player.isHero && shouldHighlightHero) || (!player.isHero && player.id === 'villain' && shouldHighlightVillain) 
+                    ? 'ring-2 ring-red-500 rounded-md p-2' : ''
+                }`}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Label className="text-slate-300 text-xs">Position</Label>
+                    {((player.isHero && shouldHighlightHero) || (!player.isHero && player.id === 'villain' && shouldHighlightVillain)) && 
+                      <AlertCircle className="w-3 h-3 text-red-500" />}
+                  </div>
+                  {((player.isHero && shouldHighlightHero) || (!player.isHero && player.id === 'villain' && shouldHighlightVillain)) && (
+                    <p className="text-red-400 text-xs mb-2">Please select position</p>
+                  )}
+                  <Select 
+                    value={player.position} 
+                    onValueChange={(value) => updatePlayer(player.id, { position: value })}
+                  >
+                    <SelectTrigger className={`bg-slate-800/50 border-slate-700/50 text-slate-200 h-8 text-xs ${
+                      (player.isHero && shouldHighlightHero) || (!player.isHero && player.id === 'villain' && shouldHighlightVillain) 
+                        ? 'border-red-500' : ''
+                    }`}>
+                      <SelectValue placeholder="Select position" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                      {getAvailablePositions(player.id).map((position) => (
+                        <SelectItem 
+                          key={position.value} 
+                          value={position.value}
+                          className="text-white hover:bg-slate-700 focus:bg-slate-700"
+                        >
+                          {position.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-slate-300 text-xs">
+                  Stack: {formData.gameFormat === 'cash' ? '$' : ''}{player.stackSize[0]}{formData.gameFormat === 'mtt' ? ' BB' : ''}
+                </Label>
+                <Slider
+                  value={player.stackSize}
+                  onValueChange={(value) => updatePlayer(player.id, { stackSize: value })}
+                  max={formData.gameFormat === 'cash' ? 1000 : 200}
+                  min={1}
+                  step={formData.gameFormat === 'cash' ? 10 : 1}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-slate-400">
+                  <span>1{formData.gameFormat === 'cash' ? '0' : ''}</span>
+                  <span>{formData.gameFormat === 'cash' ? '1000' : '200'}{formData.gameFormat === 'mtt' ? ' BB' : ''}</span>
+                </div>
+              </div>
             </div>
-            {shouldHighlightVillain && (
-              <p className="text-red-400 text-xs mb-2">Please select Villain position</p>
-            )}
-            <Select 
-              value={formData.villainPosition} 
-              onValueChange={(value) => setFormData({...formData, villainPosition: value})}
-            >
-              <SelectTrigger className={`bg-slate-900/50 border-slate-700/50 text-slate-200 h-9 ${
-                shouldHighlightVillain ? 'border-red-500' : ''
-              }`}>
-                <SelectValue placeholder="Select position" />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700">
-                {getAvailableVillainPositions().map((position) => (
-                  <SelectItem key={position.value} value={position.value}>
-                    {position.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <Label className="text-slate-300 mb-2 block text-sm">
-              Villain Stack Size: {formData.gameFormat === 'cash' ? '$' : ''}{formData.villainStackSize[0]}{formData.gameFormat === 'mtt' ? ' BB' : ''}
-            </Label>
-            <Slider
-              value={formData.villainStackSize}
-              onValueChange={(value) => setFormData({...formData, villainStackSize: value})}
-              max={formData.gameFormat === 'cash' ? 1000 : 200}
-              min={1}
-              step={formData.gameFormat === 'cash' ? 10 : 1}
-              className="w-full"
-            />
-            <div className="flex justify-between text-xs text-slate-400 mt-1">
-              <span>1{formData.gameFormat === 'cash' ? '0' : ''}</span>
-              <span>{formData.gameFormat === 'cash' ? '1000' : '200'}{formData.gameFormat === 'mtt' ? ' BB' : ''}</span>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>
