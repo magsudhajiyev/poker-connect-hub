@@ -30,7 +30,7 @@ export const MobileSidebarContent = ({ onNavigate }: { onNavigate?: () => void }
           onClick={onNavigate}
           className="text-white hover:bg-slate-800/60"
         >
-          <X className="h-5 w-5" />
+          <X className="h-5 w-5 text-white" />
         </Button>
       </div>
       

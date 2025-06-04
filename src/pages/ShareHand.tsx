@@ -22,7 +22,7 @@ const MobileSidebar = () => {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="lg:hidden">
+        <Button variant="ghost" size="icon" className="lg:hidden text-white hover:bg-slate-800/60">
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
@@ -54,7 +54,7 @@ const ShareHandContent = () => {
              style={{
                left: window.innerWidth >= 1024 ? (isCollapsed ? '3rem' : '16rem') : '0',
              }}>
-          <div className="flex items-center justify-between h-16 pl-0 pr-4 lg:px-4">
+          <div className="flex items-center justify-between h-16 pl-4 pr-4 lg:px-4">
             <div className="flex items-center space-x-4">
               <MobileSidebar />
               <h1 className="text-lg font-semibold text-slate-200 lg:hidden">Share Hand</h1>
