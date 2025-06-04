@@ -50,11 +50,11 @@ const ShareHandContent = () => {
         isCollapsed ? 'lg:ml-12' : 'lg:ml-64'
       }`}>
         {/* Fixed Header */}
-        <div className="fixed top-0 right-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50 transition-all duration-300 ease-in-out"
+        <div className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50 transition-all duration-300 ease-in-out lg:left-auto"
              style={{
                left: window.innerWidth >= 1024 ? (isCollapsed ? '3rem' : '16rem') : '0',
              }}>
-          <div className="flex items-center justify-between h-16 pl-4 pr-4 lg:px-4">
+          <div className="flex items-center justify-between h-16 px-4">
             <div className="flex items-center space-x-4">
               <MobileSidebar />
               <h1 className="text-lg font-semibold text-slate-200 lg:hidden">Share Hand</h1>
