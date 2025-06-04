@@ -1,6 +1,5 @@
 
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { useShareHandContext } from './ShareHandProvider';
 import ShareHandProgress from './ShareHandProgress';
 import ShareHandNavigation from './ShareHandNavigation';
 import GameSetupStep from './GameSetupStep';
@@ -10,26 +9,47 @@ import TurnStep from './TurnStep';
 import RiverStep from './RiverStep';
 import { useState } from 'react';
 
-const ShareHandForm = () => {
+interface ShareHandFormProps {
+  currentStep: number;
+  setCurrentStep: (step: number) => void;
+  tags: string[];
+  formData: any;
+  setFormData: (data: any) => void;
+  steps: any[];
+  getPositionName: (position: string) => string;
+  getAvailableActions: (street: string, index: number) => string[];
+  getActionButtonClass: (action: string, isSelected: boolean) => string;
+  updateAction: (street: any, index: number, action: string, betAmount?: string) => void;
+  handleBetSizeSelect: (street: any, index: number, amount: string) => void;
+  calculatePotSize: () => number;
+  getCurrencySymbol: () => string;
+  getAllSelectedCards: () => string[];
+  addTag: (tag: string) => void;
+  removeTag: (tag: string) => void;
+  nextStep: () => void;
+  prevStep: () => void;
+  handleSubmit: () => void;
+  invalidPlayerId: string | undefined;
+}
+
+const ShareHandForm = ({
+  currentStep,
+  formData,
+  setFormData,
+  tags,
+  addTag,
+  removeTag,
+  getPositionName,
+  getCurrencySymbol,
+  calculatePotSize,
+  getAvailableActions,
+  updateAction,
+  getActionButtonClass,
+  handleBetSizeSelect,
+  getAllSelectedCards,
+  invalidPlayerId
+}: ShareHandFormProps) => {
   const [showValidationErrors, setShowValidationErrors] = useState(false);
-  
-  const {
-    currentStep,
-    formData,
-    setFormData,
-    tags,
-    addTag,
-    removeTag,
-    getPositionName,
-    getCurrencySymbol,
-    calculatePotSize,
-    getAvailableActions,
-    updateAction,
-    getActionButtonClass,
-    handleBetSizeSelect,
-    getAllSelectedCards,
-    invalidPlayerId
-  } = useShareHandContext();
 
   const renderStepContent = () => {
     const showPot = currentStep > 0;
