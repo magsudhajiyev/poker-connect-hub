@@ -28,7 +28,8 @@ const ShareHandForm = () => {
     updateAction,
     getActionButtonClass,
     handleBetSizeSelect,
-    getAllSelectedCards
+    getAllSelectedCards,
+    gameStateUI
   } = useShareHandContext();
 
   // Reset validation errors when step changes
@@ -49,7 +50,8 @@ const ShareHandForm = () => {
       updateAction,
       getActionButtonClass,
       handleBetSizeSelect,
-      getAllSelectedCards
+      getAllSelectedCards,
+      gameState: gameStateUI.gameState
     };
 
     switch (currentStep) {

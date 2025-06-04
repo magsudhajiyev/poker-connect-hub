@@ -1,8 +1,9 @@
 
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 import { useShareHandLogic } from '@/hooks/useShareHandLogic';
+import { useGameStateUI } from '@/hooks/useGameStateUI';
 
-const ShareHandContext = createContext<ReturnType<typeof useShareHandLogic> | null>(null);
+const ShareHandContext = createContext<ReturnType<typeof useShareHandLogic> & { gameStateUI: ReturnType<typeof useGameStateUI> } | null>(null);
 
 export const useShareHandContext = () => {
   const context = useContext(ShareHandContext);
@@ -18,9 +19,26 @@ interface ShareHandProviderProps {
 
 export const ShareHandProvider = ({ children }: ShareHandProviderProps) => {
   const shareHandLogic = useShareHandLogic();
+  const gameStateUI = useGameStateUI();
+
+  // Initialize game when players are set up
+  useEffect(() => {
+    const { formData } = shareHandLogic;
+    
+    if (formData.players && formData.players.length >= 2 && 
+        formData.smallBlind && formData.bigBlind &&
+        formData.players.every(p => p.position)) {
+      
+      const smallBlind = parseFloat(formData.smallBlind);
+      const bigBlind = parseFloat(formData.bigBlind);
+      
+      console.log('Initializing game with players:', formData.players);
+      gameStateUI.initializeGame(formData.players, smallBlind, bigBlind);
+    }
+  }, [shareHandLogic.formData.players, shareHandLogic.formData.smallBlind, shareHandLogic.formData.bigBlind]);
 
   return (
-    <ShareHandContext.Provider value={shareHandLogic}>
+    <ShareHandContext.Provider value={{ ...shareHandLogic, gameStateUI }}>
       {children}
     </ShareHandContext.Provider>
   );
