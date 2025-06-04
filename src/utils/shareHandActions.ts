@@ -117,6 +117,146 @@ function getNextToAct(gameState: GameState) {
   return activePlayers[0].position; // Fallback
 }
 
+function isRoundComplete(gameState: GameState): boolean {
+  const { activePlayers, currentBet, lastAggressor, actionHistory, round } = gameState;
+  
+  // If only one player remains, round is complete
+  if (activePlayers.length <= 1) {
+    return true;
+  }
+  
+  // Get actions for current round
+  const currentRoundActions = actionHistory.filter(action => action.round === round);
+  
+  // Check if all players have acted
+  const playersWhoActed = new Set(currentRoundActions.map(action => action.player));
+  
+  // For each active player, check if they've acted appropriately
+  for (const player of activePlayers) {
+    const playerPosition = player.position;
+    const playerActions = currentRoundActions.filter(action => action.player === playerPosition);
+    
+    if (playerActions.length === 0) {
+      // Player hasn't acted yet
+      return false;
+    }
+    
+    const lastAction = playerActions[playerActions.length - 1];
+    
+    // If there's a current bet and player hasn't called/raised/folded, round not complete
+    if (currentBet > 0 && lastAction.action === 'check') {
+      return false;
+    }
+    
+    // If player made the last aggression, check if all others have responded
+    if (lastAggressor === playerPosition) {
+      // Check if all other players have acted since this aggression
+      const otherPlayers = activePlayers.filter(p => p.position !== playerPosition);
+      for (const otherPlayer of otherPlayers) {
+        const otherPlayerActions = currentRoundActions.filter(action => 
+          action.player === otherPlayer.position
+        );
+        if (otherPlayerActions.length === 0) {
+          return false;
+        }
+      }
+    }
+  }
+  
+  return true;
+}
+
+function advanceToNextRound(gameState: GameState): void {
+  const roundOrder: Array<'preflop' | 'flop' | 'turn' | 'river' | 'showdown'> = 
+    ['preflop', 'flop', 'turn', 'river', 'showdown'];
+  
+  const currentIndex = roundOrder.indexOf(gameState.round);
+  if (currentIndex < roundOrder.length - 1) {
+    gameState.round = roundOrder[currentIndex + 1];
+  }
+  
+  // Reset betting for new round
+  gameState.currentBet = 0;
+  gameState.lastAggressor = '';
+  
+  // Set first to act (SB or first active player)
+  const postFlopOrder = ['sb', 'bb', 'utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn'];
+  for (const position of postFlopOrder) {
+    const standardPos = standardizePosition(position);
+    const player = gameState.activePlayers.find(p => 
+      standardizePosition(p.position) === standardPos
+    );
+    if (player) {
+      gameState.currentPosition = player.position;
+      break;
+    }
+  }
+}
+
+export const processAction = (
+  gameState: GameState, 
+  playerPosition: string, 
+  action: string, 
+  amount: number = 0
+): GameState => {
+  // Clone game state to avoid mutation
+  const newState = JSON.parse(JSON.stringify(gameState));
+  
+  // Add action to history
+  newState.actionHistory.push({
+    round: newState.round,
+    player: playerPosition,
+    action: action,
+    amount: amount
+  });
+  
+  // Update game state based on action
+  switch (action) {
+    case 'fold':
+      // Remove player from active players
+      newState.activePlayers = newState.activePlayers.filter(
+        p => p.position !== playerPosition
+      );
+      break;
+      
+    case 'check':
+      // No change to pot or bet
+      break;
+      
+    case 'call':
+      // Add call amount to pot
+      newState.pot += amount;
+      break;
+      
+    case 'bet':
+    case 'raise':
+      // Add bet amount to pot
+      newState.pot += amount;
+      // Update current bet
+      newState.currentBet = amount;
+      // Update last aggressor
+      newState.lastAggressor = playerPosition;
+      break;
+  }
+  
+  // Check if round is complete
+  if (isRoundComplete(newState)) {
+    // If only one player remains, game is over
+    if (newState.activePlayers.length === 1) {
+      newState.round = 'showdown';
+      return newState;
+    }
+    
+    // Advance to next round
+    advanceToNextRound(newState);
+  } else {
+    // Set next player to act
+    newState.currentPosition = getNextToAct(newState);
+  }
+  
+  return newState;
+};
+
 export const createGameStateFromFormData = (formData: ShareHandFormData, street: StreetType): GameState => {
   const round = street.replace('Actions', '') as 'preflop' | 'flop' | 'turn' | 'river';
   const smallBlind = parseFloat(formData.smallBlind) || 1;
