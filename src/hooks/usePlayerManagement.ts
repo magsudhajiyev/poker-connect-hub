@@ -14,7 +14,7 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
         id: 'hero',
         name: 'Hero',
         position: formData.heroPosition || '',
-        stackSize: formData.heroStackSize || [100],
+        stackSize: [...(formData.heroStackSize || [100])],
         isHero: true
       };
       
@@ -22,7 +22,7 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
         id: 'villain',
         name: 'Villain 1',
         position: formData.villainPosition || '',
-        stackSize: formData.villainStackSize || [100]
+        stackSize: [...(formData.villainStackSize || [100])]
       };
 
       setFormData({
@@ -43,7 +43,12 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
     
     const updatedPlayers = players.map(player => {
       if (player.id === playerId) {
-        const updatedPlayer = { ...player, ...updates };
+        const updatedPlayer = { 
+          ...player, 
+          ...updates,
+          // Ensure stackSize is always a new array to prevent circular references
+          stackSize: updates.stackSize ? [...updates.stackSize] : [...player.stackSize]
+        };
         console.log(`Player ${playerId} updated:`, updatedPlayer);
         return updatedPlayer;
       }
@@ -61,8 +66,8 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
       players: updatedPlayers,
       heroPosition: heroPlayer?.position || '',
       villainPosition: villainPlayer?.position || '',
-      heroStackSize: heroPlayer?.stackSize || [100],
-      villainStackSize: villainPlayer?.stackSize || [100]
+      heroStackSize: heroPlayer?.stackSize ? [...heroPlayer.stackSize] : [100],
+      villainStackSize: villainPlayer?.stackSize ? [...villainPlayer.stackSize] : [100]
     };
     
     console.log('Player updated, triggering action reinitialization:', newFormData);

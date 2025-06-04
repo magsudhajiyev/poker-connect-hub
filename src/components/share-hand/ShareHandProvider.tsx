@@ -25,15 +25,31 @@ export const ShareHandProvider = ({ children }: ShareHandProviderProps) => {
   useEffect(() => {
     const { formData } = shareHandLogic;
     
-    if (formData.players && formData.players.length >= 2 && 
-        formData.smallBlind && formData.bigBlind &&
-        formData.players.every(p => p.position)) {
+    // Validate all required data is present
+    const hasValidPlayers = formData.players && formData.players.length >= 2;
+    const hasValidBlinds = formData.smallBlind && formData.bigBlind;
+    const allPlayersHavePositions = formData.players?.every(p => p.position && p.position.trim() !== '');
+    
+    if (hasValidPlayers && hasValidBlinds && allPlayersHavePositions) {
       
       const smallBlind = parseFloat(formData.smallBlind);
       const bigBlind = parseFloat(formData.bigBlind);
       
-      console.log('Initializing game with players:', formData.players);
-      gameStateUI.initializeGame(formData.players, smallBlind, bigBlind);
+      // Validate numeric values
+      if (!isNaN(smallBlind) && !isNaN(bigBlind) && smallBlind > 0 && bigBlind > 0) {
+        console.log('Initializing game with players:', formData.players);
+        console.log('Small blind:', smallBlind, 'Big blind:', bigBlind);
+        gameStateUI.initializeGame(formData.players, smallBlind, bigBlind);
+      } else {
+        console.warn('Invalid blind values:', { smallBlind, bigBlind });
+      }
+    } else {
+      console.log('Game initialization skipped - missing requirements:', {
+        hasValidPlayers,
+        hasValidBlinds,
+        allPlayersHavePositions,
+        players: formData.players
+      });
     }
   }, [shareHandLogic.formData.players, shareHandLogic.formData.smallBlind, shareHandLogic.formData.bigBlind, gameStateUI]);
 

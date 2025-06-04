@@ -40,11 +40,14 @@ export const useActionManagement = (
       const updatedActions = [...prev[street]];
       const previousAction = updatedActions[index].action;
       
+      // Ensure betAmount is properly handled
+      const validBetAmount = betAmount !== undefined ? betAmount : updatedActions[index].betAmount || '';
+      
       // Update the current action
       updatedActions[index] = {
         ...updatedActions[index],
         action,
-        betAmount: betAmount || updatedActions[index].betAmount,
+        betAmount: validBetAmount,
         completed: action !== 'bet' && action !== 'raise'
       };
       
@@ -80,6 +83,13 @@ export const useActionManagement = (
 
   const handleBetSizeSelect = (street: StreetType, index: number, amount: string) => {
     console.log(`Bet size selected: ${amount} for index ${index} on ${street}`);
+    
+    // Validate amount is a valid number
+    const numericAmount = parseFloat(amount);
+    if (isNaN(numericAmount) || numericAmount <= 0) {
+      console.warn('Invalid bet amount selected:', amount);
+      return;
+    }
     
     setFormData((prev: ShareHandFormData) => {
       const updatedActions = [...prev[street]];

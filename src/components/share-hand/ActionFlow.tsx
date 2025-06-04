@@ -47,36 +47,60 @@ const ActionFlow = ({
   };
 
   const handleActionClick = (actionStep: any, index: number, action: string) => {
+    // Validate action step and position
+    if (!actionStep || !actionStep.position) {
+      console.warn('Invalid action step or missing position:', actionStep);
+      updateAction(street, index, action);
+      return;
+    }
+
     // If we have a game state and this is the current player, process the action through game state
     if (gameState && isPlayerActive(actionStep.position)) {
       let amount = 0;
       
       if (action === 'bet' || action === 'raise') {
-        const betInput = actionStep.betAmount;
-        amount = parseFloat(betInput) || 0;
+        const betInput = actionStep.betAmount || '';
+        amount = parseFloat(betInput);
         
-        if (amount <= 0) {
+        if (isNaN(amount) || amount <= 0) {
           alert('Please enter a valid bet amount');
           return;
         }
       } else if (action === 'call') {
-        amount = gameState.currentBet;
+        amount = gameState.currentBet || 0;
       }
       
-      // Process action through game state
-      const newState = processAction(
-        gameState,
-        actionStep.position,
-        action,
-        amount
-      );
-      
-      // Update the game state in the UI hook
-      gameStateUI.updateGameState?.(newState);
+      try {
+        // Process action through game state
+        const newState = processAction(
+          gameState,
+          actionStep.position,
+          action,
+          amount
+        );
+        
+        // Update the game state in the UI hook
+        if (gameStateUI.updateGameState) {
+          gameStateUI.updateGameState(newState);
+        }
+      } catch (error) {
+        console.error('Error processing action through game state:', error);
+      }
     }
     
     // Also update the form data action (existing functionality)
     updateAction(street, index, action);
+  };
+
+  const handleBetInputChange = (actionStep: any, index: number, value: string) => {
+    // Validate input is numeric
+    const numericValue = parseFloat(value);
+    if (value !== '' && (isNaN(numericValue) || numericValue < 0)) {
+      console.warn('Invalid bet input:', value);
+      return;
+    }
+    
+    updateAction(street, index, actionStep.action!, value);
   };
 
   return (
@@ -160,9 +184,12 @@ const ActionFlow = ({
                     <Label className="text-slate-300 text-xs">{getBetSizeLabel()}</Label>
                     <Input
                       value={actionStep.betAmount || ''}
-                      onChange={(e) => updateAction(street, index, actionStep.action!, e.target.value)}
+                      onChange={(e) => handleBetInputChange(actionStep, index, e.target.value)}
                       placeholder="2.5"
                       className="bg-slate-900/50 border-slate-700/50 text-slate-200 text-xs h-8 mt-1 w-full bet-size-input"
+                      type="number"
+                      min="0"
+                      step="0.1"
                     />
                   </div>
                 </div>
