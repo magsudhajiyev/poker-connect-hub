@@ -9,7 +9,7 @@ import PreflopStep from './PreflopStep';
 import FlopStep from './FlopStep';
 import TurnStep from './TurnStep';
 import RiverStep from './RiverStep';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const ShareHandForm = () => {
   const [showValidationErrors, setShowValidationErrors] = useState(false);
@@ -30,6 +30,11 @@ const ShareHandForm = () => {
     handleBetSizeSelect,
     getAllSelectedCards
   } = useShareHandContext();
+
+  // Reset validation errors when step changes
+  useEffect(() => {
+    setShowValidationErrors(false);
+  }, [currentStep]);
 
   const renderStepContent = () => {
     const showPot = currentStep > 1;
