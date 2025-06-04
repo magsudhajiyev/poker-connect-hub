@@ -1,12 +1,9 @@
 
 import { Progress } from '@/components/ui/progress';
+import { useShareHandContext } from './ShareHandProvider';
 
-interface ShareHandProgressProps {
-  currentStep: number;
-  steps: any[];
-}
-
-const ShareHandProgress = ({ currentStep, steps }: ShareHandProgressProps) => {
+const ShareHandProgress = () => {
+  const { currentStep, steps } = useShareHandContext();
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (

@@ -17,7 +17,6 @@ export const useShareHandLogic = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [tags, setTags] = useState<string[]>(['bluff', 'tournament']);
-  const [invalidPlayerId, setInvalidPlayerId] = useState<string | undefined>();
   
   const [formData, setFormData] = useState<ShareHandFormData>({
     gameType: '',
@@ -53,7 +52,7 @@ export const useShareHandLogic = () => {
     console.log(`Adding next action step after ${currentAction.action} by ${currentAction.playerName}`);
     
     if (shouldAddNextAction(currentAction.action!)) {
-      const nextActionStep = createNextActionStep(currentAction, formData.players);
+      const nextActionStep = createNextActionStep(currentAction);
       
       // Check if next action already exists
       const nextActionExists = actions.find((action, index) => 
@@ -130,7 +129,7 @@ export const useShareHandLogic = () => {
       
       // Add next action step if this is a bet or raise and it doesn't already exist
       if (shouldAddNextAction(currentAction.action!)) {
-        const nextActionStep = createNextActionStep(currentAction, prev.players);
+        const nextActionStep = createNextActionStep(currentAction);
         
         // Check if next action already exists
         const nextActionExists = updatedActions.find((action, actionIndex) => 
@@ -148,35 +147,7 @@ export const useShareHandLogic = () => {
   };
 
   useEffect(() => {
-    if (formData.players && formData.players.length > 0) {
-      const playersWithPositions = formData.players.filter(p => p.position);
-      
-      // Only initialize actions if we have players with positions
-      if (playersWithPositions.length > 0) {
-        const streets: StreetType[] = [
-          'preflopActions', 'flopActions', 'turnActions', 'riverActions'
-        ];
-        
-        const updatedFormData = { ...formData };
-        let hasChanges = false;
-        
-        streets.forEach(street => {
-          if (updatedFormData[street].length === 0) {
-            const initializedActions = initializeActions(street, formData.heroPosition, formData.villainPosition, formData.players);
-            // Only set actions if we got valid results
-            if (initializedActions.length > 0) {
-              updatedFormData[street] = initializedActions;
-              hasChanges = true;
-            }
-          }
-        });
-        
-        if (hasChanges) {
-          setFormData(updatedFormData);
-        }
-      }
-    } else if (formData.heroPosition && formData.villainPosition) {
-      // Legacy initialization for hero/villain only
+    if (formData.heroPosition && formData.villainPosition) {
       const streets: StreetType[] = [
         'preflopActions', 'flopActions', 'turnActions', 'riverActions'
       ];
@@ -195,7 +166,7 @@ export const useShareHandLogic = () => {
         setFormData(updatedFormData);
       }
     }
-  }, [formData.heroPosition, formData.villainPosition, formData.players]);
+  }, [formData.heroPosition, formData.villainPosition]);
 
   const addTag = (tag: string) => {
     if (tag && !tags.includes(tag)) {
@@ -210,13 +181,9 @@ export const useShareHandLogic = () => {
   const nextStep = () => {
     const validation = validateCurrentStep(currentStep, formData);
     if (!validation.isValid) {
-      // Set the invalid player ID for highlighting
-      setInvalidPlayerId(validation.invalidPlayerId);
+      alert(validation.message); // Simple alert for now, could be replaced with toast
       return;
     }
-    
-    // Clear any previous validation errors
-    setInvalidPlayerId(undefined);
     
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -224,9 +191,6 @@ export const useShareHandLogic = () => {
   };
 
   const prevStep = () => {
-    // Clear validation errors when going back
-    setInvalidPlayerId(undefined);
-    
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
@@ -235,7 +199,7 @@ export const useShareHandLogic = () => {
   const handleSubmit = () => {
     const validation = validateCurrentStep(currentStep, formData);
     if (!validation.isValid) {
-      setInvalidPlayerId(validation.invalidPlayerId);
+      alert(validation.message);
       return;
     }
     
@@ -254,7 +218,7 @@ export const useShareHandLogic = () => {
     setFormData,
     steps,
     getPositionName,
-    getAvailableActions: (street: string, index: number) => getAvailableActions(street as StreetType, index, formData),
+    getAvailableActions,
     getActionButtonClass,
     updateAction,
     handleBetSizeSelect,
@@ -265,7 +229,6 @@ export const useShareHandLogic = () => {
     removeTag,
     nextStep,
     prevStep,
-    handleSubmit,
-    invalidPlayerId
+    handleSubmit
   };
 };
