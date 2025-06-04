@@ -5,15 +5,19 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ShareHandFormData, StreetType } from '@/types/shareHand';
 import SelectedCardsDisplay from './SelectedCardsDisplay';
 import ActionDisplay from './ActionDisplay';
+import { useGameStateUI } from '@/hooks/useGameStateUI';
+import { GameState } from '@/utils/gameState';
 
 interface HandReplayProps {
   formData: ShareHandFormData;
   getPositionName: (position: string) => string;
   getCurrencySymbol: () => string;
+  gameState?: GameState | null;
 }
 
-const HandReplay = ({ formData, getPositionName, getCurrencySymbol }: HandReplayProps) => {
+const HandReplay = ({ formData, getPositionName, getCurrencySymbol, gameState }: HandReplayProps) => {
   const [currentStreet, setCurrentStreet] = useState<number>(0);
+  const { isRoundActive } = useGameStateUI(gameState);
   
   const streets = [
     { 
@@ -81,20 +85,31 @@ const HandReplay = ({ formData, getPositionName, getCurrencySymbol }: HandReplay
         </Button>
         
         <div className="flex space-x-2">
-          {streets.map((street, index) => (
-            <Button
-              key={street.id}
-              size="sm"
-              onClick={() => goToStreet(index)}
-              className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors ${
-                index === currentStreet
-                  ? 'bg-gradient-to-r from-emerald-500 to-violet-500 text-slate-900'
-                  : 'bg-slate-900/60 border border-slate-700/50 text-slate-300 hover:bg-slate-800/50'
-              }`}
-            >
-              {street.title}
-            </Button>
-          ))}
+          {streets.map((street, index) => {
+            const isGameStateActive = isRoundActive(street.id);
+            const isCurrentStreet = index === currentStreet;
+            
+            return (
+              <Button
+                key={street.id}
+                size="sm"
+                onClick={() => goToStreet(index)}
+                className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors round-tab ${
+                  isCurrentStreet
+                    ? 'bg-gradient-to-r from-emerald-500 to-violet-500 text-slate-900'
+                    : isGameStateActive
+                    ? 'bg-emerald-900/60 border border-emerald-500/50 text-emerald-300 hover:bg-emerald-800/50'
+                    : 'bg-slate-900/60 border border-slate-700/50 text-slate-300 hover:bg-slate-800/50'
+                }`}
+                data-round={street.id}
+              >
+                {street.title}
+                {isGameStateActive && !isCurrentStreet && (
+                  <span className="ml-1 text-emerald-400">●</span>
+                )}
+              </Button>
+            );
+          })}
         </div>
         
         <Button

@@ -4,6 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Check } from 'lucide-react';
 import BetSizingButtons from '@/components/BetSizingButtons';
+import { useGameStateUI } from '@/hooks/useGameStateUI';
+import { GameState } from '@/utils/gameState';
 
 interface ActionFlowProps {
   street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions';
@@ -15,6 +17,7 @@ interface ActionFlowProps {
   updateAction: (street: any, index: number, action: string, betAmount?: string) => void;
   getActionButtonClass: (action: string, isSelected: boolean) => string;
   handleBetSizeSelect: (street: any, index: number, amount: string) => void;
+  gameState?: GameState | null;
 }
 
 const ActionFlow = ({ 
@@ -26,11 +29,15 @@ const ActionFlow = ({
   getAvailableActions, 
   updateAction, 
   getActionButtonClass, 
-  handleBetSizeSelect 
+  handleBetSizeSelect,
+  gameState 
 }: ActionFlowProps) => {
   const actions = formData[street];
   const potSize = calculatePotSize();
   const currentStackSize = formData.heroStackSize[0];
+  
+  // Use game state UI updates
+  const { isPlayerActive, isActionAvailable } = useGameStateUI(gameState);
 
   const getBetSizeLabel = () => {
     return formData.gameFormat === 'cash' ? 'Bet Size ($)' : 'Bet Size (BB)';
@@ -49,11 +56,25 @@ const ActionFlow = ({
           playerPosition = player?.position || '';
         }
         
+        // Check if this player is currently active
+        const isCurrentPlayer = isPlayerActive(playerPosition);
+        
         return (
-          <div key={`${actionStep.playerId}-${index}`} className="border border-slate-700/50 rounded-lg p-2 w-full overflow-x-hidden">
+          <div 
+            key={`${actionStep.playerId}-${index}`} 
+            className={`border rounded-lg p-2 w-full overflow-x-hidden transition-colors ${
+              isCurrentPlayer 
+                ? 'border-emerald-500/50 bg-emerald-950/20' 
+                : 'border-slate-700/50'
+            }`}
+            data-position={playerPosition}
+          >
             <div className="flex items-center justify-between mb-2">
-              <span className={`font-medium text-xs truncate ${actionStep.isHero ? 'text-emerald-400' : 'text-violet-400'}`}>
+              <span className={`font-medium text-xs truncate ${
+                actionStep.isHero ? 'text-emerald-400' : 'text-violet-400'
+              } ${isCurrentPlayer ? 'font-bold' : ''}`}>
                 {actionStep.playerName} ({getPositionName(playerPosition)})
+                {isCurrentPlayer && <span className="ml-1 text-emerald-400">●</span>}
               </span>
               {actionStep.completed && (
                 <Check className="w-3 h-3 text-emerald-400 shrink-0" />
@@ -64,16 +85,25 @@ const ActionFlow = ({
               <div className="w-full">
                 <Label className="text-slate-300 text-xs">Action</Label>
                 <div className="grid grid-cols-2 gap-1 mt-1 w-full">
-                  {availableActions.map((action) => (
-                    <Button
-                      key={action}
-                      size="sm"
-                      onClick={() => updateAction(street, index, action)}
-                      className={`${getActionButtonClass(action, actionStep.action === action)} text-xs h-7 truncate`}
-                    >
-                      {action.charAt(0).toUpperCase() + action.slice(1)}
-                    </Button>
-                  ))}
+                  {availableActions.map((action) => {
+                    const isAvailable = isCurrentPlayer ? isActionAvailable(action) : true;
+                    return (
+                      <Button
+                        key={action}
+                        size="sm"
+                        onClick={() => updateAction(street, index, action)}
+                        disabled={!isAvailable && isCurrentPlayer}
+                        className={`${getActionButtonClass(action, actionStep.action === action)} text-xs h-7 truncate transition-opacity ${
+                          !isAvailable && isCurrentPlayer ? 'opacity-50' : ''
+                        }`}
+                        style={{ 
+                          display: isCurrentPlayer && !isAvailable ? 'none' : 'block' 
+                        }}
+                      >
+                        {action.charAt(0).toUpperCase() + action.slice(1)}
+                      </Button>
+                    );
+                  })}
                 </div>
               </div>
               
