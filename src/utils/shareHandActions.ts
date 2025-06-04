@@ -120,11 +120,12 @@ export const getAvailableActions = (street: string, actionIndex: number, allActi
     availableActions = ['fold', 'call', 'raise'];
   } else {
     // If no betting yet
-    if (isFirstAction || previousActions.every(action => action.action === 'check')) {
-      // First to act or everyone has checked - can check or bet
+    if (isFirstAction) {
+      // First to act - can check or bet
       availableActions = ['check', 'bet'];
     } else {
-      // Someone has acted but no betting - can check, bet, or fold if facing action
+      // Not first to act and no betting - can check or bet
+      // After the first action, players can also check
       availableActions = ['check', 'bet'];
     }
   }
