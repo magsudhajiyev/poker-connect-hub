@@ -1,4 +1,3 @@
-
 import { ActionStep, StreetType, ShareHandFormData, Player } from '@/types/shareHand';
 import { positionOrder } from './shareHandConstants';
 import { createGameState, updateGameState, GameState } from './gameState';
@@ -86,6 +85,12 @@ export const initializeActions = (
   return actionOrder;
 };
 
+function hasRaiseInRound(actionHistory: any[], round: string): boolean {
+  return actionHistory.some(action => 
+    action.round === round && action.action === 'raise'
+  );
+}
+
 export const createGameStateFromFormData = (formData: ShareHandFormData, street: StreetType): GameState => {
   const round = street.replace('Actions', '') as 'preflop' | 'flop' | 'turn' | 'river';
   const smallBlind = parseFloat(formData.smallBlind) || 1;
@@ -95,62 +100,38 @@ export const createGameStateFromFormData = (formData: ShareHandFormData, street:
 };
 
 export const getAvailableActions = (street: string, actionIndex: number, allActions: ActionStep[]): string[] => {
-  // Get all previous actions in this street
+  // Get the current action step to determine player position
+  const currentAction = allActions[actionIndex];
+  if (!currentAction) return [];
+  
+  const position = standardizePosition(currentAction.position || '');
+  const round = street.replace('Actions', '');
+  
+  // Get all previous actions in this street to determine current bet state
   const previousActions = allActions.slice(0, actionIndex);
   
-  // Special handling for preflop - big blind creates a betting situation
-  if (street === 'preflopActions') {
-    // Check if there's been any betting action beyond the big blind
-    const hasBetting = previousActions.some(action => 
-      action.action === 'bet' || action.action === 'raise'
-    );
-    
-    // Check if this is the first action in the street
-    const isFirstAction = actionIndex === 0;
-    
-    if (hasBetting) {
-      // If there's been betting beyond the blinds, player can fold, call, or raise
-      return ['fold', 'call', 'raise'];
-    } else {
-      // For the first action preflop, player faces the big blind
-      if (isFirstAction || previousActions.every(action => action.action === 'fold' || action.action === 'call')) {
-        // First to act or facing only folds/calls - can fold, call (match BB), or raise
-        return ['fold', 'call', 'raise'];
-      } else {
-        // If someone has checked (shouldn't happen preflop but just in case)
-        return ['fold', 'call', 'raise'];
-      }
-    }
-  }
-  
-  // Post-flop logic (flop, turn, river)
-  // Check if there's been any betting action
+  // Determine if there's been any betting/raising in this round
   const hasBetting = previousActions.some(action => 
     action.action === 'bet' || action.action === 'raise'
   );
   
-  // Check if this is the first action in the street
-  const isFirstAction = actionIndex === 0;
+  const hasRaise = previousActions.some(action => action.action === 'raise');
   
-  // Base actions
-  let availableActions: string[] = [];
-  
-  if (hasBetting) {
-    // If there's been betting, player can fold, call, or raise
-    availableActions = ['fold', 'call', 'raise'];
-  } else {
-    // If no betting yet
-    if (isFirstAction) {
-      // First to act - can check or bet
-      availableActions = ['check', 'bet'];
-    } else {
-      // Not first to act and no betting - can check or bet
-      // After the first action, players can also check
-      availableActions = ['check', 'bet'];
-    }
+  // Special case for BB preflop when no one has raised
+  if (round === 'preflop' && 
+      position === 'BB' && 
+      !hasRaise &&
+      !hasBetting) {
+    return ['check', 'bet'];
   }
   
-  return availableActions;
+  // No bet has been made in current round
+  if (!hasBetting) {
+    return ['check', 'bet'];
+  }
+  
+  // Bet has been made
+  return ['fold', 'call', 'raise'];
 };
 
 export const getActionButtonClass = (action: string, isSelected: boolean): string => {
