@@ -14,32 +14,65 @@ export const initializeActions = (
   
   const actionOrder: ActionStep[] = [];
   
-  if (heroIndex < villainIndex) {
-    actionOrder.push({
-      playerId: 'hero',
-      playerName: 'Hero',
-      isHero: true,
-      completed: false
-    });
-    actionOrder.push({
-      playerId: 'villain',
-      playerName: 'Villain',
-      isHero: false,
-      completed: false
-    });
+  // For preflop, action starts from UTG (lower position index)
+  if (street === 'preflopActions') {
+    if (heroIndex < villainIndex) {
+      actionOrder.push({
+        playerId: 'hero',
+        playerName: 'Hero',
+        isHero: true,
+        completed: false
+      });
+      actionOrder.push({
+        playerId: 'villain',
+        playerName: 'Villain',
+        isHero: false,
+        completed: false
+      });
+    } else {
+      actionOrder.push({
+        playerId: 'villain',
+        playerName: 'Villain',
+        isHero: false,
+        completed: false
+      });
+      actionOrder.push({
+        playerId: 'hero',
+        playerName: 'Hero',
+        isHero: true,
+        completed: false
+      });
+    }
   } else {
-    actionOrder.push({
-      playerId: 'villain',
-      playerName: 'Villain',
-      isHero: false,
-      completed: false
-    });
-    actionOrder.push({
-      playerId: 'hero',
-      playerName: 'Hero',
-      isHero: true,
-      completed: false
-    });
+    // For post-flop streets (flop, turn, river), action starts from Small Blind
+    // Small Blind is later in the position order, so we need to reverse the logic
+    if (heroIndex > villainIndex) {
+      actionOrder.push({
+        playerId: 'hero',
+        playerName: 'Hero',
+        isHero: true,
+        completed: false
+      });
+      actionOrder.push({
+        playerId: 'villain',
+        playerName: 'Villain',
+        isHero: false,
+        completed: false
+      });
+    } else {
+      actionOrder.push({
+        playerId: 'villain',
+        playerName: 'Villain',
+        isHero: false,
+        completed: false
+      });
+      actionOrder.push({
+        playerId: 'hero',
+        playerName: 'Hero',
+        isHero: true,
+        completed: false
+      });
+    }
   }
   
   return actionOrder;
