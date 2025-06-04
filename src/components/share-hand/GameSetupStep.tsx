@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Check } from 'lucide-react';
 
 interface GameSetupStepProps {
@@ -62,35 +63,19 @@ const GameSetupStep = ({ formData, setFormData, showValidationErrors = false }: 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div>
-          <Label htmlFor="game-type" className="text-slate-300 text-sm">Game Type</Label>
-          <Select value={formData.gameType} onValueChange={(value) => setFormData({...formData, gameType: value})}>
-            <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200 h-9">
-              <SelectValue placeholder="Select game type" />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-700">
-              <SelectItem value="nlhe" className="text-white hover:bg-slate-700 focus:bg-slate-700">No Limit Hold'em</SelectItem>
-              <SelectItem value="plo" className="text-white hover:bg-slate-700 focus:bg-slate-700">Pot Limit Omaha</SelectItem>
-              <SelectItem value="stud" className="text-white hover:bg-slate-700 focus:bg-slate-700">Seven Card Stud</SelectItem>
-              <SelectItem value="mixed" className="text-white hover:bg-slate-700 focus:bg-slate-700">Mixed Games</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div>
-          <Label htmlFor="table-size" className="text-slate-300 text-sm">Table Size</Label>
-          <Select value={formData.tableSize} onValueChange={(value) => setFormData({...formData, tableSize: value})}>
-            <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200 h-9">
-              <SelectValue placeholder="Select table size" />
-            </SelectTrigger>
-            <SelectContent className="bg-slate-800 border-slate-700">
-              <SelectItem value="6max" className="text-white hover:bg-slate-700 focus:bg-slate-700">6-Max</SelectItem>
-              <SelectItem value="9max" className="text-white hover:bg-slate-700 focus:bg-slate-700">9-Max</SelectItem>
-              <SelectItem value="heads-up" className="text-white hover:bg-slate-700 focus:bg-slate-700">Heads-Up</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      <div>
+        <Label htmlFor="game-type" className="text-slate-300 text-sm">Game Type</Label>
+        <Select value={formData.gameType} onValueChange={(value) => setFormData({...formData, gameType: value})}>
+          <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200 h-9">
+            <SelectValue placeholder="Select game type" />
+          </SelectTrigger>
+          <SelectContent className="bg-slate-800 border-slate-700">
+            <SelectItem value="nlhe" className="text-white hover:bg-slate-700 focus:bg-slate-700">No Limit Hold'em</SelectItem>
+            <SelectItem value="plo" className="text-white hover:bg-slate-700 focus:bg-slate-700">Pot Limit Omaha</SelectItem>
+            <SelectItem value="stud" className="text-white hover:bg-slate-700 focus:bg-slate-700">Seven Card Stud</SelectItem>
+            <SelectItem value="mixed" className="text-white hover:bg-slate-700 focus:bg-slate-700">Mixed Games</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Blind Levels Section */}
@@ -119,6 +104,21 @@ const GameSetupStep = ({ formData, setFormData, showValidationErrors = false }: 
             />
           </div>
         </div>
+
+        {/* Ante Checkbox - Only show for MTT */}
+        {formData.gameFormat === 'mtt' && (
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="ante"
+              checked={formData.ante || false}
+              onCheckedChange={(checked) => setFormData({...formData, ante: checked})}
+              className="border-slate-700/50 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
+            />
+            <Label htmlFor="ante" className="text-slate-300 text-sm">
+              Big Blind Ante
+            </Label>
+          </div>
+        )}
       </div>
 
       {/* Stack Size - Default for all players */}

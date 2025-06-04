@@ -42,7 +42,7 @@ export const useShareHandLogic = () => {
     description: '',
     smallBlind: '',
     bigBlind: '',
-    tableSize: ''
+    ante: false
   });
 
   const addNextActionStep = (street: StreetType, currentIndex: number) => {

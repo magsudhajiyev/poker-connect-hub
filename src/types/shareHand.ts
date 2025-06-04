@@ -32,7 +32,7 @@ export interface ShareHandFormData {
   description: string;
   smallBlind: string;
   bigBlind: string;
-  tableSize: string;
+  ante: boolean;
 }
 
 export type StreetType = 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions';
