@@ -22,7 +22,7 @@ const GameSetupStep = ({ formData, setFormData, showValidationErrors = false }: 
 
   return (
     <div className="space-y-4">
-      <h3 className="text-base font-medium text-slate-200 mb-3">Game Setup</h3>
+      <h3 className="text-base font-medium text-slate-200 mb-3">Setup</h3>
       
       {/* Game Format Selection with Toggle Buttons */}
       <div>
