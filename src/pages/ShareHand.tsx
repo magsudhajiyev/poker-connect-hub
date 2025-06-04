@@ -2,7 +2,6 @@
 import { ProfileTopBar } from '@/components/profile/ProfileTopBar';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
 import { MobileSidebarContent } from '@/components/MobileSidebarContent';
-import { ShareHandProvider } from '@/components/share-hand/ShareHandProvider';
 import ShareHandHeader from '@/components/share-hand/ShareHandHeader';
 import ShareHandForm from '@/components/share-hand/ShareHandForm';
 import { Button } from '@/components/ui/button';
@@ -15,6 +14,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet';
+import { useShareHandLogic } from '@/hooks/useShareHandLogic';
 
 const MobileSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,6 +37,7 @@ const MobileSidebar = () => {
 
 const ShareHandContent = () => {
   const { isCollapsed } = useSidebar();
+  const shareHandLogic = useShareHandLogic();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex">
@@ -71,10 +72,8 @@ const ShareHandContent = () => {
         <main className="flex-1 pt-16">
           <div className="w-full px-2 sm:px-3 md:px-4 py-3 sm:py-4 md:py-6">
             <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4 md:space-y-6">
-              <ShareHandProvider>
-                <ShareHandHeader />
-                <ShareHandForm />
-              </ShareHandProvider>
+              <ShareHandHeader />
+              <ShareHandForm {...shareHandLogic} />
             </div>
           </div>
         </main>
