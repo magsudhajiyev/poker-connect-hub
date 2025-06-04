@@ -24,19 +24,13 @@ export const validateCurrentStep = (
     return { isValid: true, message: '' };
   }
   
-  // Validate positions step (step 1)
+  // Validate positions step (step 1) - now silent validation for UI highlighting
   if (currentStep === 1) {
-    if (!formData.heroPosition || formData.heroPosition.trim() === '') {
+    if (!formData.heroPosition || formData.heroPosition.trim() === '' ||
+        !formData.villainPosition || formData.villainPosition.trim() === '') {
       return {
         isValid: false,
-        message: 'Please select Hero position before proceeding.'
-      };
-    }
-    
-    if (!formData.villainPosition || formData.villainPosition.trim() === '') {
-      return {
-        isValid: false,
-        message: 'Please select Villain position before proceeding.'
+        message: '' // No alert message, just UI highlighting
       };
     }
     

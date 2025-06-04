@@ -10,6 +10,19 @@ interface ShareHandNavigationProps {
 const ShareHandNavigation = ({ onValidationError }: ShareHandNavigationProps) => {
   const { currentStep, steps, prevStep, nextStep, handleSubmit } = useShareHandContext();
 
+  const handleNextStep = () => {
+    const previousStep = currentStep;
+    nextStep();
+    
+    // If step didn't advance, it means validation failed
+    // Use setTimeout to check after state update
+    setTimeout(() => {
+      if (currentStep === previousStep) {
+        onValidationError();
+      }
+    }, 0);
+  };
+
   return (
     <div className="flex flex-col sm:flex-row justify-between gap-2 pt-3">
       <Button
@@ -36,15 +49,7 @@ const ShareHandNavigation = ({ onValidationError }: ShareHandNavigationProps) =>
         
         {currentStep < steps.length - 1 ? (
           <Button
-            onClick={() => {
-              // Check if we need to trigger validation error
-              // For now, just call nextStep - validation logic will be in the context
-              try {
-                nextStep();
-              } catch (error) {
-                onValidationError();
-              }
-            }}
+            onClick={handleNextStep}
             className="bg-gradient-to-r from-emerald-500 to-violet-500 text-slate-900 w-full sm:w-auto h-9"
           >
             Next Step
