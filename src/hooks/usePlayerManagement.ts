@@ -40,14 +40,17 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
     const heroPlayer = updatedPlayers.find(p => p.isHero);
     const villainPlayer = updatedPlayers.find(p => p.id === 'villain');
     
-    setFormData({
+    const newFormData = {
       ...formData,
       players: updatedPlayers,
       heroPosition: heroPlayer?.position || '',
       villainPosition: villainPlayer?.position || '',
       heroStackSize: heroPlayer?.stackSize || [100],
       villainStackSize: villainPlayer?.stackSize || [100]
-    });
+    };
+    
+    console.log('Player updated, triggering action reinitialization:', newFormData);
+    setFormData(newFormData);
   };
 
   // Add a new player
@@ -59,10 +62,13 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
       stackSize: [100]
     };
     
-    setFormData({
+    const newFormData = {
       ...formData,
       players: [...players, newPlayer]
-    });
+    };
+    
+    console.log('New player added, triggering action reinitialization:', newFormData);
+    setFormData(newFormData);
   };
 
   // Remove a player (except hero and villain)
@@ -70,10 +76,13 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
     if (playerId === 'hero' || playerId === 'villain') return;
     
     const updatedPlayers = players.filter(p => p.id !== playerId);
-    setFormData({
+    const newFormData = {
       ...formData,
       players: updatedPlayers
-    });
+    };
+    
+    console.log('Player removed, triggering action reinitialization:', newFormData);
+    setFormData(newFormData);
   };
 
   return {

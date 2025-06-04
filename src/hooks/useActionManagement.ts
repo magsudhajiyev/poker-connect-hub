@@ -121,18 +121,29 @@ export const useActionManagement = (
       let hasChanges = false;
       
       streets.forEach(street => {
-        if (updatedFormData[street].length === 0) {
-          updatedFormData[street] = initializeActions(
-            street, 
-            formData.heroPosition, 
-            formData.villainPosition,
-            formData.players
-          );
+        // Always reinitialize actions when players change
+        const newActions = initializeActions(
+          street, 
+          formData.heroPosition, 
+          formData.villainPosition,
+          formData.players
+        );
+        
+        // Only update if the action structure has changed (different number of players or different players)
+        const currentActions = updatedFormData[street];
+        const currentPlayerIds = currentActions.map(a => a.playerId);
+        const newPlayerIds = newActions.map(a => a.playerId);
+        
+        if (currentPlayerIds.length !== newPlayerIds.length || 
+            !currentPlayerIds.every((id, index) => id === newPlayerIds[index])) {
+          console.log(`Reinitializing ${street} actions with new player structure`);
+          updatedFormData[street] = newActions;
           hasChanges = true;
         }
       });
       
       if (hasChanges) {
+        console.log('Updated actions for all streets with new players:', updatedFormData);
         setFormData(updatedFormData);
       }
     }

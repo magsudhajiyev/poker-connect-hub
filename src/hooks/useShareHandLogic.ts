@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShareHandFormData } from '@/types/shareHand';
@@ -44,8 +45,9 @@ export const useShareHandLogic = () => {
 
   // Initialize actions when positions are set or players change
   useEffect(() => {
+    console.log('FormData players changed, reinitializing actions:', formData.players);
     initializeActionsForPositions();
-  }, [formData.heroPosition, formData.villainPosition, formData.players]);
+  }, [formData.heroPosition, formData.villainPosition, JSON.stringify(formData.players)]);
 
   const addTag = (tag: string) => {
     if (tag && !tags.includes(tag)) {
