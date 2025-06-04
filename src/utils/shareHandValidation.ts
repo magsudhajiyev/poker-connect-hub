@@ -7,6 +7,25 @@ export const validateCurrentStep = (
 ): ValidationResult => {
   // Validate game setup step (step 0)
   if (currentStep === 0) {
+    if (!formData.gameFormat || formData.gameFormat.trim() === '') {
+      return {
+        isValid: false,
+        message: 'Please select a game format before proceeding.'
+      };
+    }
+    
+    if (!formData.gameType || formData.gameType.trim() === '') {
+      return {
+        isValid: false,
+        message: 'Please select a game type before proceeding.'
+      };
+    }
+    
+    return { isValid: true, message: '' };
+  }
+  
+  // Validate positions step (step 1)
+  if (currentStep === 1) {
     if (!formData.heroPosition || formData.heroPosition.trim() === '') {
       return {
         isValid: false,
@@ -24,7 +43,8 @@ export const validateCurrentStep = (
     return { isValid: true, message: '' };
   }
   
-  const streetName = ['preflopActions', 'flopActions', 'turnActions', 'riverActions'][currentStep - 1] as StreetType;
+  // For preflop, flop, turn, river steps (steps 2-5)
+  const streetName = ['preflopActions', 'flopActions', 'turnActions', 'riverActions'][currentStep - 2] as StreetType;
   const actions = formData[streetName];
   
   // Check if any bet/raise action is missing bet amount

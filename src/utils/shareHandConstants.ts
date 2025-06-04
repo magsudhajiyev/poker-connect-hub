@@ -15,6 +15,7 @@ export const positionNames: { [key: string]: string } = {
 
 export const steps = [
   { id: 'game-setup', title: 'Game Setup', description: 'Basic game information' },
+  { id: 'positions', title: 'Positions', description: 'Player positions and stacks' },
   { id: 'preflop', title: 'Preflop', description: 'Preflop action and betting' },
   { id: 'flop', title: 'Flop', description: 'Flop cards and action' },
   { id: 'turn', title: 'Turn', description: 'Turn card and action' },

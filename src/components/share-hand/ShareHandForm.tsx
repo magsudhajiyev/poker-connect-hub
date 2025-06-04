@@ -4,6 +4,7 @@ import { useShareHandContext } from './ShareHandProvider';
 import ShareHandProgress from './ShareHandProgress';
 import ShareHandNavigation from './ShareHandNavigation';
 import GameSetupStep from './GameSetupStep';
+import PositionsStep from './PositionsStep';
 import PreflopStep from './PreflopStep';
 import FlopStep from './FlopStep';
 import TurnStep from './TurnStep';
@@ -31,7 +32,7 @@ const ShareHandForm = () => {
   } = useShareHandContext();
 
   const renderStepContent = () => {
-    const showPot = currentStep > 0;
+    const showPot = currentStep > 1;
 
     const commonProps = {
       formData,
@@ -50,12 +51,14 @@ const ShareHandForm = () => {
       case 0:
         return <GameSetupStep {...commonProps} showValidationErrors={showValidationErrors} />;
       case 1:
-        return <PreflopStep {...commonProps} showPot={showPot} />;
+        return <PositionsStep {...commonProps} showValidationErrors={showValidationErrors} />;
       case 2:
-        return <FlopStep {...commonProps} showPot={showPot} />;
+        return <PreflopStep {...commonProps} showPot={showPot} />;
       case 3:
-        return <TurnStep {...commonProps} showPot={showPot} />;
+        return <FlopStep {...commonProps} showPot={showPot} />;
       case 4:
+        return <TurnStep {...commonProps} showPot={showPot} />;
+      case 5:
         return <RiverStep {...commonProps} showPot={showPot} tags={tags} addTag={addTag} removeTag={removeTag} />;
       default:
         return null;
