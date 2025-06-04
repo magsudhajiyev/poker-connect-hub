@@ -86,14 +86,16 @@ const PlayerRow = ({
         <Label className="text-slate-300 text-xs">
           Stack: {gameFormat === 'cash' ? '$' : ''}{player.stackSize[0]}{gameFormat === 'mtt' ? ' BB' : ''}
         </Label>
-        <Slider
-          value={player.stackSize}
-          onValueChange={(value) => onUpdatePlayer(player.id, { stackSize: value })}
-          max={gameFormat === 'cash' ? 1000 : 200}
-          min={1}
-          step={gameFormat === 'cash' ? 10 : 1}
-          className="w-full"
-        />
+        <div className="w-full [&>*]:w-full">
+          <Slider
+            value={player.stackSize}
+            onValueChange={(value) => onUpdatePlayer(player.id, { stackSize: value })}
+            max={gameFormat === 'cash' ? 1000 : 200}
+            min={1}
+            step={gameFormat === 'cash' ? 10 : 1}
+            className="w-full [&_.range]:bg-gradient-to-r [&_.range]:from-emerald-500 [&_.range]:to-violet-500 [&_.thumb]:border-emerald-500"
+          />
+        </div>
         <div className="flex justify-between text-xs text-slate-400">
           <span>1{gameFormat === 'cash' ? '0' : ''}</span>
           <span>{gameFormat === 'cash' ? '1000' : '200'}{gameFormat === 'mtt' ? ' BB' : ''}</span>
