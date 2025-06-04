@@ -1,3 +1,4 @@
+
 import { ActionStep, StreetType, ShareHandFormData, Player } from '@/types/shareHand';
 import { positionOrder } from './shareHandConstants';
 
@@ -24,7 +25,8 @@ export const initializeActions = (
       playerId: player.id,
       playerName: player.name,
       isHero: player.isHero || false,
-      completed: false
+      completed: false,
+      position: player.position // Add position to action step
     }));
   }
   
@@ -41,13 +43,15 @@ export const initializeActions = (
       playerId: 'hero',
       playerName: 'Hero',
       isHero: true,
-      completed: false
+      completed: false,
+      position: heroPosition
     });
     actionOrder.push({
       playerId: 'villain',
       playerName: 'Villain',
       isHero: false,
-      completed: false
+      completed: false,
+      position: villainPosition
     });
   } else {
     // Villain is in earlier position, acts first
@@ -55,13 +59,15 @@ export const initializeActions = (
       playerId: 'villain',
       playerName: 'Villain',
       isHero: false,
-      completed: false
+      completed: false,
+      position: villainPosition
     });
     actionOrder.push({
       playerId: 'hero',
       playerName: 'Hero',
       isHero: true,
-      completed: false
+      completed: false,
+      position: heroPosition
     });
   }
   
@@ -88,7 +94,8 @@ export const createNextActionStep = (currentAction: ActionStep): ActionStep => {
     playerId: nextPlayerId,
     playerName: nextPlayerName,
     isHero: !currentAction.isHero,
-    completed: false
+    completed: false,
+    position: currentAction.position // Preserve position info
   };
 };
 
