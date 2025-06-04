@@ -1,4 +1,3 @@
-
 import { ActionStep, StreetType, ShareHandFormData, Player } from '@/types/shareHand';
 import { positionOrder } from './shareHandConstants';
 import { createGameState, updateGameState, GameState } from './gameState';
@@ -92,102 +91,61 @@ function hasRaiseInRound(actionHistory: any[], round: string): boolean {
   );
 }
 
-function getNextToAct(gameState: GameState) {
-  const { activePlayers, currentPosition } = gameState;
+function getNextToAct(gameState: GameState): string {
+  const { activePlayers, currentPosition, actionOrder } = gameState;
   
-  // Get standard positions
-  const standardPositions = activePlayers.map(p => standardizePosition(p.position));
-  const currentStandardPosition = standardizePosition(currentPosition);
+  // Get only active players (not folded)
+  const stillActive = activePlayers.filter(p => p.isActive);
   
-  // Find current position's index
-  const currentIndex = positionOrder.indexOf(currentStandardPosition);
+  if (stillActive.length <= 1) {
+    return stillActive[0]?.position || currentPosition;
+  }
   
-  // Find next active position clockwise
-  for (let i = 1; i <= positionOrder.length; i++) {
-    const nextIndex = (currentIndex + i) % positionOrder.length;
-    const nextPosition = positionOrder[nextIndex];
+  // Find current position in action order
+  const currentIndex = actionOrder.indexOf(currentPosition);
+  
+  // Find next active player in order
+  for (let i = 1; i <= actionOrder.length; i++) {
+    const nextIndex = (currentIndex + i) % actionOrder.length;
+    const nextPosition = actionOrder[nextIndex];
     
-    if (standardPositions.includes(nextPosition)) {
-      // Find player with this position
-      return activePlayers.find(p => 
-        standardizePosition(p.position) === nextPosition
-      )?.position || activePlayers[0].position;
+    // Check if this player is still active
+    const nextPlayer = stillActive.find(p => p.position === nextPosition);
+    if (nextPlayer) {
+      return nextPlayer.position;
     }
   }
   
-  return activePlayers[0].position; // Fallback
-}
-
-// Modified round completion check that accounts for raises
-function isRoundCompleteFixed(gameState: GameState): boolean {
-  const { activePlayers, lastAggressor } = gameState;
-  
-  // If only one player remains, round is complete
-  if (activePlayers.length <= 1) {
-    return true;
-  }
-  
-  // Check if all active players have acted after the last raise
-  const allPlayersActed = activePlayers.every(player => {
-    // If player is the last aggressor, they've acted
-    if (player.position === lastAggressor) {
-      return true;
-    }
-    
-    // Check if player has acted after the last raise
-    return (player as any).hasActedAfterRaise === true;
-  });
-  
-  return allPlayersActed;
+  return stillActive[0].position; // Fallback
 }
 
 function isRoundComplete(gameState: GameState): boolean {
-  const { activePlayers, currentBet, lastAggressor, actionHistory, round } = gameState;
+  const { activePlayers, lastAggressor } = gameState;
+  
+  // Get only active players (not folded)
+  const stillActive = activePlayers.filter(p => p.isActive);
   
   // If only one player remains, round is complete
-  if (activePlayers.length <= 1) {
+  if (stillActive.length <= 1) {
     return true;
   }
   
-  // Get actions for current round
-  const currentRoundActions = actionHistory.filter(action => action.round === round);
-  
-  // Check if all players have acted
-  const playersWhoActed = new Set(currentRoundActions.map(action => action.player));
-  
-  // For each active player, check if they've acted appropriately
-  for (const player of activePlayers) {
-    const playerPosition = player.position;
-    const playerActions = currentRoundActions.filter(action => action.player === playerPosition);
-    
-    if (playerActions.length === 0) {
-      // Player hasn't acted yet
-      return false;
-    }
-    
-    const lastAction = playerActions[playerActions.length - 1];
-    
-    // If there's a current bet and player hasn't called/raised/folded, round not complete
-    if (currentBet > 0 && lastAction.action === 'check') {
-      return false;
-    }
-    
-    // If player made the last aggression, check if all others have responded
-    if (lastAggressor === playerPosition) {
-      // Check if all other players have acted since this aggression
-      const otherPlayers = activePlayers.filter(p => p.position !== playerPosition);
-      for (const otherPlayer of otherPlayers) {
-        const otherPlayerActions = currentRoundActions.filter(action => 
-          action.player === otherPlayer.position
-        );
-        if (otherPlayerActions.length === 0) {
-          return false;
-        }
-      }
-    }
+  // If no one has raised this round, check if everyone has acted
+  if (!lastAggressor) {
+    return stillActive.every(player => player.hasActedAfterRaise);
   }
   
-  return true;
+  // If someone raised, check if all other active players have acted since the raise
+  const allOthersActed = stillActive.every(player => {
+    // The aggressor has acted by definition
+    if (player.position === lastAggressor) {
+      return true;
+    }
+    // All others must have acted after the raise
+    return player.hasActedAfterRaise;
+  });
+  
+  return allOthersActed;
 }
 
 function advanceToNextRound(gameState: GameState): void {
@@ -205,20 +163,23 @@ function advanceToNextRound(gameState: GameState): void {
   
   // Reset hasActedAfterRaise for all players
   gameState.activePlayers.forEach(player => {
-    (player as any).hasActedAfterRaise = false;
+    player.hasActedAfterRaise = false;
   });
   
-  // Set first to act (SB or first active player)
-  const postFlopOrder = ['sb', 'bb', 'utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn'];
-  for (const position of postFlopOrder) {
-    const standardPos = standardizePosition(position);
-    const player = gameState.activePlayers.find(p => 
-      standardizePosition(p.position) === standardPos
+  // Set first to act based on new action order for post-flop
+  if (gameState.round !== 'preflop') {
+    const postFlopOrder = ['sb', 'bb', 'utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn'];
+    gameState.actionOrder = postFlopOrder.filter(pos => 
+      gameState.activePlayers.some(p => p.position === pos && p.isActive)
     );
-    if (player) {
-      gameState.currentPosition = player.position;
-      break;
-    }
+  }
+  
+  // Set first active player as current
+  const firstActive = gameState.activePlayers.find(p => 
+    p.isActive && gameState.actionOrder.includes(p.position)
+  );
+  if (firstActive) {
+    gameState.currentPosition = firstActive.position;
   }
 }
 
@@ -242,19 +203,25 @@ export const processAction = (
   // Update game state based on action
   switch (action) {
     case 'fold':
-      // Remove player from active players
-      newState.activePlayers = newState.activePlayers.filter(
-        p => p.position !== playerPosition
+      // Mark player as inactive
+      newState.activePlayers = newState.activePlayers.map(p => 
+        p.position === playerPosition ? { ...p, isActive: false } : p
       );
       break;
       
     case 'check':
-      // No change to pot or bet
+      // Mark player as having acted
+      newState.activePlayers = newState.activePlayers.map(p => 
+        p.position === playerPosition ? { ...p, hasActedAfterRaise: true } : p
+      );
       break;
       
     case 'call':
-      // Add call amount to pot
+      // Add call amount to pot and mark as acted
       newState.pot += amount;
+      newState.activePlayers = newState.activePlayers.map(p => 
+        p.position === playerPosition ? { ...p, hasActedAfterRaise: true } : p
+      );
       break;
       
     case 'bet':
@@ -266,28 +233,21 @@ export const processAction = (
       // Update last aggressor
       newState.lastAggressor = playerPosition;
       
-      // IMPORTANT FIX: Reset action status for all other players
-      // This ensures all players get to act again after a raise
-      newState.activePlayers.forEach(player => {
-        if (player.position !== playerPosition) {
-          // Remove their last action in this round from consideration
-          // when checking if round is complete
-          player.hasActedAfterRaise = false;
-        }
-      });
+      // Reset action status for all players, set current player as acted
+      newState.activePlayers = newState.activePlayers.map(player => ({
+        ...player,
+        hasActedAfterRaise: player.position === playerPosition
+      }));
       break;
   }
   
-  // Mark current player as having acted after the latest raise
-  const currentPlayer = newState.activePlayers.find(p => p.position === playerPosition);
-  if (currentPlayer) {
-    currentPlayer.hasActedAfterRaise = true;
-  }
-  
-  // Check if round is complete - MODIFIED LOGIC
-  if (isRoundCompleteFixed(newState)) {
+  // Check if round is complete
+  if (isRoundComplete(newState)) {
+    // Get active players
+    const stillActive = newState.activePlayers.filter(p => p.isActive);
+    
     // If only one player remains, game is over
-    if (newState.activePlayers.length === 1) {
+    if (stillActive.length <= 1) {
       newState.round = 'showdown';
       return newState;
     }

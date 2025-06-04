@@ -31,7 +31,15 @@ export const useGameStateUI = (initialGameState?: GameState | null): GameStateUI
 
   const isPlayerActive = (position: string): boolean => {
     if (!gameState || !position) return false;
-    return standardizePosition(position) === standardizePosition(currentPlayerPosition);
+    
+    // Check if this is the current player to act
+    const isCurrentPlayer = standardizePosition(position) === standardizePosition(currentPlayerPosition);
+    
+    // Check if player is still active in the hand
+    const player = gameState.activePlayers.find(p => standardizePosition(p.position) === standardizePosition(position));
+    const isStillInHand = player?.isActive !== false;
+    
+    return isCurrentPlayer && isStillInHand;
   };
 
   const isRoundActive = (round: string): boolean => {
@@ -43,17 +51,40 @@ export const useGameStateUI = (initialGameState?: GameState | null): GameStateUI
   };
 
   const updateGameState = (newState: GameState) => {
-    console.log('Updating game state:', newState);
+    console.log('Updating game state:', {
+      round: newState.round,
+      currentPlayer: newState.currentPosition,
+      activePlayers: newState.activePlayers.filter(p => p.isActive).map(p => p.position),
+      pot: newState.pot,
+      currentBet: newState.currentBet
+    });
     setGameState(newState);
   };
 
   const initializeGame = (players: Player[], smallBlind: number, bigBlind: number): GameState => {
+    // Create action order based on positions
+    const positionOrder = ['sb', 'bb', 'utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn'];
+    const playerPositions = players.map(p => p.position);
+    
+    // Preflop action order: start after BB
+    const actionOrder = [];
+    for (const pos of positionOrder) {
+      if (playerPositions.includes(pos) && pos !== 'sb' && pos !== 'bb') {
+        actionOrder.push(pos);
+      }
+    }
+    // Add blinds at the end for preflop
+    if (playerPositions.includes('sb')) actionOrder.push('sb');
+    if (playerPositions.includes('bb')) actionOrder.push('bb');
+
     // Convert UI players to game state format
     const activePlayers = players.map(player => ({
       name: player.name,
       position: player.position,
       stack: player.stackSize[0] || 100,
-      isHero: player.isHero
+      isHero: player.isHero,
+      hasActedAfterRaise: false,
+      isActive: true
     }));
 
     // Find small blind and big blind players
@@ -66,7 +97,7 @@ export const useGameStateUI = (initialGameState?: GameState | null): GameStateUI
     if (sbPlayer) {
       actionHistory.push({
         round: 'preflop' as const,
-        player: sbPlayer.name,
+        player: sbPlayer.position,
         action: 'post',
         amount: smallBlind
       });
@@ -75,33 +106,33 @@ export const useGameStateUI = (initialGameState?: GameState | null): GameStateUI
     if (bbPlayer) {
       actionHistory.push({
         round: 'preflop' as const,
-        player: bbPlayer.name,
+        player: bbPlayer.position,
         action: 'post',
         amount: bigBlind
       });
     }
 
-    // Get first player to act preflop (first position after BB)
-    const uiPositions = players.map(p => p.position);
-    const orderedPositions = getActionOrder(uiPositions, true); // true for preflop
-    let firstToAct = orderedPositions[0];
-    
-    // Find the player with this position
-    const firstPlayer = activePlayers.find(p => 
-      standardizePosition(p.position) === firstToAct
-    );
+    // Set first to act (first in action order)
+    const firstToAct = actionOrder[0] || players[0].position;
 
     const newGameState: GameState = {
       round: 'preflop',
       activePlayers,
-      currentPosition: firstPlayer?.position || activePlayers[0].position,
+      currentPosition: firstToAct,
       currentBet: bigBlind,
-      lastAggressor: bbPlayer?.name || '',
+      lastAggressor: bbPlayer?.position || '',
       pot: smallBlind + bigBlind,
-      actionHistory
+      actionHistory,
+      actionOrder
     };
 
-    console.log('Game initialized:', newGameState);
+    console.log('Game initialized with improved multi-player logic:', {
+      players: newGameState.activePlayers.map(p => ({ name: p.name, position: p.position })),
+      actionOrder: newGameState.actionOrder,
+      firstToAct: newGameState.currentPosition,
+      pot: newGameState.pot
+    });
+    
     setGameState(newGameState);
     return newGameState;
   };
@@ -113,7 +144,8 @@ export const useGameStateUI = (initialGameState?: GameState | null): GameStateUI
         currentPlayer: currentPlayerPosition,
         availableActions,
         pot: potAmount,
-        round: currentRound
+        round: currentRound,
+        activePlayers: gameState.activePlayers.filter(p => p.isActive).map(p => p.position)
       });
     }
   }, [gameState, currentPlayerPosition, availableActions, potAmount, currentRound]);

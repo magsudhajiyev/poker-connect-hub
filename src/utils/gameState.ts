@@ -6,7 +6,8 @@ export interface GameStatePlayer {
   position: string;
   stack: number;
   isHero?: boolean;
-  hasActedAfterRaise?: boolean;
+  hasActedAfterRaise: boolean;
+  isActive: boolean; // Track if player is still in the hand
 }
 
 export interface ActionHistoryEntry {
@@ -24,6 +25,7 @@ export interface GameState {
   lastAggressor: string;
   pot: number;
   actionHistory: ActionHistoryEntry[];
+  actionOrder: string[]; // Track the correct order of players for this round
 }
 
 export const createGameState = (
@@ -38,8 +40,33 @@ export const createGameState = (
     position: player.position,
     stack: player.stackSize[0] || 100,
     isHero: player.isHero,
-    hasActedAfterRaise: false // Initialize flag
+    hasActedAfterRaise: false,
+    isActive: true
   }));
+
+  // Create action order based on positions
+  const positionOrder = ['sb', 'bb', 'utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn'];
+  let actionOrder: string[];
+  
+  if (round === 'preflop') {
+    // Preflop: start with UTG (first after BB)
+    const playerPositions = activePlayers.map(p => p.position);
+    actionOrder = [];
+    
+    // Add positions starting from UTG
+    for (const pos of positionOrder) {
+      if (playerPositions.includes(pos) && pos !== 'sb' && pos !== 'bb') {
+        actionOrder.push(pos);
+      }
+    }
+    // Add blinds at the end for preflop
+    if (playerPositions.includes('sb')) actionOrder.push('sb');
+    if (playerPositions.includes('bb')) actionOrder.push('bb');
+  } else {
+    // Post-flop: start with SB
+    const playerPositions = activePlayers.map(p => p.position);
+    actionOrder = positionOrder.filter(pos => playerPositions.includes(pos));
+  }
 
   // Find small blind and big blind players
   const sbPlayer = activePlayers.find(p => p.position === 'sb');
@@ -51,7 +78,7 @@ export const createGameState = (
   if (sbPlayer) {
     actionHistory.push({
       round: 'preflop',
-      player: sbPlayer.name,
+      player: sbPlayer.position,
       action: 'post',
       amount: smallBlind
     });
@@ -60,42 +87,24 @@ export const createGameState = (
   if (bbPlayer) {
     actionHistory.push({
       round: 'preflop',
-      player: bbPlayer.name,
+      player: bbPlayer.position,
       action: 'post',
       amount: bigBlind
     });
   }
 
-  // Determine first to act based on round
-  let currentPosition = '';
-  if (round === 'preflop') {
-    // Preflop: first to act is UTG (or first position after BB)
-    const positionOrder = ['utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn', 'sb', 'bb'];
-    for (const pos of positionOrder) {
-      if (activePlayers.some(p => p.position === pos)) {
-        currentPosition = pos;
-        break;
-      }
-    }
-  } else {
-    // Post-flop: first to act is SB (or first active player)
-    const postFlopOrder = ['sb', 'bb', 'utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn'];
-    for (const pos of postFlopOrder) {
-      if (activePlayers.some(p => p.position === pos)) {
-        currentPosition = pos;
-        break;
-      }
-    }
-  }
+  // Set first to act
+  const currentPosition = actionOrder[0] || activePlayers[0].position;
 
   return {
     round,
     activePlayers,
     currentPosition,
     currentBet: round === 'preflop' ? bigBlind : 0,
-    lastAggressor: round === 'preflop' ? (bbPlayer?.name || '') : '',
+    lastAggressor: round === 'preflop' ? (bbPlayer?.position || '') : '',
     pot: round === 'preflop' ? smallBlind + bigBlind : 0,
-    actionHistory
+    actionHistory,
+    actionOrder
   };
 };
 
@@ -115,6 +124,7 @@ export const updateGameState = (
   let newCurrentBet = gameState.currentBet;
   let newLastAggressor = gameState.lastAggressor;
   let newPot = gameState.pot;
+  let newActivePlayers = [...gameState.activePlayers];
 
   // Update game state based on action
   switch (action) {
@@ -124,16 +134,32 @@ export const updateGameState = (
         newCurrentBet = amount;
         newLastAggressor = player;
         newPot += amount;
+        
+        // Reset hasActedAfterRaise for all other players
+        newActivePlayers = newActivePlayers.map(p => ({
+          ...p,
+          hasActedAfterRaise: p.position === player ? true : false
+        }));
       }
       break;
     case 'call':
       newPot += gameState.currentBet;
+      // Mark player as having acted
+      newActivePlayers = newActivePlayers.map(p => 
+        p.position === player ? { ...p, hasActedAfterRaise: true } : p
+      );
       break;
     case 'fold':
       // Remove player from active players
+      newActivePlayers = newActivePlayers.map(p => 
+        p.position === player ? { ...p, isActive: false } : p
+      );
       break;
     case 'check':
-      // No state change needed
+      // Mark player as having acted
+      newActivePlayers = newActivePlayers.map(p => 
+        p.position === player ? { ...p, hasActedAfterRaise: true } : p
+      );
       break;
   }
 
@@ -142,6 +168,7 @@ export const updateGameState = (
     currentBet: newCurrentBet,
     lastAggressor: newLastAggressor,
     pot: newPot,
-    actionHistory: newActionHistory
+    actionHistory: newActionHistory,
+    activePlayers: newActivePlayers
   };
 };
