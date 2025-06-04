@@ -12,7 +12,7 @@ interface PreflopStepProps {
   getPositionName: (position: string) => string;
   getCurrencySymbol: () => string;
   calculatePotSize: () => number;
-  getAvailableActions: (street: string, index: number) => string[];
+  getAvailableActions: (street: string, index: number, allActions: any[]) => string[];
   updateAction: (street: any, index: number, action: string, betAmount?: string) => void;
   getActionButtonClass: (action: string, isSelected: boolean) => string;
   handleBetSizeSelect: (street: any, index: number, amount: string) => void;
