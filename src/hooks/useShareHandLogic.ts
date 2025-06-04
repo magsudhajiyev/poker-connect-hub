@@ -179,19 +179,6 @@ export const useShareHandLogic = () => {
   };
 
   const nextStep = () => {
-    const validation = validateCurrentStep(currentStep, formData);
-    if (!validation.isValid) {
-      // For positions step (step 1), don't show alert - let UI handle highlighting
-      if (currentStep === 1) {
-        return; // Just return without advancing, UI will show red borders
-      }
-      // For other steps, still show alert
-      if (validation.message) {
-        alert(validation.message);
-      }
-      return;
-    }
-    
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }

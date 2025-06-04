@@ -77,7 +77,7 @@ const PositionsStep = ({ formData, setFormData, showValidationErrors = false }: 
     return allPositions.filter(pos => !usedPositions.includes(pos.value));
   };
 
-  // Check if a player should be highlighted (only when showValidationErrors is true AND position is empty)
+  // Check if a player should be highlighted - ONLY when validation errors are being shown AND position is empty
   const shouldHighlightPlayer = (player: Player) => {
     return showValidationErrors && (!player.position || player.position.trim() === '');
   };
@@ -161,48 +161,46 @@ const PositionsStep = ({ formData, setFormData, showValidationErrors = false }: 
               </div>
 
               <div className="space-y-2">
-                <div className={shouldHighlightPlayer(player) ? 'ring-2 ring-red-500 rounded-md p-2' : ''}>
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <Label className="text-slate-300 text-xs">Position</Label>
-                      {shouldHighlightPlayer(player) && <AlertCircle className="w-3 h-3 text-red-500" />}
-                    </div>
-                    {!player.isHero && player.id !== 'villain' && (
-                      <Button
-                        onClick={() => removePlayer(player.id)}
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 text-slate-400 hover:text-red-400"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    )}
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-slate-300 text-xs">Position</Label>
+                    {shouldHighlightPlayer(player) && <AlertCircle className="w-3 h-3 text-red-500" />}
                   </div>
-                  {shouldHighlightPlayer(player) && (
-                    <p className="text-red-400 text-xs mb-2">Please select position</p>
+                  {!player.isHero && player.id !== 'villain' && (
+                    <Button
+                      onClick={() => removePlayer(player.id)}
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-slate-400 hover:text-red-400"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
                   )}
-                  <Select 
-                    value={player.position} 
-                    onValueChange={(value) => updatePlayer(player.id, { position: value })}
-                  >
-                    <SelectTrigger className={`bg-slate-800/50 border-slate-700/50 text-slate-200 h-8 text-xs ${
-                      shouldHighlightPlayer(player) ? 'border-red-500' : ''
-                    }`}>
-                      <SelectValue placeholder="Select position" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
-                      {getAvailablePositions(player.id).map((position) => (
-                        <SelectItem 
-                          key={position.value} 
-                          value={position.value}
-                          className="text-white hover:bg-slate-700 focus:bg-slate-700"
-                        >
-                          {position.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
+                {shouldHighlightPlayer(player) && (
+                  <p className="text-red-400 text-xs mb-2">Please select position</p>
+                )}
+                <Select 
+                  value={player.position} 
+                  onValueChange={(value) => updatePlayer(player.id, { position: value })}
+                >
+                  <SelectTrigger className={`bg-slate-800/50 border-slate-700/50 text-slate-200 h-8 text-xs ${
+                    shouldHighlightPlayer(player) ? 'border-red-500' : ''
+                  }`}>
+                    <SelectValue placeholder="Select position" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    {getAvailablePositions(player.id).map((position) => (
+                      <SelectItem 
+                        key={position.value} 
+                        value={position.value}
+                        className="text-white hover:bg-slate-700 focus:bg-slate-700"
+                      >
+                        {position.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">

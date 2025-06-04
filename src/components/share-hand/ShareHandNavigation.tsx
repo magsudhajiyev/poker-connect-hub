@@ -2,25 +2,27 @@
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Share2 } from 'lucide-react';
 import { useShareHandContext } from './ShareHandProvider';
+import { validateCurrentStep } from '@/utils/shareHandValidation';
 
 interface ShareHandNavigationProps {
   onValidationError: () => void;
 }
 
 const ShareHandNavigation = ({ onValidationError }: ShareHandNavigationProps) => {
-  const { currentStep, steps, prevStep, nextStep, handleSubmit } = useShareHandContext();
+  const { currentStep, steps, prevStep, nextStep, handleSubmit, formData } = useShareHandContext();
 
   const handleNextStep = () => {
-    const previousStep = currentStep;
-    nextStep();
+    // Check validation before attempting to advance
+    const validation = validateCurrentStep(currentStep, formData);
     
-    // If step didn't advance, it means validation failed
-    // Use setTimeout to check after state update
-    setTimeout(() => {
-      if (currentStep === previousStep) {
-        onValidationError();
-      }
-    }, 0);
+    if (!validation.isValid) {
+      // If validation fails, trigger the error state
+      onValidationError();
+      return;
+    }
+    
+    // If validation passes, proceed to next step
+    nextStep();
   };
 
   return (
