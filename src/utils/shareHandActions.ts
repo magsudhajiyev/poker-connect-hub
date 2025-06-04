@@ -1,4 +1,3 @@
-
 import { ActionStep, StreetType, ShareHandFormData, Player } from '@/types/shareHand';
 import { positionOrder } from './shareHandConstants';
 import { createGameState, updateGameState, GameState } from './gameState';
@@ -90,6 +89,32 @@ function hasRaiseInRound(actionHistory: any[], round: string): boolean {
   return actionHistory.some(action => 
     action.round === round && action.action === 'raise'
   );
+}
+
+function getNextToAct(gameState: GameState) {
+  const { activePlayers, currentPosition } = gameState;
+  
+  // Get standard positions
+  const standardPositions = activePlayers.map(p => standardizePosition(p.position));
+  const currentStandardPosition = standardizePosition(currentPosition);
+  
+  // Find current position's index
+  const currentIndex = positionOrder.indexOf(currentStandardPosition);
+  
+  // Find next active position clockwise
+  for (let i = 1; i <= positionOrder.length; i++) {
+    const nextIndex = (currentIndex + i) % positionOrder.length;
+    const nextPosition = positionOrder[nextIndex];
+    
+    if (standardPositions.includes(nextPosition)) {
+      // Find player with this position
+      return activePlayers.find(p => 
+        standardizePosition(p.position) === nextPosition
+      )?.position || activePlayers[0].position;
+    }
+  }
+  
+  return activePlayers[0].position; // Fallback
 }
 
 export const createGameStateFromFormData = (formData: ShareHandFormData, street: StreetType): GameState => {
