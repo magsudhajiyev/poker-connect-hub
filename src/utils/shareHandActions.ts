@@ -1,83 +1,68 @@
-
-import { ActionStep, StreetType, ShareHandFormData } from '@/types/shareHand';
+import { ActionStep, StreetType, ShareHandFormData, Player } from '@/types/shareHand';
 import { positionOrder } from './shareHandConstants';
 
 export const initializeActions = (
   street: StreetType,
   heroPosition: string,
-  villainPosition: string
+  villainPosition: string,
+  players?: Player[]
 ): ActionStep[] => {
   if (!heroPosition || !villainPosition) return [];
   
+  // If we have players data, use it to create action order for all players
+  if (players && players.length > 0) {
+    // Sort players by position order (earliest position first)
+    const sortedPlayers = [...players]
+      .filter(player => player.position) // Only include players with positions
+      .sort((a, b) => {
+        const aIndex = positionOrder.indexOf(a.position);
+        const bIndex = positionOrder.indexOf(b.position);
+        return aIndex - bIndex;
+      });
+    
+    return sortedPlayers.map(player => ({
+      playerId: player.id,
+      playerName: player.name,
+      isHero: player.isHero || false,
+      completed: false
+    }));
+  }
+  
+  // Fallback to hero/villain only if no players data
   const heroIndex = positionOrder.indexOf(heroPosition);
   const villainIndex = positionOrder.indexOf(villainPosition);
   
   const actionOrder: ActionStep[] = [];
   
-  // For preflop, action starts from UTG (earliest position = lowest index)
-  if (street === 'preflopActions') {
-    // The player with the lower index (earlier position) acts first
-    if (heroIndex < villainIndex) {
-      // Hero is in earlier position, acts first
-      actionOrder.push({
-        playerId: 'hero',
-        playerName: 'Hero',
-        isHero: true,
-        completed: false
-      });
-      actionOrder.push({
-        playerId: 'villain',
-        playerName: 'Villain',
-        isHero: false,
-        completed: false
-      });
-    } else {
-      // Villain is in earlier position, acts first
-      actionOrder.push({
-        playerId: 'villain',
-        playerName: 'Villain',
-        isHero: false,
-        completed: false
-      });
-      actionOrder.push({
-        playerId: 'hero',
-        playerName: 'Hero',
-        isHero: true,
-        completed: false
-      });
-    }
+  // For all streets, action starts from earliest position (lowest index)
+  if (heroIndex < villainIndex) {
+    // Hero is in earlier position, acts first
+    actionOrder.push({
+      playerId: 'hero',
+      playerName: 'Hero',
+      isHero: true,
+      completed: false
+    });
+    actionOrder.push({
+      playerId: 'villain',
+      playerName: 'Villain',
+      isHero: false,
+      completed: false
+    });
   } else {
-    // For post-flop streets (flop, turn, river), action starts from Small Blind (earliest position = lowest index)
-    // Same logic applies - earliest position acts first
-    if (heroIndex < villainIndex) {
-      // Hero is in earlier position, acts first
-      actionOrder.push({
-        playerId: 'hero',
-        playerName: 'Hero',
-        isHero: true,
-        completed: false
-      });
-      actionOrder.push({
-        playerId: 'villain',
-        playerName: 'Villain',
-        isHero: false,
-        completed: false
-      });
-    } else {
-      // Villain is in earlier position, acts first
-      actionOrder.push({
-        playerId: 'villain',
-        playerName: 'Villain',
-        isHero: false,
-        completed: false
-      });
-      actionOrder.push({
-        playerId: 'hero',
-        playerName: 'Hero',
-        isHero: true,
-        completed: false
-      });
-    }
+    // Villain is in earlier position, acts first
+    actionOrder.push({
+      playerId: 'villain',
+      playerName: 'Villain',
+      isHero: false,
+      completed: false
+    });
+    actionOrder.push({
+      playerId: 'hero',
+      playerName: 'Hero',
+      isHero: true,
+      completed: false
+    });
   }
   
   return actionOrder;

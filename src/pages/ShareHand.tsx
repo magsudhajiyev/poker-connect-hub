@@ -1,3 +1,4 @@
+
 import { ProfileTopBar } from '@/components/profile/ProfileTopBar';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
 import { MobileSidebarContent } from '@/components/MobileSidebarContent';
@@ -6,7 +7,7 @@ import ShareHandHeader from '@/components/share-hand/ShareHandHeader';
 import ShareHandForm from '@/components/share-hand/ShareHandForm';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Sheet,
   SheetContent,
@@ -36,9 +37,14 @@ const MobileSidebar = () => {
 
 const ShareHandContent = () => {
   const { isCollapsed } = useSidebar();
+  const [sidebarWidth, setSidebarWidth] = useState('16rem');
+
+  useEffect(() => {
+    setSidebarWidth(isCollapsed ? '4rem' : '16rem');
+  }, [isCollapsed]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex w-full">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <GlobalSidebar />
@@ -46,13 +52,15 @@ const ShareHandContent = () => {
 
       {/* Main Content Container */}
       <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out ${
-        isCollapsed ? 'lg:ml-12' : 'lg:ml-64'
+        isCollapsed ? 'lg:ml-16' : 'lg:ml-64'
       }`}>
         {/* Fixed Header */}
-        <div className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50 lg:left-auto transition-all duration-300 ease-in-out"
-             style={{
-               left: window.innerWidth >= 1024 ? (isCollapsed ? '3rem' : '16rem') : '0',
-             }}>
+        <div 
+          className="fixed top-0 right-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50 transition-all duration-300 ease-in-out"
+          style={{
+            left: window.innerWidth >= 1024 ? sidebarWidth : '0',
+          }}
+        >
           <div className="flex items-center justify-between h-16 px-4">
             <div className="flex items-center space-x-4">
               <MobileSidebar />

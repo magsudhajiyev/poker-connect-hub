@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShareHandFormData } from '@/types/shareHand';
@@ -43,10 +42,10 @@ export const useShareHandLogic = () => {
 
   const { updateAction, handleBetSizeSelect, initializeActionsForPositions } = useActionManagement(formData, setFormData);
 
-  // Initialize actions when positions are set
+  // Initialize actions when positions are set or players change
   useEffect(() => {
     initializeActionsForPositions();
-  }, [formData.heroPosition, formData.villainPosition]);
+  }, [formData.heroPosition, formData.villainPosition, formData.players]);
 
   const addTag = (tag: string) => {
     if (tag && !tags.includes(tag)) {

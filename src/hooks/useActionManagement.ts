@@ -122,7 +122,12 @@ export const useActionManagement = (
       
       streets.forEach(street => {
         if (updatedFormData[street].length === 0) {
-          updatedFormData[street] = initializeActions(street, formData.heroPosition, formData.villainPosition);
+          updatedFormData[street] = initializeActions(
+            street, 
+            formData.heroPosition, 
+            formData.villainPosition,
+            formData.players
+          );
           hasChanges = true;
         }
       });
