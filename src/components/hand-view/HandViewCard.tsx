@@ -69,10 +69,6 @@ export const HandViewCard = ({ hand }: HandViewCardProps) => {
               <span className="text-slate-200 ml-2">{hand.formData.heroPosition}</span>
             </div>
             <div className="min-w-0">
-              <span className="text-slate-400">Players:</span>
-              <span className="text-slate-200 ml-2">{hand.formData.tableSize}</span>
-            </div>
-            <div className="min-w-0">
               <span className="text-slate-400">Stack Size:</span>
               <span className="text-slate-200 ml-2">{hand.formData.stackSize} BB</span>
             </div>

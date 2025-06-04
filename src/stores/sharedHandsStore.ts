@@ -35,7 +35,6 @@ class SharedHandsStore {
         bigBlind: '$2',
         heroPosition: 'BB',
         villainPosition: 'BTN',
-        tableSize: '6-max',
         stackSize: '100',
         heroStackSize: [200],
         villainStackSize: [150],
@@ -50,7 +49,8 @@ class SharedHandsStore {
         turnActions: [],
         turnDescription: 'Turn brought a possible straight draw',
         riverActions: [],
-        riverDescription: 'River completed possible straight, facing large bet'
+        riverDescription: 'River completed possible straight, facing large bet',
+        ante: false
       },
       tags: ['Top Pair', 'River Decision', 'Value Bet', 'Bluff Catcher'],
       authorName: 'Sarah Chen',
