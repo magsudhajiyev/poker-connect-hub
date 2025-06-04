@@ -1,6 +1,7 @@
 
 import { ActionStep, StreetType, ShareHandFormData, Player } from '@/types/shareHand';
 import { positionOrder } from './shareHandConstants';
+import { createGameState, updateGameState, GameState } from './gameState';
 
 export const initializeActions = (
   street: StreetType,
@@ -72,6 +73,14 @@ export const initializeActions = (
   }
   
   return actionOrder;
+};
+
+export const createGameStateFromFormData = (formData: ShareHandFormData, street: StreetType): GameState => {
+  const round = street.replace('Actions', '') as 'preflop' | 'flop' | 'turn' | 'river';
+  const smallBlind = parseFloat(formData.smallBlind) || 1;
+  const bigBlind = parseFloat(formData.bigBlind) || 2;
+  
+  return createGameState(formData.players || [], smallBlind, bigBlind, round);
 };
 
 export const getAvailableActions = (street: string, actionIndex: number, allActions: ActionStep[]): string[] => {
