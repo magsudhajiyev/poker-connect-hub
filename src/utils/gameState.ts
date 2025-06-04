@@ -6,6 +6,7 @@ export interface GameStatePlayer {
   position: string;
   stack: number;
   isHero?: boolean;
+  hasActedAfterRaise?: boolean;
 }
 
 export interface ActionHistoryEntry {
@@ -36,7 +37,8 @@ export const createGameState = (
     name: player.name,
     position: player.position,
     stack: player.stackSize[0] || 100,
-    isHero: player.isHero
+    isHero: player.isHero,
+    hasActedAfterRaise: false // Initialize flag
   }));
 
   // Find small blind and big blind players

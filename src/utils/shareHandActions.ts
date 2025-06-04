@@ -118,6 +118,29 @@ function getNextToAct(gameState: GameState) {
   return activePlayers[0].position; // Fallback
 }
 
+// Modified round completion check that accounts for raises
+function isRoundCompleteFixed(gameState: GameState): boolean {
+  const { activePlayers, lastAggressor } = gameState;
+  
+  // If only one player remains, round is complete
+  if (activePlayers.length <= 1) {
+    return true;
+  }
+  
+  // Check if all active players have acted after the last raise
+  const allPlayersActed = activePlayers.every(player => {
+    // If player is the last aggressor, they've acted
+    if (player.position === lastAggressor) {
+      return true;
+    }
+    
+    // Check if player has acted after the last raise
+    return (player as any).hasActedAfterRaise === true;
+  });
+  
+  return allPlayersActed;
+}
+
 function isRoundComplete(gameState: GameState): boolean {
   const { activePlayers, currentBet, lastAggressor, actionHistory, round } = gameState;
   
@@ -180,6 +203,11 @@ function advanceToNextRound(gameState: GameState): void {
   gameState.currentBet = 0;
   gameState.lastAggressor = '';
   
+  // Reset hasActedAfterRaise for all players
+  gameState.activePlayers.forEach(player => {
+    (player as any).hasActedAfterRaise = false;
+  });
+  
   // Set first to act (SB or first active player)
   const postFlopOrder = ['sb', 'bb', 'utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn'];
   for (const position of postFlopOrder) {
@@ -237,11 +265,27 @@ export const processAction = (
       newState.currentBet = amount;
       // Update last aggressor
       newState.lastAggressor = playerPosition;
+      
+      // IMPORTANT FIX: Reset action status for all other players
+      // This ensures all players get to act again after a raise
+      newState.activePlayers.forEach(player => {
+        if (player.position !== playerPosition) {
+          // Remove their last action in this round from consideration
+          // when checking if round is complete
+          player.hasActedAfterRaise = false;
+        }
+      });
       break;
   }
   
-  // Check if round is complete
-  if (isRoundComplete(newState)) {
+  // Mark current player as having acted after the latest raise
+  const currentPlayer = newState.activePlayers.find(p => p.position === playerPosition);
+  if (currentPlayer) {
+    currentPlayer.hasActedAfterRaise = true;
+  }
+  
+  // Check if round is complete - MODIFIED LOGIC
+  if (isRoundCompleteFixed(newState)) {
     // If only one player remains, game is over
     if (newState.activePlayers.length === 1) {
       newState.round = 'showdown';
