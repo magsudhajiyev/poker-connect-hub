@@ -16,7 +16,7 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
       
       const villainPlayer: Player = {
         id: 'villain',
-        name: 'Villain',
+        name: 'Villain 1',
         position: formData.villainPosition || '',
         stackSize: formData.villainStackSize || [100]
       };
@@ -55,9 +55,14 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
 
   // Add a new player
   const addPlayer = () => {
+    // Calculate the next villain number based on existing players
+    // Count all non-hero players (villain + manually added players)
+    const nonHeroPlayers = players.filter(p => !p.isHero);
+    const nextVillainNumber = nonHeroPlayers.length + 1;
+    
     const newPlayer: Player = {
       id: `player_${Date.now()}`,
-      name: `Player ${players.length + 1}`,
+      name: `Villain ${nextVillainNumber}`,
       position: '',
       stackSize: [100]
     };
