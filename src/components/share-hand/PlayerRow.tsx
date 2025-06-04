@@ -35,7 +35,7 @@ const PlayerRow = ({
           value={player.name}
           onChange={(e) => onUpdatePlayer(player.id, { name: e.target.value })}
           className="bg-slate-800/50 border-slate-700/50 text-slate-200 h-8 text-xs"
-          disabled={player.isHero || player.id === 'villain'}
+          disabled={player.isHero}
         />
       </div>
 
