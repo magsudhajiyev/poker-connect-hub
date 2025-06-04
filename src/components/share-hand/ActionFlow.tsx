@@ -6,6 +6,8 @@ import { Check } from 'lucide-react';
 import BetSizingButtons from '@/components/BetSizingButtons';
 import { useGameStateUI } from '@/hooks/useGameStateUI';
 import { GameState } from '@/utils/gameState';
+import { processAction } from '@/utils/shareHandActions';
+import { useShareHandContext } from './ShareHandProvider';
 
 interface ActionFlowProps {
   street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions';
@@ -38,9 +40,43 @@ const ActionFlow = ({
   
   // Use game state UI updates
   const { isPlayerActive, isActionAvailable } = useGameStateUI(gameState);
+  const { gameStateUI } = useShareHandContext();
 
   const getBetSizeLabel = () => {
     return formData.gameFormat === 'cash' ? 'Bet Size ($)' : 'Bet Size (BB)';
+  };
+
+  const handleActionClick = (actionStep: any, index: number, action: string) => {
+    // If we have a game state and this is the current player, process the action through game state
+    if (gameState && isPlayerActive(actionStep.position)) {
+      let amount = 0;
+      
+      if (action === 'bet' || action === 'raise') {
+        const betInput = actionStep.betAmount;
+        amount = parseFloat(betInput) || 0;
+        
+        if (amount <= 0) {
+          alert('Please enter a valid bet amount');
+          return;
+        }
+      } else if (action === 'call') {
+        amount = gameState.currentBet;
+      }
+      
+      // Process action through game state
+      const newState = processAction(
+        gameState,
+        actionStep.position,
+        action,
+        amount
+      );
+      
+      // Update the game state in the UI hook
+      gameStateUI.updateGameState?.(newState);
+    }
+    
+    // Also update the form data action (existing functionality)
+    updateAction(street, index, action);
   };
 
   return (
@@ -91,9 +127,9 @@ const ActionFlow = ({
                       <Button
                         key={action}
                         size="sm"
-                        onClick={() => updateAction(street, index, action)}
+                        onClick={() => handleActionClick(actionStep, index, action)}
                         disabled={!isAvailable && isCurrentPlayer}
-                        className={`${getActionButtonClass(action, actionStep.action === action)} text-xs h-7 truncate transition-opacity ${
+                        className={`${getActionButtonClass(action, actionStep.action === action)} text-xs h-7 truncate transition-opacity action-button ${action} ${
                           !isAvailable && isCurrentPlayer ? 'opacity-50' : ''
                         }`}
                         style={{ 
@@ -126,7 +162,7 @@ const ActionFlow = ({
                       value={actionStep.betAmount || ''}
                       onChange={(e) => updateAction(street, index, actionStep.action!, e.target.value)}
                       placeholder="2.5"
-                      className="bg-slate-900/50 border-slate-700/50 text-slate-200 text-xs h-8 mt-1 w-full"
+                      className="bg-slate-900/50 border-slate-700/50 text-slate-200 text-xs h-8 mt-1 w-full bet-size-input"
                     />
                   </div>
                 </div>

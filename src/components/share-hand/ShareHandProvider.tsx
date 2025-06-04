@@ -35,7 +35,7 @@ export const ShareHandProvider = ({ children }: ShareHandProviderProps) => {
       console.log('Initializing game with players:', formData.players);
       gameStateUI.initializeGame(formData.players, smallBlind, bigBlind);
     }
-  }, [shareHandLogic.formData.players, shareHandLogic.formData.smallBlind, shareHandLogic.formData.bigBlind]);
+  }, [shareHandLogic.formData.players, shareHandLogic.formData.smallBlind, shareHandLogic.formData.bigBlind, gameStateUI]);
 
   return (
     <ShareHandContext.Provider value={{ ...shareHandLogic, gameStateUI }}>

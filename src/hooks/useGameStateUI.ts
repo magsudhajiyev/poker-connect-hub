@@ -15,6 +15,7 @@ export interface GameStateUIUpdates {
   isRoundActive: (round: string) => boolean;
   isActionAvailable: (action: string) => boolean;
   initializeGame: (players: Player[], smallBlind: number, bigBlind: number) => GameState;
+  updateGameState: (newState: GameState) => void;
 }
 
 export const useGameStateUI = (initialGameState?: GameState | null): GameStateUIUpdates => {
@@ -39,6 +40,11 @@ export const useGameStateUI = (initialGameState?: GameState | null): GameStateUI
 
   const isActionAvailable = (action: string): boolean => {
     return availableActions.includes(action);
+  };
+
+  const updateGameState = (newState: GameState) => {
+    console.log('Updating game state:', newState);
+    setGameState(newState);
   };
 
   const initializeGame = (players: Player[], smallBlind: number, bigBlind: number): GameState => {
@@ -121,6 +127,7 @@ export const useGameStateUI = (initialGameState?: GameState | null): GameStateUI
     isPlayerActive,
     isRoundActive,
     isActionAvailable,
-    initializeGame
+    initializeGame,
+    updateGameState
   };
 };
