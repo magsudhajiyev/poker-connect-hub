@@ -47,7 +47,11 @@ const ShareHandForm = ({
   getActionButtonClass,
   handleBetSizeSelect,
   getAllSelectedCards,
-  invalidPlayerId
+  invalidPlayerId,
+  steps,
+  nextStep,
+  prevStep,
+  handleSubmit
 }: ShareHandFormProps) => {
   const [showValidationErrors, setShowValidationErrors] = useState(false);
 
@@ -93,7 +97,7 @@ const ShareHandForm = ({
         <CardHeader className="pb-2">
           <div className="space-y-2">
             <h2 className="text-lg font-semibold text-slate-200">Hand Details</h2>
-            <ShareHandProgress />
+            <ShareHandProgress currentStep={currentStep} steps={steps} />
           </div>
         </CardHeader>
         
@@ -101,7 +105,14 @@ const ShareHandForm = ({
           <div className="w-full overflow-x-hidden">
             {renderStepContent()}
           </div>
-          <ShareHandNavigation onValidationError={() => setShowValidationErrors(true)} />
+          <ShareHandNavigation 
+            currentStep={currentStep}
+            steps={steps}
+            prevStep={prevStep}
+            nextStep={nextStep}
+            handleSubmit={handleSubmit}
+            onValidationError={() => setShowValidationErrors(true)} 
+          />
         </CardContent>
       </Card>
     </div>

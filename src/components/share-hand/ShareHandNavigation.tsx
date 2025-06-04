@@ -1,15 +1,24 @@
 
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Share2 } from 'lucide-react';
-import { useShareHandContext } from './ShareHandProvider';
 
 interface ShareHandNavigationProps {
+  currentStep: number;
+  steps: any[];
+  prevStep: () => void;
+  nextStep: () => void;
+  handleSubmit: () => void;
   onValidationError: () => void;
 }
 
-const ShareHandNavigation = ({ onValidationError }: ShareHandNavigationProps) => {
-  const { currentStep, steps, prevStep, nextStep, handleSubmit } = useShareHandContext();
-
+const ShareHandNavigation = ({ 
+  currentStep, 
+  steps, 
+  prevStep, 
+  nextStep, 
+  handleSubmit, 
+  onValidationError 
+}: ShareHandNavigationProps) => {
   return (
     <div className="flex flex-col sm:flex-row justify-between gap-2 pt-3">
       <Button
