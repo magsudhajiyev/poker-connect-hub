@@ -26,7 +26,7 @@ export const initializeActions = (
       playerName: player.name,
       isHero: player.isHero || false,
       completed: false,
-      position: player.position // Add position to action step
+      position: player.position
     }));
   }
   
@@ -86,7 +86,23 @@ export const getActionButtonClass = (action: string, isSelected: boolean): strin
   return `${baseClass} border-slate-700/50 text-slate-300 hover:bg-slate-800/50`;
 };
 
-export const createNextActionStep = (currentAction: ActionStep): ActionStep => {
+export const createNextActionStep = (currentAction: ActionStep, players?: Player[]): ActionStep => {
+  // Find the next player in the action sequence based on current players
+  if (players && players.length > 0) {
+    const currentPlayerIndex = players.findIndex(p => p.id === currentAction.playerId);
+    const nextPlayerIndex = (currentPlayerIndex + 1) % players.length;
+    const nextPlayer = players[nextPlayerIndex];
+    
+    return {
+      playerId: nextPlayer.id,
+      playerName: nextPlayer.name,
+      isHero: nextPlayer.isHero || false,
+      completed: false,
+      position: nextPlayer.position
+    };
+  }
+  
+  // Fallback for legacy hero/villain logic
   const nextPlayerId = currentAction.isHero ? 'villain' : 'hero';
   const nextPlayerName = currentAction.isHero ? 'Villain' : 'Hero';
   
@@ -95,7 +111,7 @@ export const createNextActionStep = (currentAction: ActionStep): ActionStep => {
     playerName: nextPlayerName,
     isHero: !currentAction.isHero,
     completed: false,
-    position: currentAction.position // Preserve position info
+    position: currentAction.position // This will be wrong for legacy, but we prioritize players array
   };
 };
 

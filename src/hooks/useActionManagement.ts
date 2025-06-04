@@ -17,7 +17,7 @@ export const useActionManagement = (
     console.log(`Adding next action step after ${currentAction.action} by ${currentAction.playerName}`);
     
     if (shouldAddNextAction(currentAction.action!)) {
-      const nextActionStep = createNextActionStep(currentAction);
+      const nextActionStep = createNextActionStep(currentAction, formData.players);
       
       // Check if next action already exists
       const nextActionExists = actions.find((action, index) => 
@@ -94,7 +94,7 @@ export const useActionManagement = (
       
       // Add next action step if this is a bet or raise and it doesn't already exist
       if (shouldAddNextAction(currentAction.action!)) {
-        const nextActionStep = createNextActionStep(currentAction);
+        const nextActionStep = createNextActionStep(currentAction, prev.players);
         
         // Check if next action already exists
         const nextActionExists = updatedActions.find((action, actionIndex) => 

@@ -1,4 +1,3 @@
-
 export interface ActionStep {
   playerId: string;
   playerName: string;
@@ -6,6 +5,7 @@ export interface ActionStep {
   action?: string;
   betAmount?: string;
   completed: boolean;
+  position?: string;
 }
 
 export interface Player {
