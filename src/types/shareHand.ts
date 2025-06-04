@@ -8,6 +8,14 @@ export interface ActionStep {
   completed: boolean;
 }
 
+export interface Player {
+  id: string;
+  name: string;
+  position: string;
+  stackSize: number[];
+  isHero?: boolean;
+}
+
 export interface ShareHandFormData {
   gameType: string;
   gameFormat: string;
@@ -16,6 +24,7 @@ export interface ShareHandFormData {
   villainPosition: string;
   heroStackSize: number[];
   villainStackSize: number[];
+  players?: Player[];
   holeCards: string[];
   flopCards: string[];
   turnCard: string[];

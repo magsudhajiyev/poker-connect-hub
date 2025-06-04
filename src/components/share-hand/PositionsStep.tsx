@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { AlertCircle, Plus, Trash2 } from 'lucide-react';
+import { useEffect } from 'react';
 
 interface PositionsStepProps {
   formData: any;
@@ -21,17 +22,9 @@ interface Player {
 }
 
 const PositionsStep = ({ formData, setFormData, showValidationErrors = false }: PositionsStepProps) => {
-  // Only highlight if validation errors should be shown AND the field is empty
-  const shouldHighlightHero = showValidationErrors && !formData.heroPosition;
-  const shouldHighlightVillain = showValidationErrors && !formData.villainPosition;
-
-  const getStackSizeLabel = () => {
-    return formData.gameFormat === 'cash' ? 'Stack Size ($)' : 'Stack Size (BB)';
-  };
-
-  // Initialize players if not exists
-  const initializePlayers = () => {
-    if (!formData.players) {
+  // Initialize players in useEffect to avoid state update during render
+  useEffect(() => {
+    if (!formData.players || formData.players.length === 0) {
       const heroPlayer: Player = {
         id: 'hero',
         name: 'Hero',
@@ -52,13 +45,14 @@ const PositionsStep = ({ formData, setFormData, showValidationErrors = false }: 
         players: [heroPlayer, villainPlayer]
       });
     }
+  }, [formData, setFormData]);
+
+  const getStackSizeLabel = () => {
+    return formData.gameFormat === 'cash' ? 'Stack Size ($)' : 'Stack Size (BB)';
   };
 
-  // Get players or initialize them
+  // Get players array
   const players: Player[] = formData.players || [];
-  if (players.length === 0) {
-    initializePlayers();
-  }
 
   // Get all available positions (limited to 9 for max poker game size)
   const allPositions = [
@@ -81,6 +75,11 @@ const PositionsStep = ({ formData, setFormData, showValidationErrors = false }: 
       .filter(Boolean);
     
     return allPositions.filter(pos => !usedPositions.includes(pos.value));
+  };
+
+  // Check if a player should be highlighted (only when showValidationErrors is true AND position is empty)
+  const shouldHighlightPlayer = (player: Player) => {
+    return showValidationErrors && (!player.position || player.position.trim() === '');
   };
 
   // Update a player
@@ -162,15 +161,11 @@ const PositionsStep = ({ formData, setFormData, showValidationErrors = false }: 
               </div>
 
               <div className="space-y-2">
-                <div className={`${
-                  (player.isHero && shouldHighlightHero) || (!player.isHero && player.id === 'villain' && shouldHighlightVillain) 
-                    ? 'ring-2 ring-red-500 rounded-md p-2' : ''
-                }`}>
+                <div className={shouldHighlightPlayer(player) ? 'ring-2 ring-red-500 rounded-md p-2' : ''}>
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                       <Label className="text-slate-300 text-xs">Position</Label>
-                      {((player.isHero && shouldHighlightHero) || (!player.isHero && player.id === 'villain' && shouldHighlightVillain)) && 
-                        <AlertCircle className="w-3 h-3 text-red-500" />}
+                      {shouldHighlightPlayer(player) && <AlertCircle className="w-3 h-3 text-red-500" />}
                     </div>
                     {!player.isHero && player.id !== 'villain' && (
                       <Button
@@ -183,7 +178,7 @@ const PositionsStep = ({ formData, setFormData, showValidationErrors = false }: 
                       </Button>
                     )}
                   </div>
-                  {((player.isHero && shouldHighlightHero) || (!player.isHero && player.id === 'villain' && shouldHighlightVillain)) && (
+                  {shouldHighlightPlayer(player) && (
                     <p className="text-red-400 text-xs mb-2">Please select position</p>
                   )}
                   <Select 
@@ -191,8 +186,7 @@ const PositionsStep = ({ formData, setFormData, showValidationErrors = false }: 
                     onValueChange={(value) => updatePlayer(player.id, { position: value })}
                   >
                     <SelectTrigger className={`bg-slate-800/50 border-slate-700/50 text-slate-200 h-8 text-xs ${
-                      (player.isHero && shouldHighlightHero) || (!player.isHero && player.id === 'villain' && shouldHighlightVillain) 
-                        ? 'border-red-500' : ''
+                      shouldHighlightPlayer(player) ? 'border-red-500' : ''
                     }`}>
                       <SelectValue placeholder="Select position" />
                     </SelectTrigger>

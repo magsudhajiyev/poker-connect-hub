@@ -24,14 +24,29 @@ export const validateCurrentStep = (
     return { isValid: true, message: '' };
   }
   
-  // Validate positions step (step 1) - now silent validation for UI highlighting
+  // Validate positions step (step 1) - check all players
   if (currentStep === 1) {
-    if (!formData.heroPosition || formData.heroPosition.trim() === '' ||
-        !formData.villainPosition || formData.villainPosition.trim() === '') {
-      return {
-        isValid: false,
-        message: '' // No alert message, just UI highlighting
-      };
+    // Check if players array exists and has valid positions
+    if (formData.players && formData.players.length > 0) {
+      const playersWithoutPosition = formData.players.filter(player => 
+        !player.position || player.position.trim() === ''
+      );
+      
+      if (playersWithoutPosition.length > 0) {
+        return {
+          isValid: false,
+          message: '' // No alert message, just UI highlighting
+        };
+      }
+    } else {
+      // Fallback to legacy validation for hero and villain
+      if (!formData.heroPosition || formData.heroPosition.trim() === '' ||
+          !formData.villainPosition || formData.villainPosition.trim() === '') {
+        return {
+          isValid: false,
+          message: '' // No alert message, just UI highlighting
+        };
+      }
     }
     
     return { isValid: true, message: '' };
