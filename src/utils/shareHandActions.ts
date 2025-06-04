@@ -1,3 +1,4 @@
+
 import { ActionStep, StreetType, ShareHandFormData, Player } from '@/types/shareHand';
 import { positionOrder } from './shareHandConstants';
 import { createGameState, updateGameState, GameState } from './gameState';
@@ -161,22 +162,34 @@ function advanceToNextRound(gameState: GameState): void {
   gameState.currentBet = 0;
   gameState.lastAggressor = '';
   
-  // Reset hasActedAfterRaise for all players
+  // Get only active players (not folded) for the new round
+  const stillActive = gameState.activePlayers.filter(p => p.isActive);
+  
+  // Reset hasActedAfterRaise for all active players
   gameState.activePlayers.forEach(player => {
-    player.hasActedAfterRaise = false;
+    if (player.isActive) {
+      player.hasActedAfterRaise = false;
+    }
   });
   
-  // Set first to act based on new action order for post-flop
+  // Create new action order with only active players for post-flop
   if (gameState.round !== 'preflop') {
     const postFlopOrder = ['sb', 'bb', 'utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn'];
-    gameState.actionOrder = postFlopOrder.filter(pos => 
-      gameState.activePlayers.some(p => p.position === pos && p.isActive)
-    );
+    
+    // Filter to only include positions of players who are still active
+    const activePositions = stillActive.map(p => p.position);
+    gameState.actionOrder = postFlopOrder.filter(pos => activePositions.includes(pos));
+    
+    console.log('Advanced to new round:', {
+      round: gameState.round,
+      activePositions,
+      newActionOrder: gameState.actionOrder
+    });
   }
   
   // Set first active player as current
-  const firstActive = gameState.activePlayers.find(p => 
-    p.isActive && gameState.actionOrder.includes(p.position)
+  const firstActive = stillActive.find(p => 
+    gameState.actionOrder.includes(p.position)
   );
   if (firstActive) {
     gameState.currentPosition = firstActive.position;
@@ -200,6 +213,11 @@ export const processAction = (
     amount: amount
   });
   
+  console.log(`Processing action: ${playerPosition} ${action} ${amount}`, {
+    currentRound: newState.round,
+    activePlayers: newState.activePlayers.filter(p => p.isActive).map(p => p.position)
+  });
+  
   // Update game state based on action
   switch (action) {
     case 'fold':
@@ -207,6 +225,8 @@ export const processAction = (
       newState.activePlayers = newState.activePlayers.map(p => 
         p.position === playerPosition ? { ...p, isActive: false } : p
       );
+      console.log(`${playerPosition} folded. Remaining active players:`, 
+        newState.activePlayers.filter(p => p.isActive).map(p => p.position));
       break;
       
     case 'check':
@@ -249,14 +269,18 @@ export const processAction = (
     // If only one player remains, game is over
     if (stillActive.length <= 1) {
       newState.round = 'showdown';
+      console.log('Game complete - only one player remaining');
       return newState;
     }
     
     // Advance to next round
     advanceToNextRound(newState);
+    console.log(`Round complete. Advanced to ${newState.round} with players:`, 
+      newState.activePlayers.filter(p => p.isActive).map(p => p.position));
   } else {
     // Set next player to act
     newState.currentPosition = getNextToAct(newState);
+    console.log(`Next to act: ${newState.currentPosition}`);
   }
   
   return newState;
