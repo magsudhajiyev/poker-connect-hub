@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -66,8 +65,8 @@ const GameSetupStep = ({ formData, setFormData, showValidationErrors = false }: 
             onClick={() => setFormData({...formData, gameFormat: 'mtt'})}
             className={`h-12 flex flex-col items-center justify-center relative ${
               formData.gameFormat === 'mtt' 
-                ? 'bg-emerald-500 text-slate-900 border-emerald-500' 
-                : 'border-slate-700/50 text-white hover:bg-slate-800/50 bg-slate-900/30'
+                ? 'bg-emerald-500 text-slate-900 border-emerald-500 hover:bg-emerald-600 hover:text-slate-900' 
+                : 'border-slate-700/50 text-white hover:bg-slate-800/50 hover:text-white bg-slate-900/30'
             }`}
           >
             {formData.gameFormat === 'mtt' && (
@@ -82,8 +81,8 @@ const GameSetupStep = ({ formData, setFormData, showValidationErrors = false }: 
             onClick={() => setFormData({...formData, gameFormat: 'cash'})}
             className={`h-12 flex flex-col items-center justify-center relative ${
               formData.gameFormat === 'cash' 
-                ? 'bg-emerald-500 text-slate-900 border-emerald-500' 
-                : 'border-slate-700/50 text-white hover:bg-slate-800/50 bg-slate-900/30'
+                ? 'bg-emerald-500 text-slate-900 border-emerald-500 hover:bg-emerald-600 hover:text-slate-900' 
+                : 'border-slate-700/50 text-white hover:bg-slate-800/50 hover:text-white bg-slate-900/30'
             }`}
           >
             {formData.gameFormat === 'cash' && (
