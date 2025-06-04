@@ -1,4 +1,3 @@
-
 import { ActionStep, StreetType } from '@/types/shareHand';
 import { positionOrder } from './shareHandConstants';
 
@@ -6,6 +5,11 @@ export const initializeActions = (street: StreetType, heroPosition: string, vill
   // If we have players array, use that; otherwise fall back to legacy hero/villain
   if (players && players.length > 0) {
     const playersWithPositions = players.filter(p => p.position);
+    
+    // If no players have positions set yet, return empty array to avoid errors
+    if (playersWithPositions.length === 0) {
+      return [];
+    }
     
     // Sort players by position order
     const sortedPlayers = playersWithPositions.sort((a, b) => {
@@ -24,6 +28,7 @@ export const initializeActions = (street: StreetType, heroPosition: string, vill
       if (bbIndex !== -1) {
         startingPlayerIndex = (bbIndex + 1) % sortedPlayers.length;
       }
+      // If no big blind, start with first player
     } else {
       // Postflop: start with small blind or first active player
       const sbIndex = sortedPlayers.findIndex(p => p.position === 'sb');
@@ -31,6 +36,11 @@ export const initializeActions = (street: StreetType, heroPosition: string, vill
     }
 
     const startingPlayer = sortedPlayers[startingPlayerIndex];
+    
+    // Additional safety check to ensure startingPlayer exists
+    if (!startingPlayer) {
+      return [];
+    }
     
     return [{
       playerId: startingPlayer.id,

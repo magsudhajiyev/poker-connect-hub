@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShareHandFormData, StreetType, ActionStep } from '@/types/shareHand';
@@ -150,22 +149,31 @@ export const useShareHandLogic = () => {
 
   useEffect(() => {
     if (formData.players && formData.players.length > 0) {
-      const streets: StreetType[] = [
-        'preflopActions', 'flopActions', 'turnActions', 'riverActions'
-      ];
+      const playersWithPositions = formData.players.filter(p => p.position);
       
-      const updatedFormData = { ...formData };
-      let hasChanges = false;
-      
-      streets.forEach(street => {
-        if (updatedFormData[street].length === 0) {
-          updatedFormData[street] = initializeActions(street, formData.heroPosition, formData.villainPosition, formData.players);
-          hasChanges = true;
+      // Only initialize actions if we have players with positions
+      if (playersWithPositions.length > 0) {
+        const streets: StreetType[] = [
+          'preflopActions', 'flopActions', 'turnActions', 'riverActions'
+        ];
+        
+        const updatedFormData = { ...formData };
+        let hasChanges = false;
+        
+        streets.forEach(street => {
+          if (updatedFormData[street].length === 0) {
+            const initializedActions = initializeActions(street, formData.heroPosition, formData.villainPosition, formData.players);
+            // Only set actions if we got valid results
+            if (initializedActions.length > 0) {
+              updatedFormData[street] = initializedActions;
+              hasChanges = true;
+            }
+          }
+        });
+        
+        if (hasChanges) {
+          setFormData(updatedFormData);
         }
-      });
-      
-      if (hasChanges) {
-        setFormData(updatedFormData);
       }
     } else if (formData.heroPosition && formData.villainPosition) {
       // Legacy initialization for hero/villain only
