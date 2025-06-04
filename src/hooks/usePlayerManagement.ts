@@ -32,9 +32,19 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
 
   // Update a player
   const updatePlayer = (playerId: string, updates: Partial<Player>) => {
-    const updatedPlayers = players.map(player => 
-      player.id === playerId ? { ...player, ...updates } : player
-    );
+    console.log(`Updating player ${playerId} with:`, updates);
+    console.log('Current players before update:', players);
+    
+    const updatedPlayers = players.map(player => {
+      if (player.id === playerId) {
+        const updatedPlayer = { ...player, ...updates };
+        console.log(`Player ${playerId} updated:`, updatedPlayer);
+        return updatedPlayer;
+      }
+      return player;
+    });
+    
+    console.log('Updated players array:', updatedPlayers);
     
     // Also update legacy formData fields for backwards compatibility
     const heroPlayer = updatedPlayers.find(p => p.isHero);

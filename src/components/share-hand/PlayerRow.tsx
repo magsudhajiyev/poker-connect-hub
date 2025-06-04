@@ -27,6 +27,11 @@ const PlayerRow = ({
   // Check if a player should be highlighted - ONLY when validation errors are being shown AND position is empty
   const shouldHighlightPlayer = showValidationErrors && (!player.position || player.position.trim() === '');
 
+  const handlePositionChange = (value: string) => {
+    console.log(`Position change for player ${player.id} (${player.name}): ${value}`);
+    onUpdatePlayer(player.id, { position: value });
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 p-3 bg-slate-900/30 rounded-lg border border-slate-700/30">
       <div className="space-y-2">
@@ -61,7 +66,7 @@ const PlayerRow = ({
         )}
         <Select 
           value={player.position} 
-          onValueChange={(value) => onUpdatePlayer(player.id, { position: value })}
+          onValueChange={handlePositionChange}
         >
           <SelectTrigger className={`bg-slate-800/50 border-slate-700/50 text-slate-200 h-8 text-xs ${
             shouldHighlightPlayer ? 'border-red-500' : ''
