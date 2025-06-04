@@ -78,6 +78,32 @@ export const getAvailableActions = (street: string, actionIndex: number, allActi
   // Get all previous actions in this street
   const previousActions = allActions.slice(0, actionIndex);
   
+  // Special handling for preflop - big blind creates a betting situation
+  if (street === 'preflopActions') {
+    // Check if there's been any betting action beyond the big blind
+    const hasBetting = previousActions.some(action => 
+      action.action === 'bet' || action.action === 'raise'
+    );
+    
+    // Check if this is the first action in the street
+    const isFirstAction = actionIndex === 0;
+    
+    if (hasBetting) {
+      // If there's been betting beyond the blinds, player can fold, call, or raise
+      return ['fold', 'call', 'raise'];
+    } else {
+      // For the first action preflop, player faces the big blind
+      if (isFirstAction || previousActions.every(action => action.action === 'fold' || action.action === 'call')) {
+        // First to act or facing only folds/calls - can fold, call (match BB), or raise
+        return ['fold', 'call', 'raise'];
+      } else {
+        // If someone has checked (shouldn't happen preflop but just in case)
+        return ['fold', 'call', 'raise'];
+      }
+    }
+  }
+  
+  // Post-flop logic (flop, turn, river)
   // Check if there's been any betting action
   const hasBetting = previousActions.some(action => 
     action.action === 'bet' || action.action === 'raise'
@@ -144,5 +170,5 @@ export const createNextActionStep = (currentAction: ActionStep, players?: Player
 };
 
 export const shouldAddNextAction = (action: string): boolean => {
-  return action === 'bet' || action === 'raise';
+  return action === 'bet' || action === 'raise' || action === 'call';
 };
