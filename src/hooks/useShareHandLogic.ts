@@ -88,6 +88,11 @@ export const useShareHandLogic = () => {
     navigate('/feed');
   };
 
+  // Updated getAvailableActions to accept all parameters
+  const getAvailableActionsWithParams = (street: string, index: number, allActions: any[]) => {
+    return getAvailableActions(street, index, allActions);
+  };
+
   return {
     currentStep,
     setCurrentStep,
@@ -96,7 +101,7 @@ export const useShareHandLogic = () => {
     setFormData,
     steps,
     getPositionName,
-    getAvailableActions,
+    getAvailableActions: getAvailableActionsWithParams,
     getActionButtonClass,
     updateAction,
     handleBetSizeSelect,

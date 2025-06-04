@@ -74,8 +74,36 @@ export const initializeActions = (
   return actionOrder;
 };
 
-export const getAvailableActions = (street: string, index: number): string[] => {
-  return ['fold', 'call', 'bet', 'raise', 'check'];
+export const getAvailableActions = (street: string, actionIndex: number, allActions: ActionStep[]): string[] => {
+  // Get all previous actions in this street
+  const previousActions = allActions.slice(0, actionIndex);
+  
+  // Check if there's been any betting action
+  const hasBetting = previousActions.some(action => 
+    action.action === 'bet' || action.action === 'raise'
+  );
+  
+  // Check if this is the first action in the street
+  const isFirstAction = actionIndex === 0;
+  
+  // Base actions
+  let availableActions: string[] = [];
+  
+  if (hasBetting) {
+    // If there's been betting, player can fold, call, or raise
+    availableActions = ['fold', 'call', 'raise'];
+  } else {
+    // If no betting yet
+    if (isFirstAction || previousActions.every(action => action.action === 'check')) {
+      // First to act or everyone has checked - can check or bet
+      availableActions = ['check', 'bet'];
+    } else {
+      // Someone has acted but no betting - can check, bet, or fold if facing action
+      availableActions = ['check', 'bet'];
+    }
+  }
+  
+  return availableActions;
 };
 
 export const getActionButtonClass = (action: string, isSelected: boolean): string => {

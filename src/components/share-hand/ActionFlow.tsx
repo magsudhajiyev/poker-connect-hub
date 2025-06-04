@@ -11,7 +11,7 @@ interface ActionFlowProps {
   getPositionName: (position: string) => string;
   getCurrencySymbol: () => string;
   calculatePotSize: () => number;
-  getAvailableActions: (street: string, index: number) => string[];
+  getAvailableActions: (street: string, index: number, allActions: any[]) => string[];
   updateAction: (street: any, index: number, action: string, betAmount?: string) => void;
   getActionButtonClass: (action: string, isSelected: boolean) => string;
   handleBetSizeSelect: (street: any, index: number, amount: string) => void;
@@ -40,7 +40,7 @@ const ActionFlow = ({
     <div className="space-y-2 w-full overflow-x-hidden">
       <h4 className="text-sm font-medium text-slate-300">Action Flow</h4>
       {actions.map((actionStep: any, index: number) => {
-        const availableActions = getAvailableActions(street, index);
+        const availableActions = getAvailableActions(street, index, actions);
         
         // Get position from action step or find the player in formData.players
         let playerPosition = actionStep.position;
