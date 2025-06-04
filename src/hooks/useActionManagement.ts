@@ -8,7 +8,7 @@ import {
 
 export const useActionManagement = (
   formData: ShareHandFormData, 
-  setFormData: (data: ShareHandFormData) => void
+  setFormData: (data: ShareHandFormData | ((prev: ShareHandFormData) => ShareHandFormData)) => void
 ) => {
   const addNextActionStep = (street: StreetType, currentIndex: number) => {
     const actions = formData[street];
@@ -28,7 +28,7 @@ export const useActionManagement = (
         const updatedActions = [...actions, nextActionStep];
         console.log(`Adding next action step for ${nextActionStep.playerName}`, updatedActions);
         
-        setFormData(prev => ({ ...prev, [street]: updatedActions }));
+        setFormData((prev: ShareHandFormData) => ({ ...prev, [street]: updatedActions }));
       }
     }
   };
@@ -36,7 +36,7 @@ export const useActionManagement = (
   const updateAction = (street: StreetType, index: number, action: string, betAmount?: string) => {
     console.log(`Updating action at index ${index} on ${street}:`, action, betAmount);
     
-    setFormData(prev => {
+    setFormData((prev: ShareHandFormData) => {
       const updatedActions = [...prev[street]];
       const previousAction = updatedActions[index].action;
       
@@ -81,7 +81,7 @@ export const useActionManagement = (
   const handleBetSizeSelect = (street: StreetType, index: number, amount: string) => {
     console.log(`Bet size selected: ${amount} for index ${index} on ${street}`);
     
-    setFormData(prev => {
+    setFormData((prev: ShareHandFormData) => {
       const updatedActions = [...prev[street]];
       const currentAction = updatedActions[index];
       
