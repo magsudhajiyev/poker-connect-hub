@@ -3,9 +3,13 @@ import { useState, useEffect } from 'react';
 import { Player, ShareHandFormData } from '@/types/shareHand';
 
 export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (data: ShareHandFormData) => void) => {
+  const [isInitialized, setIsInitialized] = useState(false);
+
   // Initialize players in useEffect to avoid state update during render
   useEffect(() => {
-    if (!formData.players || formData.players.length === 0) {
+    if (!isInitialized && (!formData.players || formData.players.length === 0)) {
+      console.log('Initializing players for the first time');
+      
       const heroPlayer: Player = {
         id: 'hero',
         name: 'Hero',
@@ -25,8 +29,10 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
         ...formData,
         players: [heroPlayer, villainPlayer]
       });
+      
+      setIsInitialized(true);
     }
-  }, [formData, setFormData]);
+  }, [formData.heroPosition, formData.villainPosition, isInitialized, formData, setFormData]);
 
   const players: Player[] = formData.players || [];
 

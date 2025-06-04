@@ -112,7 +112,10 @@ export const useActionManagement = (
   };
 
   const initializeActionsForPositions = () => {
-    if (formData.heroPosition && formData.villainPosition) {
+    // Only initialize if we have both positions and players
+    if (formData.heroPosition && formData.villainPosition && formData.players && formData.players.length > 0) {
+      console.log('Initializing actions with players:', formData.players);
+      
       const streets: StreetType[] = [
         'preflopActions', 'flopActions', 'turnActions', 'riverActions'
       ];
@@ -146,6 +149,12 @@ export const useActionManagement = (
         console.log('Updated actions for all streets with new players:', updatedFormData);
         setFormData(updatedFormData);
       }
+    } else {
+      console.log('Skipping action initialization - missing data:', {
+        heroPosition: formData.heroPosition,
+        villainPosition: formData.villainPosition,
+        players: formData.players
+      });
     }
   };
 

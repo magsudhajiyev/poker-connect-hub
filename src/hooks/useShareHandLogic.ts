@@ -22,6 +22,7 @@ export const useShareHandLogic = () => {
     villainPosition: '',
     heroStackSize: [100],
     villainStackSize: [100],
+    players: [], // Initialize as empty array instead of undefined
     holeCards: [] as string[],
     flopCards: [] as string[],
     turnCard: [] as string[],
