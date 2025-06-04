@@ -1,3 +1,4 @@
+
 import { ActionStep, StreetType, ShareHandFormData, Player } from '@/types/shareHand';
 import { positionOrder } from './shareHandConstants';
 import { createGameState, updateGameState, GameState } from './gameState';
@@ -167,7 +168,7 @@ function isRoundComplete(gameState: GameState): boolean {
 }
 
 function advanceToNextRound(gameState: GameState): void {
-  const roundOrder: Array<'preflop' | 'flop' | 'turn' | 'river' | 'showdown'> = 
+  const roundOrder: Array<GameState['round']> = 
     ['preflop', 'flop', 'turn', 'river', 'showdown'];
   
   const currentIndex = roundOrder.indexOf(gameState.round);

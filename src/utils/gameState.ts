@@ -16,7 +16,7 @@ export interface ActionHistoryEntry {
 }
 
 export interface GameState {
-  round: 'preflop' | 'flop' | 'turn' | 'river';
+  round: 'preflop' | 'flop' | 'turn' | 'river' | 'showdown';
   activePlayers: GameStatePlayer[];
   currentPosition: string;
   currentBet: number;
