@@ -1,24 +1,44 @@
 
 import { ValidationResult, StreetType, ShareHandFormData } from '@/types/shareHand';
 
+export interface DetailedValidationResult extends ValidationResult {
+  invalidPlayerId?: string;
+}
+
 export const validateCurrentStep = (
   currentStep: number,
   formData: ShareHandFormData
-): ValidationResult => {
+): DetailedValidationResult => {
   // Validate game setup step (step 0)
   if (currentStep === 0) {
-    if (!formData.heroPosition || formData.heroPosition.trim() === '') {
-      return {
-        isValid: false,
-        message: 'Please select Hero position before proceeding.'
-      };
-    }
-    
-    if (!formData.villainPosition || formData.villainPosition.trim() === '') {
-      return {
-        isValid: false,
-        message: 'Please select Villain position before proceeding.'
-      };
+    // Check if players exist and validate their positions
+    if (formData.players && formData.players.length > 0) {
+      for (const player of formData.players) {
+        if (!player.position || player.position.trim() === '') {
+          return {
+            isValid: false,
+            message: `Please select position for ${player.name}`,
+            invalidPlayerId: player.id
+          };
+        }
+      }
+    } else {
+      // Fallback to legacy validation for backwards compatibility
+      if (!formData.heroPosition || formData.heroPosition.trim() === '') {
+        return {
+          isValid: false,
+          message: 'Please select Hero position before proceeding.',
+          invalidPlayerId: 'hero'
+        };
+      }
+      
+      if (!formData.villainPosition || formData.villainPosition.trim() === '') {
+        return {
+          isValid: false,
+          message: 'Please select Villain position before proceeding.',
+          invalidPlayerId: 'villain'
+        };
+      }
     }
     
     return { isValid: true, message: '' };

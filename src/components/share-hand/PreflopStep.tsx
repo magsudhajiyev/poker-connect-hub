@@ -1,9 +1,9 @@
-
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import CardInput from '@/components/CardInput';
 import PotDisplay from './PotDisplay';
 import ActionFlow from './ActionFlow';
+import SelectedPositionsDisplay from './SelectedPositionsDisplay';
 
 interface PreflopStepProps {
   formData: any;
@@ -35,11 +35,12 @@ const PreflopStep = ({
   const potSize = calculatePotSize();
 
   return (
-    <div className="space-y-3">
-      {showPot && (
-        <PotDisplay potSize={potSize} getCurrencySymbol={getCurrencySymbol} />
-      )}
-
+    <div className="space-y-4">
+      <h3 className="text-base font-medium text-slate-200 mb-3">Preflop</h3>
+      
+      {/* Show selected positions */}
+      <SelectedPositionsDisplay players={formData.players || []} />
+      
       <h3 className="text-base font-medium text-slate-200 mb-2">Preflop Action</h3>
       
       <CardInput

@@ -17,6 +17,7 @@ export const useShareHandLogic = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [tags, setTags] = useState<string[]>(['bluff', 'tournament']);
+  const [invalidPlayerId, setInvalidPlayerId] = useState<string | undefined>();
   
   const [formData, setFormData] = useState<ShareHandFormData>({
     gameType: '',
@@ -181,9 +182,13 @@ export const useShareHandLogic = () => {
   const nextStep = () => {
     const validation = validateCurrentStep(currentStep, formData);
     if (!validation.isValid) {
-      alert(validation.message); // Simple alert for now, could be replaced with toast
+      // Set the invalid player ID for highlighting
+      setInvalidPlayerId(validation.invalidPlayerId);
       return;
     }
+    
+    // Clear any previous validation errors
+    setInvalidPlayerId(undefined);
     
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -191,6 +196,9 @@ export const useShareHandLogic = () => {
   };
 
   const prevStep = () => {
+    // Clear validation errors when going back
+    setInvalidPlayerId(undefined);
+    
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
@@ -199,7 +207,7 @@ export const useShareHandLogic = () => {
   const handleSubmit = () => {
     const validation = validateCurrentStep(currentStep, formData);
     if (!validation.isValid) {
-      alert(validation.message);
+      setInvalidPlayerId(validation.invalidPlayerId);
       return;
     }
     
@@ -229,6 +237,7 @@ export const useShareHandLogic = () => {
     removeTag,
     nextStep,
     prevStep,
-    handleSubmit
+    handleSubmit,
+    invalidPlayerId
   };
 };

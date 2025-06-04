@@ -5,11 +5,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Check, AlertCircle, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 
 interface GameSetupStepProps {
   formData: any;
   setFormData: (data: any) => void;
   showValidationErrors?: boolean;
+  invalidPlayerId?: string;
 }
 
 interface Player {
@@ -20,10 +22,18 @@ interface Player {
   isHero?: boolean;
 }
 
-const GameSetupStep = ({ formData, setFormData, showValidationErrors = false }: GameSetupStepProps) => {
-  // Only highlight if validation errors should be shown AND the field is empty
-  const shouldHighlightHero = showValidationErrors && !formData.heroPosition;
-  const shouldHighlightVillain = showValidationErrors && !formData.villainPosition;
+const GameSetupStep = ({ formData, setFormData, showValidationErrors = false, invalidPlayerId }: GameSetupStepProps) => {
+  const invalidPlayerRef = useRef<HTMLDivElement>(null);
+  
+  // Scroll to invalid player when validation error occurs
+  useEffect(() => {
+    if (showValidationErrors && invalidPlayerId && invalidPlayerRef.current) {
+      invalidPlayerRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }
+  }, [showValidationErrors, invalidPlayerId]);
 
   const getStackSizeLabel = () => {
     return formData.gameFormat === 'cash' ? 'Stack Size ($)' : 'Stack Size (BB)';
@@ -133,6 +143,11 @@ const GameSetupStep = ({ formData, setFormData, showValidationErrors = false }: 
     });
   };
 
+  // Check if this player should be highlighted
+  const shouldHighlightPlayer = (playerId: string) => {
+    return showValidationErrors && invalidPlayerId === playerId;
+  };
+
   return (
     <div className="space-y-4">
       <h3 className="text-base font-medium text-slate-200 mb-3">Game Setup</h3>
@@ -220,7 +235,15 @@ const GameSetupStep = ({ formData, setFormData, showValidationErrors = false }: 
 
         <div className="space-y-3">
           {players.map((player, index) => (
-            <div key={player.id} className="grid grid-cols-1 lg:grid-cols-3 gap-3 p-3 bg-slate-900/30 rounded-lg border border-slate-700/30">
+            <div 
+              key={player.id} 
+              ref={shouldHighlightPlayer(player.id) ? invalidPlayerRef : null}
+              className={`grid grid-cols-1 lg:grid-cols-3 gap-3 p-3 rounded-lg border transition-all duration-300 ${
+                shouldHighlightPlayer(player.id)
+                  ? 'bg-red-900/20 border-red-500/50 ring-2 ring-red-500/50'
+                  : 'bg-slate-900/30 border-slate-700/30'
+              }`}
+            >
               <div className="space-y-2">
                 <Label className="text-slate-300 text-xs">Player Name</Label>
                 <Input
@@ -232,53 +255,48 @@ const GameSetupStep = ({ formData, setFormData, showValidationErrors = false }: 
               </div>
 
               <div className="space-y-2">
-                <div className={`${
-                  (player.isHero && shouldHighlightHero) || (!player.isHero && player.id === 'villain' && shouldHighlightVillain) 
-                    ? 'ring-2 ring-red-500 rounded-md p-2' : ''
-                }`}>
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <Label className="text-slate-300 text-xs">Position</Label>
-                      {((player.isHero && shouldHighlightHero) || (!player.isHero && player.id === 'villain' && shouldHighlightVillain)) && 
-                        <AlertCircle className="w-3 h-3 text-red-500" />}
-                    </div>
-                    {!player.isHero && player.id !== 'villain' && (
-                      <Button
-                        onClick={() => removePlayer(player.id)}
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 text-slate-400 hover:text-red-400"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-slate-300 text-xs">Position</Label>
+                    {shouldHighlightPlayer(player.id) && (
+                      <AlertCircle className="w-3 h-3 text-red-500" />
                     )}
                   </div>
-                  {((player.isHero && shouldHighlightHero) || (!player.isHero && player.id === 'villain' && shouldHighlightVillain)) && (
-                    <p className="text-red-400 text-xs mb-2">Please select position</p>
+                  {!player.isHero && player.id !== 'villain' && (
+                    <Button
+                      onClick={() => removePlayer(player.id)}
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-slate-400 hover:text-red-400"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
                   )}
-                  <Select 
-                    value={player.position} 
-                    onValueChange={(value) => updatePlayer(player.id, { position: value })}
-                  >
-                    <SelectTrigger className={`bg-slate-800/50 border-slate-700/50 text-slate-200 h-8 text-xs ${
-                      (player.isHero && shouldHighlightHero) || (!player.isHero && player.id === 'villain' && shouldHighlightVillain) 
-                        ? 'border-red-500' : ''
-                    }`}>
-                      <SelectValue placeholder="Select position" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
-                      {getAvailablePositions(player.id).map((position) => (
-                        <SelectItem 
-                          key={position.value} 
-                          value={position.value}
-                          className="text-white hover:bg-slate-700 focus:bg-slate-700"
-                        >
-                          {position.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
+                {shouldHighlightPlayer(player.id) && (
+                  <p className="text-red-400 text-xs mb-2">Please select position</p>
+                )}
+                <Select 
+                  value={player.position} 
+                  onValueChange={(value) => updatePlayer(player.id, { position: value })}
+                >
+                  <SelectTrigger className={`bg-slate-800/50 border-slate-700/50 text-slate-200 h-8 text-xs ${
+                    shouldHighlightPlayer(player.id) ? 'border-red-500 ring-1 ring-red-500' : ''
+                  }`}>
+                    <SelectValue placeholder="Select position" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700 z-50">
+                    {getAvailablePositions(player.id).map((position) => (
+                      <SelectItem 
+                        key={position.value} 
+                        value={position.value}
+                        className="text-white hover:bg-slate-700 focus:bg-slate-700"
+                      >
+                        {position.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">

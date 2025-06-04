@@ -27,7 +27,8 @@ const ShareHandForm = () => {
     updateAction,
     getActionButtonClass,
     handleBetSizeSelect,
-    getAllSelectedCards
+    getAllSelectedCards,
+    invalidPlayerId
   } = useShareHandContext();
 
   const renderStepContent = () => {
@@ -48,7 +49,11 @@ const ShareHandForm = () => {
 
     switch (currentStep) {
       case 0:
-        return <GameSetupStep {...commonProps} showValidationErrors={showValidationErrors} />;
+        return <GameSetupStep 
+          {...commonProps} 
+          showValidationErrors={showValidationErrors} 
+          invalidPlayerId={invalidPlayerId}
+        />;
       case 1:
         return <PreflopStep {...commonProps} showPot={showPot} />;
       case 2:
