@@ -64,14 +64,11 @@ const GameSetupStep = ({ formData, setFormData, showValidationErrors = false }: 
     initializePlayers();
   }
 
-  // Get all available positions
+  // Get all available positions (limited to 9 for max poker game size)
   const allPositions = [
     { value: 'utg', label: 'UTG' },
     { value: 'utg1', label: 'UTG+1' },
-    { value: 'utg2', label: 'UTG+2' },
     { value: 'mp', label: 'Middle Position' },
-    { value: 'mp1', label: 'MP+1' },
-    { value: 'mp2', label: 'MP+2' },
     { value: 'lj', label: 'Lojack' },
     { value: 'hj', label: 'Hijack' },
     { value: 'co', label: 'Cut Off' },
@@ -225,19 +222,7 @@ const GameSetupStep = ({ formData, setFormData, showValidationErrors = false }: 
           {players.map((player, index) => (
             <div key={player.id} className="grid grid-cols-1 lg:grid-cols-3 gap-3 p-3 bg-slate-900/30 rounded-lg border border-slate-700/30">
               <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-slate-300 text-xs">Player Name</Label>
-                  {!player.isHero && player.id !== 'villain' && (
-                    <Button
-                      onClick={() => removePlayer(player.id)}
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 text-slate-400 hover:text-red-400"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  )}
-                </div>
+                <Label className="text-slate-300 text-xs">Player Name</Label>
                 <Input
                   value={player.name}
                   onChange={(e) => updatePlayer(player.id, { name: e.target.value })}
@@ -251,10 +236,22 @@ const GameSetupStep = ({ formData, setFormData, showValidationErrors = false }: 
                   (player.isHero && shouldHighlightHero) || (!player.isHero && player.id === 'villain' && shouldHighlightVillain) 
                     ? 'ring-2 ring-red-500 rounded-md p-2' : ''
                 }`}>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Label className="text-slate-300 text-xs">Position</Label>
-                    {((player.isHero && shouldHighlightHero) || (!player.isHero && player.id === 'villain' && shouldHighlightVillain)) && 
-                      <AlertCircle className="w-3 h-3 text-red-500" />}
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-slate-300 text-xs">Position</Label>
+                      {((player.isHero && shouldHighlightHero) || (!player.isHero && player.id === 'villain' && shouldHighlightVillain)) && 
+                        <AlertCircle className="w-3 h-3 text-red-500" />}
+                    </div>
+                    {!player.isHero && player.id !== 'villain' && (
+                      <Button
+                        onClick={() => removePlayer(player.id)}
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-slate-400 hover:text-red-400"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    )}
                   </div>
                   {((player.isHero && shouldHighlightHero) || (!player.isHero && player.id === 'villain' && shouldHighlightVillain)) && (
                     <p className="text-red-400 text-xs mb-2">Please select position</p>

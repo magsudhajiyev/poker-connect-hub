@@ -1,13 +1,10 @@
 
-export const positionOrder = ['utg', 'utg1', 'utg2', 'mp', 'mp1', 'mp2', 'lj', 'hj', 'co', 'btn', 'sb', 'bb'];
+export const positionOrder = ['utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn', 'sb', 'bb'];
 
 export const positionNames: { [key: string]: string } = {
   'utg': 'UTG',
   'utg1': 'UTG+1',
-  'utg2': 'UTG+2',
   'mp': 'Middle Position',
-  'mp1': 'MP+1',
-  'mp2': 'MP+2',
   'lj': 'Lojack',
   'hj': 'Hijack',
   'co': 'Cut Off',
