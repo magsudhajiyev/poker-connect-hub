@@ -54,7 +54,7 @@ const ShareHandContent = () => {
              style={{
                left: window.innerWidth >= 1024 ? (isCollapsed ? '3rem' : '16rem') : '0',
              }}>
-          <div className="flex items-center justify-between h-16 px-4">
+          <div className="flex items-center justify-between h-16 pl-0 pr-4 lg:px-4">
             <div className="flex items-center space-x-4">
               <MobileSidebar />
               <h1 className="text-lg font-semibold text-slate-200 lg:hidden">Share Hand</h1>
