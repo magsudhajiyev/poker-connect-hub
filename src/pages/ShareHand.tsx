@@ -4,7 +4,7 @@ import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalS
 import { MobileSidebarContent } from '@/components/MobileSidebarContent';
 import { ShareHandProvider } from '@/components/share-hand/ShareHandProvider';
 import ShareHandHeader from '@/components/share-hand/ShareHandHeader';
-import ShareHandForm from '@/components/share-hand/ShareHandForm';
+import TableShareHandForm from '@/components/share-hand/TableShareHandForm';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -63,7 +63,7 @@ const ShareHandContent = () => {
         >
           <div className="flex items-center justify-between h-16 px-4">
             <div className="flex items-center space-x-4">
-              <MobileSidebar />
+              {/* <MobileSidebar /> */}
               <h1 className="text-lg font-semibold text-slate-200 lg:hidden">Share Hand</h1>
             </div>
           </div>
@@ -77,10 +77,10 @@ const ShareHandContent = () => {
         {/* Main Content */}
         <main className="flex-1 pt-16">
           <div className="w-full px-2 sm:px-3 md:px-4 py-3 sm:py-4 md:py-6">
-            <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4 md:space-y-6">
+            <div className="max-w-6xl mx-auto space-y-3 sm:space-y-4 md:space-y-6">
               <ShareHandProvider>
                 <ShareHandHeader />
-                <ShareHandForm />
+                <TableShareHandForm />
               </ShareHandProvider>
             </div>
           </div>
