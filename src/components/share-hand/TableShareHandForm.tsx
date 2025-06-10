@@ -39,14 +39,6 @@ const TableShareHandForm = () => {
         <GameSetupStep 
           formData={formData}
           setFormData={setFormData}
-          getPositionName={getPositionName}
-          getCurrencySymbol={getCurrencySymbol}
-          calculatePotSize={calculatePotSize}
-          getAvailableActions={getAvailableActions}
-          updateAction={updateAction}
-          getActionButtonClass={getActionButtonClass}
-          handleBetSizeSelect={handleBetSizeSelect}
-          getAllSelectedCards={getAllSelectedCards}
           showValidationErrors={showValidationErrors}
         />
       );

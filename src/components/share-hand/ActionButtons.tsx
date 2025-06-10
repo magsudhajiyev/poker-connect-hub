@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Player } from '@/types/shareHand';
+import { Player, StreetType } from '@/types/shareHand';
 import { useShareHandContext } from './ShareHandProvider';
 
 interface ActionButtonsProps {
@@ -16,7 +16,15 @@ const ActionButtons = ({ player, formData, setFormData, currentStep }: ActionBut
   const [betAmount, setBetAmount] = useState('');
   const { gameStateUI, getAvailableActions, updateAction } = useShareHandContext();
   
-  const streetMap = ['', '', 'preflopActions', 'flopActions', 'turnActions', 'riverActions'];
+  const streetMap: { [key: number]: StreetType | '' } = {
+    0: '',
+    1: '',
+    2: 'preflopActions',
+    3: 'flopActions',
+    4: 'turnActions',
+    5: 'riverActions'
+  };
+  
   const street = streetMap[currentStep];
   
   if (!street) return null;
