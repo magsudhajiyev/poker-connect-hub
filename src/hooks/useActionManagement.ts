@@ -1,12 +1,11 @@
+
 import { ShareHandFormData, StreetType, ActionStep } from '@/types/shareHand';
 import { 
   initializeActions, 
   createNextActionStep, 
   shouldAddNextAction,
-  processAction,
-  createGameStateFromFormData
+  removeFoldedPlayerFromFutureStreets
 } from '@/utils/shareHandActions';
-import { GameState } from '@/utils/gameState';
 
 export const useActionManagement = (
   formData: ShareHandFormData, 
@@ -42,47 +41,6 @@ export const useActionManagement = (
     }
   };
 
-  const advanceToNextPlayer = (street: StreetType, currentIndex: number, action: string, betAmount?: string) => {
-    console.log(`Advancing to next player after ${action} action`);
-    
-    // Get current game state
-    const gameState = gameStateUI?.gameState || createGameStateFromFormData(formData, street);
-    
-    // Get the current action step to find the player position
-    const actions = formData[street];
-    const currentActionStep = actions[currentIndex];
-    
-    if (!currentActionStep || !currentActionStep.position) {
-      console.warn('Cannot advance: missing action step or position');
-      return;
-    }
-    
-    // Process the action through game state to determine next player
-    try {
-      let amount = 0;
-      if (action === 'bet' || action === 'raise') {
-        amount = parseFloat(betAmount || '0');
-      } else if (action === 'call' && gameState) {
-        amount = gameState.currentBet || 0;
-      }
-      
-      const newGameState = processAction(gameState, currentActionStep.position, action, amount);
-      
-      // Update game state in UI IMMEDIATELY for real-time UI updates
-      if (gameStateUI?.updateGameState) {
-        console.log('IMMEDIATELY updating game state for UI sync:', {
-          currentPlayer: newGameState.currentPosition,
-          round: newGameState.round,
-          activePlayers: newGameState.activePlayers.filter(p => p.isActive).map(p => p.position)
-        });
-        gameStateUI.updateGameState(newGameState);
-      }
-      
-    } catch (error) {
-      console.error('Error processing action in game state:', error);
-    }
-  };
-
   const updateAction = (street: StreetType, index: number, action: string, betAmount?: string) => {
     console.log(`Updating action at index ${index} on ${street}:`, action, betAmount);
     
@@ -115,9 +73,6 @@ export const useActionManagement = (
         const actionsToKeep = updatedActions.slice(0, index + 1);
         const newFormData = { ...prev, [street]: actionsToKeep };
         
-        // Advance to next player IMMEDIATELY (no setTimeout delay)
-        advanceToNextPlayer(street, index, action, validBetAmount);
-        
         // If the new action is bet or raise, add next action step
         if (shouldAddNextAction(action)) {
           setTimeout(() => {
@@ -129,9 +84,6 @@ export const useActionManagement = (
       }
       
       const newFormData = { ...prev, [street]: updatedActions };
-      
-      // Advance to next player IMMEDIATELY (no setTimeout delay)
-      advanceToNextPlayer(street, index, action, validBetAmount);
       
       // If this is a bet or raise action, add next action step
       if (shouldAddNextAction(action)) {
@@ -170,9 +122,6 @@ export const useActionManagement = (
         betAmount: amount,
         completed: true
       };
-      
-      // Advance to next player IMMEDIATELY (no setTimeout delay)
-      advanceToNextPlayer(street, index, currentAction.action || '', amount);
       
       // Add next action step if this is a bet or raise and it doesn't already exist
       if (currentAction.action && shouldAddNextAction(currentAction.action)) {
