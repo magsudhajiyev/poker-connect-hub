@@ -37,8 +37,6 @@ const PokerTable = ({
     'bb': { mobile: { x: 35, y: 15 }, desktop: { x: 35, y: 15 } }
   };
 
-  const tableShape = isMobile ? 'ellipse' : 'rounded-rectangle';
-
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
       {/* Pot Display */}
@@ -57,9 +55,7 @@ const PokerTable = ({
         {/* Table Surface */}
         <div 
           className={`absolute inset-0 bg-gradient-to-br from-green-800 to-green-900 border-4 border-amber-600 shadow-2xl ${
-            tableShape === 'ellipse' 
-              ? 'rounded-full' 
-              : 'rounded-3xl'
+            isMobile ? 'rounded-full' : 'rounded-full'
           }`}
           style={{
             background: 'radial-gradient(ellipse at center, #1f7a3c, #15593f, #0d3520)',
@@ -68,9 +64,7 @@ const PokerTable = ({
         >
           {/* Table Inner Shadow */}
           <div 
-            className={`absolute inset-4 border-2 border-amber-700/30 ${
-              tableShape === 'ellipse' ? 'rounded-full' : 'rounded-2xl'
-            }`}
+            className={`absolute inset-4 border-2 border-amber-700/30 rounded-full`}
             style={{
               boxShadow: 'inset 0 0 30px rgba(0,0,0,0.2)'
             }}
