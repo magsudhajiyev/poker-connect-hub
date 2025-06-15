@@ -26,9 +26,9 @@ const EmptySeatDisplay = ({ position }: EmptySeatDisplayProps) => {
   };
 
   return (
-    <div className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16 sm:w-20 sm:h-20'} rounded-full border-2 border-dashed border-slate-500 bg-slate-800/40 hover:bg-slate-700/60 transition-all duration-300 flex flex-col items-center justify-center group`}>
-      <Plus className={`${isMobile ? 'w-4 h-4' : 'w-6 h-6'} text-slate-400 group-hover:text-slate-300`} />
-      <div className={`${isMobile ? 'text-[9px]' : 'text-xs'} text-slate-400 font-bold bg-slate-700/50 px-1 py-0.5 rounded mt-1`}>
+    <div className={`${isMobile ? 'w-11 h-11' : 'w-16 h-16 sm:w-20 sm:h-20'} rounded-full border-2 border-dashed border-slate-500 bg-slate-800/40 hover:bg-slate-700/60 transition-all duration-300 flex flex-col items-center justify-center group`}>
+      <Plus className={`${isMobile ? 'w-3.5 h-3.5' : 'w-6 h-6'} text-slate-400 group-hover:text-slate-300`} />
+      <div className={`${isMobile ? 'text-[8px]' : 'text-xs'} text-slate-400 font-bold bg-slate-700/50 px-1 py-0.5 rounded mt-1`}>
         {getPositionLabel(position)}
       </div>
     </div>

@@ -42,7 +42,7 @@ const PlayerSeat = ({ player, position, isActive = false, gameFormat = 'cash' }:
       <div className={`flex flex-col items-center space-y-1 ${isActive ? 'z-30' : 'z-20'}`}>
         {/* Player Avatar/Chip Stack */}
         <div 
-          className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16 sm:w-20 sm:h-20'} rounded-full border-3 flex flex-col items-center justify-center text-xs font-bold transition-all duration-300 ${
+          className={`${isMobile ? 'w-11 h-11' : 'w-16 h-16 sm:w-20 sm:h-20'} rounded-full border-3 flex flex-col items-center justify-center text-xs font-bold transition-all duration-300 ${
             isActive 
               ? 'border-emerald-400 bg-emerald-500/30 shadow-lg shadow-emerald-400/50' 
               : player.isHero
@@ -51,7 +51,7 @@ const PlayerSeat = ({ player, position, isActive = false, gameFormat = 'cash' }:
           }`}
         >
           {/* Stack Size */}
-          <div className={`${isMobile ? 'text-[10px]' : 'text-xs sm:text-sm'} font-bold ${
+          <div className={`${isMobile ? 'text-[9px]' : 'text-xs sm:text-sm'} font-bold ${
             isActive ? 'text-emerald-200' : player.isHero ? 'text-blue-200' : 'text-slate-100'
           }`}>
             {gameFormat === 'cash' ? '$' : ''}{player.stackSize[0]}{gameFormat === 'mtt' ? 'BB' : ''}
@@ -61,14 +61,14 @@ const PlayerSeat = ({ player, position, isActive = false, gameFormat = 'cash' }:
         {/* Player Info */}
         <div className="flex flex-col items-center space-y-0.5">
           {/* Player Name */}
-          <div className={`${isMobile ? 'text-[11px]' : 'text-sm sm:text-base'} font-medium px-2 py-1 rounded bg-slate-800/80 text-center ${isMobile ? 'max-w-20' : 'max-w-24'} truncate border ${
+          <div className={`${isMobile ? 'text-[10px]' : 'text-sm sm:text-base'} font-medium px-2 py-1 rounded bg-slate-800/80 text-center ${isMobile ? 'max-w-20' : 'max-w-24'} truncate border ${
             player.isHero ? 'text-blue-200 border-blue-400/30' : 'text-slate-100 border-slate-500/30'
           }`}>
             {player.name}
           </div>
           
           {/* Position Label */}
-          <div className={`${isMobile ? 'text-[9px]' : 'text-xs'} text-slate-300 font-bold bg-slate-700/50 px-1 py-0.5 rounded`}>
+          <div className={`${isMobile ? 'text-[8px]' : 'text-xs'} text-slate-300 font-bold bg-slate-700/50 px-1 py-0.5 rounded`}>
             {getPositionLabel(player.position)}
           </div>
         </div>

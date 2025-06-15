@@ -31,7 +31,7 @@ const PlayerSeatDisplay = ({ player, position, gameFormat }: PlayerSeatDisplayPr
   return (
     <div className="flex flex-col items-center space-y-1">
       <div 
-        className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16 sm:w-20 sm:h-20'} rounded-full border-3 flex flex-col items-center justify-center text-xs font-bold transition-all duration-300 hover:scale-105 ${
+        className={`${isMobile ? 'w-11 h-11' : 'w-16 h-16 sm:w-20 sm:h-20'} rounded-full border-3 flex flex-col items-center justify-center text-xs font-bold transition-all duration-300 hover:scale-105 ${
           player.isHero
             ? 'border-blue-400 bg-blue-500/30 shadow-md'
             : 'border-slate-300 bg-slate-600/40 shadow-md'
@@ -39,11 +39,11 @@ const PlayerSeatDisplay = ({ player, position, gameFormat }: PlayerSeatDisplayPr
       >
         {/* Hero Crown */}
         {player.isHero && (
-          <Crown className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-yellow-400 mb-1`} />
+          <Crown className={`${isMobile ? 'w-2.5 h-2.5' : 'w-4 h-4'} text-yellow-400 mb-1`} />
         )}
         
         {/* Stack Size */}
-        <div className={`${isMobile ? 'text-[10px]' : 'text-xs sm:text-sm'} font-bold ${
+        <div className={`${isMobile ? 'text-[9px]' : 'text-xs sm:text-sm'} font-bold ${
           player.isHero ? 'text-blue-200' : 'text-slate-100'
         }`}>
           {gameFormat === 'cash' ? '$' : ''}{player.stackSize[0]}{gameFormat === 'mtt' ? 'BB' : ''}
@@ -52,13 +52,13 @@ const PlayerSeatDisplay = ({ player, position, gameFormat }: PlayerSeatDisplayPr
 
       {/* Player Info */}
       <div className="flex flex-col items-center space-y-0.5">
-        <div className={`${isMobile ? 'text-[11px]' : 'text-sm sm:text-base'} font-medium px-2 py-1 rounded bg-slate-800/80 text-center ${isMobile ? 'max-w-20' : 'max-w-24'} truncate border ${
+        <div className={`${isMobile ? 'text-[10px]' : 'text-sm sm:text-base'} font-medium px-2 py-1 rounded bg-slate-800/80 text-center ${isMobile ? 'max-w-20' : 'max-w-24'} truncate border ${
           player.isHero ? 'text-blue-200 border-blue-400/30' : 'text-slate-100 border-slate-500/30'
         }`}>
           {player.name}
         </div>
         
-        <div className={`${isMobile ? 'text-[9px]' : 'text-xs'} text-slate-300 font-bold bg-slate-700/50 px-1 py-0.5 rounded`}>
+        <div className={`${isMobile ? 'text-[8px]' : 'text-xs'} text-slate-300 font-bold bg-slate-700/50 px-1 py-0.5 rounded`}>
           {getPositionLabel(position)}
         </div>
       </div>
