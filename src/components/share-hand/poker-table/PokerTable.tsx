@@ -1,4 +1,3 @@
-
 import React from 'react';
 import ClickablePlayerSeat from './ClickablePlayerSeat';
 import CommunityCards from './CommunityCards';
@@ -90,29 +89,52 @@ const PokerTable = ({
 
   // Check if it's this player's turn to act
   const isPlayerToAct = (position: string) => {
-    if (!currentStreet || !formData) return false;
+    if (!currentStreet || !formData) {
+      console.log('No currentStreet or formData for isPlayerToAct check');
+      return false;
+    }
     
     const actions = formData[currentStreet];
-    if (!actions || actions.length === 0) return false;
+    if (!actions || actions.length === 0) {
+      console.log('No actions found for street:', currentStreet);
+      return false;
+    }
     
     const player = getPlayerAtPosition(position);
-    if (!player) return false;
+    if (!player) {
+      console.log('No player found at position:', position);
+      return false;
+    }
     
-    // Find the first incomplete action
+    // Find the first incomplete action (next to act)
     const nextActionIndex = actions.findIndex((action: any) => !action.completed);
-    if (nextActionIndex === -1) return false;
+    if (nextActionIndex === -1) {
+      console.log('No incomplete actions found');
+      return false;
+    }
     
     const nextAction = actions[nextActionIndex];
-    console.log('Checking if player to act:', {
+    const isMatch = nextAction.playerId === player.id;
+    
+    console.log('DETAILED isPlayerToAct check:', {
       position,
+      playerName: player.name,
       playerId: player.id,
       nextActionPlayerId: nextAction.playerId,
-      isMatch: nextAction.playerId === player.id,
+      nextActionPlayerName: nextAction.playerName,
+      isMatch,
       currentStreet,
-      nextActionIndex
+      nextActionIndex,
+      nextAction,
+      allActions: actions.map((a: any) => ({ 
+        playerId: a.playerId, 
+        playerName: a.playerName, 
+        completed: a.completed,
+        action: a.action 
+      }))
     });
     
-    return nextAction.playerId === player.id;
+    return isMatch;
   };
 
   // Get the current bet amount for a player in this street
@@ -187,9 +209,9 @@ const PokerTable = ({
           const isToAct = isPlayerToAct(position);
           const betAmount = getPlayerBetAmount(position);
 
-          console.log('Rendering seat:', {
-            position,
+          console.log(`Rendering seat ${position}:`, {
             hasPlayer: !!player,
+            playerName: player?.name,
             isToAct,
             betAmount,
             currentStreet

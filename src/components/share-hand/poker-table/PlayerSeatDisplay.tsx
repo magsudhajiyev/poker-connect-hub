@@ -42,7 +42,8 @@ const PlayerSeatDisplay = ({
     playerName: player.name,
     position,
     isToAct,
-    betAmount
+    betAmount,
+    'FLASHING_CHECK': isToAct ? 'YES - SHOULD BE FLASHING' : 'NO'
   });
 
   return (
@@ -57,11 +58,14 @@ const PlayerSeatDisplay = ({
       <div 
         className={`${isMobile ? 'w-11 h-11' : 'w-16 h-16 sm:w-20 sm:h-20'} rounded-full border-3 flex flex-col items-center justify-center text-xs font-bold transition-all duration-300 hover:scale-105 relative ${
           isToAct
-            ? 'border-emerald-400 bg-emerald-500/30 shadow-lg shadow-emerald-400/50 animate-pulse'
+            ? 'border-emerald-400 bg-emerald-500/30 shadow-lg shadow-emerald-400/50'
             : player.isHero
             ? 'border-blue-400 bg-blue-500/30 shadow-md'
             : 'border-slate-300 bg-slate-600/40 shadow-md'
         }`}
+        style={isToAct ? {
+          animation: 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+        } : {}}
       >
         {/* Hero Crown */}
         {player.isHero && (
@@ -84,10 +88,12 @@ const PlayerSeatDisplay = ({
 
         {/* Action Indicator - Enhanced flashing effect */}
         {isToAct && (
-          <div className={`absolute -top-1 -right-1 ${isMobile ? 'w-3 h-3' : 'w-4 h-4'} bg-emerald-400 rounded-full shadow-lg border-2 border-emerald-200`} 
-               style={{
-                 animation: 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-               }} />
+          <div 
+            className={`absolute -top-1 -right-1 ${isMobile ? 'w-3 h-3' : 'w-4 h-4'} bg-emerald-400 rounded-full shadow-lg border-2 border-emerald-200`} 
+            style={{
+              animation: 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+            }} 
+          />
         )}
       </div>
 
