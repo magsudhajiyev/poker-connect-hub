@@ -3,12 +3,16 @@ import { ShareHandFormData, StreetType, ActionStep } from '@/types/shareHand';
 import { 
   initializeActions, 
   createNextActionStep, 
-  shouldAddNextAction 
+  shouldAddNextAction,
+  processAction,
+  createGameStateFromFormData
 } from '@/utils/shareHandActions';
+import { GameState } from '@/utils/gameState';
 
 export const useActionManagement = (
   formData: ShareHandFormData, 
-  setFormData: (data: ShareHandFormData | ((prev: ShareHandFormData) => ShareHandFormData)) => void
+  setFormData: (data: ShareHandFormData | ((prev: ShareHandFormData) => ShareHandFormData)) => void,
+  gameStateUI?: any
 ) => {
   const addNextActionStep = (street: StreetType, currentIndex: number) => {
     const actions = formData[street];
@@ -36,6 +40,48 @@ export const useActionManagement = (
         
         setFormData((prev: ShareHandFormData) => ({ ...prev, [street]: updatedActions }));
       }
+    }
+  };
+
+  const advanceToNextPlayer = (street: StreetType, currentIndex: number, action: string, betAmount?: string) => {
+    console.log(`Advancing to next player after ${action} action`);
+    
+    // Get current game state
+    const gameState = gameStateUI?.gameState || createGameStateFromFormData(formData, street);
+    
+    // Get the current action step to find the player position
+    const actions = formData[street];
+    const currentActionStep = actions[currentIndex];
+    
+    if (!currentActionStep || !currentActionStep.position) {
+      console.warn('Cannot advance: missing action step or position');
+      return;
+    }
+    
+    // Process the action through game state to determine next player
+    try {
+      let amount = 0;
+      if (action === 'bet' || action === 'raise') {
+        amount = parseFloat(betAmount || '0');
+      } else if (action === 'call' && gameState) {
+        amount = gameState.currentBet || 0;
+      }
+      
+      const newGameState = processAction(gameState, currentActionStep.position, action, amount);
+      
+      // Update game state in UI
+      if (gameStateUI?.updateGameState) {
+        gameStateUI.updateGameState(newGameState);
+      }
+      
+      console.log('Game state updated:', {
+        currentPlayer: newGameState.currentPosition,
+        round: newGameState.round,
+        activePlayers: newGameState.activePlayers.filter(p => p.isActive).map(p => p.position)
+      });
+      
+    } catch (error) {
+      console.error('Error processing action in game state:', error);
     }
   };
 
@@ -78,6 +124,11 @@ export const useActionManagement = (
           }, 100);
         }
         
+        // Advance to next player automatically
+        setTimeout(() => {
+          advanceToNextPlayer(street, index, action, validBetAmount);
+        }, 150);
+        
         return newFormData;
       }
       
@@ -89,6 +140,11 @@ export const useActionManagement = (
           addNextActionStep(street, index);
         }, 100);
       }
+      
+      // Advance to next player automatically after any completed action
+      setTimeout(() => {
+        advanceToNextPlayer(street, index, action, validBetAmount);
+      }, 150);
       
       return newFormData;
     });
@@ -135,6 +191,11 @@ export const useActionManagement = (
           console.log(`Adding next action step for ${nextActionStep.playerName}`, updatedActions);
         }
       }
+      
+      // Advance to next player automatically after bet size selection
+      setTimeout(() => {
+        advanceToNextPlayer(street, index, currentAction.action || '', amount);
+      }, 150);
       
       return { ...prev, [street]: updatedActions };
     });

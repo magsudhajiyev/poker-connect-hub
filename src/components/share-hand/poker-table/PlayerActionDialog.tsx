@@ -101,14 +101,22 @@ const PlayerActionDialog = ({
     setBetAmount(amount);
     if (handleBetSizeSelect && actionIndex >= 0) {
       handleBetSizeSelect(currentStreet, actionIndex, amount);
-      onOpenChange(false);
+      // Close dialog automatically after bet size selection
+      setTimeout(() => {
+        onOpenChange(false);
+      }, 100);
     }
   };
 
   const submitAction = (action: string, amount?: string) => {
     if (updateAction && actionIndex >= 0) {
+      console.log(`Submitting action: ${action} with amount: ${amount || betAmount} for player: ${player.name}`);
       updateAction(currentStreet, actionIndex, action, amount || betAmount);
-      onOpenChange(false);
+      
+      // Close dialog automatically after action submission
+      setTimeout(() => {
+        onOpenChange(false);
+      }, 100);
     }
   };
 

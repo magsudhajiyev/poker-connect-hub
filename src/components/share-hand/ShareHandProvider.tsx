@@ -1,7 +1,7 @@
-
 import React, { createContext, useContext, useEffect } from 'react';
 import { useShareHandLogic } from '@/hooks/useShareHandLogic';
 import { useGameStateUI } from '@/hooks/useGameStateUI';
+import { useActionManagement } from '@/hooks/useActionManagement';
 
 const ShareHandContext = createContext<ReturnType<typeof useShareHandLogic> & { gameStateUI: ReturnType<typeof useGameStateUI> } | null>(null);
 
@@ -20,6 +20,8 @@ interface ShareHandProviderProps {
 export const ShareHandProvider = ({ children }: ShareHandProviderProps) => {
   const shareHandLogic = useShareHandLogic();
   const gameStateUI = useGameStateUI();
+  
+  const actionManagement = useActionManagement(shareHandLogic.formData, shareHandLogic.setFormData, gameStateUI);
 
   // Initialize game when players are set up
   useEffect(() => {
