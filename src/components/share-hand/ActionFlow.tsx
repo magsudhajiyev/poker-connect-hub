@@ -46,17 +46,48 @@ const ActionFlow = ({
       return;
     }
 
-    console.log(`Processing action click: ${action} by ${actionStep.playerName} at position ${actionStep.position}`);
+    // If we have a game state and this is the current player, process the action through game state
+    if (gameState && isPlayerActive(actionStep.position)) {
+      let amount = 0;
+      
+      if (action === 'bet' || action === 'raise') {
+        const betInput = actionStep.betAmount || '';
+        amount = parseFloat(betInput);
+        
+        if (isNaN(amount) || amount <= 0) {
+          alert('Please enter a valid bet amount');
+          return;
+        }
+      } else if (action === 'call') {
+        amount = gameState.currentBet || 0;
+      }
+      
+      try {
+        // Process action through game state
+        const newState = processAction(
+          gameState,
+          actionStep.position,
+          action,
+          amount
+        );
+        
+        // Update the game state in the UI hook
+        if (gameStateUI.updateGameState) {
+          gameStateUI.updateGameState(newState);
+        }
 
-    // If player folded, remove them from future streets immediately
-    if (action === 'fold') {
-      console.log(`Player ${actionStep.playerId} folded, removing from future streets`);
-      const updatedFormData = removeFoldedPlayerFromFutureStreets(formData, actionStep.playerId);
-      setFormData(updatedFormData);
+        // If player folded, remove them from future streets
+        if (action === 'fold') {
+          console.log(`Player ${actionStep.playerId} folded, removing from future streets`);
+          const updatedFormData = removeFoldedPlayerFromFutureStreets(formData, actionStep.playerId);
+          setFormData(updatedFormData);
+        }
+      } catch (error) {
+        console.error('Error processing action through game state:', error);
+      }
     }
     
-    // Process action through the standard update mechanism
-    // The auto-advancement will be handled by the updated updateAction function
+    // Also update the form data action (existing functionality)
     updateAction(street, index, action);
   };
 

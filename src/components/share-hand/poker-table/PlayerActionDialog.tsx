@@ -38,11 +38,7 @@ const PlayerActionDialog = ({
     if (!formData || !currentStreet) return -1;
     
     const actions = formData[currentStreet];
-    if (!actions || actions.length === 0) {
-      // If no actions exist yet, this means we need to create the first action
-      // Return 0 to indicate this should be the first action
-      return 0;
-    }
+    if (!actions) return -1;
     
     return actions.findIndex((action: any) => 
       action.playerId === player.id && !action.completed
@@ -51,12 +47,7 @@ const PlayerActionDialog = ({
 
   const actionIndex = getCurrentActionIndex();
   const actions = formData?.[currentStreet] || [];
-  
-  // If no actions exist yet and this is the first action, use default available actions
-  const availableActions = getAvailableActions ? 
-    getAvailableActions(currentStreet, Math.max(0, actionIndex), actions) : 
-    ['fold', 'call', 'raise']; // Default actions if no function provided
-    
+  const availableActions = getAvailableActions ? getAvailableActions(currentStreet, actionIndex, actions) : [];
   const potSize = formData ? (parseFloat(formData.smallBlind) + parseFloat(formData.bigBlind)) : 0;
   const stackSize = player.stackSize[0];
 
@@ -101,22 +92,14 @@ const PlayerActionDialog = ({
     setBetAmount(amount);
     if (handleBetSizeSelect && actionIndex >= 0) {
       handleBetSizeSelect(currentStreet, actionIndex, amount);
-      // Close dialog automatically after bet size selection
-      setTimeout(() => {
-        onOpenChange(false);
-      }, 100);
+      onOpenChange(false);
     }
   };
 
   const submitAction = (action: string, amount?: string) => {
     if (updateAction && actionIndex >= 0) {
-      console.log(`Submitting action: ${action} with amount: ${amount || betAmount} for player: ${player.name}`);
       updateAction(currentStreet, actionIndex, action, amount || betAmount);
-      
-      // Close dialog automatically after action submission
-      setTimeout(() => {
-        onOpenChange(false);
-      }, 100);
+      onOpenChange(false);
     }
   };
 
@@ -134,19 +117,9 @@ const PlayerActionDialog = ({
     return formData?.gameFormat === 'cash' ? 'Bet Size ($)' : 'Bet Size (BB)';
   };
 
-  // Don't render if we can't determine a valid action index
   if (actionIndex < 0) {
-    console.log('PlayerActionDialog: Invalid action index', { actionIndex, player: player.name, currentStreet });
     return null;
   }
-
-  console.log('PlayerActionDialog rendering for:', { 
-    playerName: player.name, 
-    position, 
-    actionIndex, 
-    availableActions,
-    isOpen 
-  });
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
