@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
 import { Player } from '@/types/shareHand';
-import { DialogTrigger } from '@/components/ui/dialog';
 import EmptySeatDisplay from './EmptySeatDisplay';
 import PlayerSeatDisplay from './PlayerSeatDisplay';
 import PlayerEditDialog from './PlayerEditDialog';
+import PlayerActionDialog from './PlayerActionDialog';
 
 interface ClickablePlayerSeatProps {
   position: string;
@@ -15,6 +15,12 @@ interface ClickablePlayerSeatProps {
   onRemovePlayer: (playerId: string) => void;
   availablePositions: Array<{value: string, label: string}>;
   hasHero?: boolean;
+  isToAct?: boolean;
+  currentStreet?: string;
+  formData?: any;
+  getAvailableActions?: (street: string, index: number, allActions: any[]) => string[];
+  updateAction?: (street: any, index: number, action: string, betAmount?: string) => void;
+  handleBetSizeSelect?: (street: any, index: number, amount: string) => void;
 }
 
 const ClickablePlayerSeat = ({ 
@@ -24,9 +30,16 @@ const ClickablePlayerSeat = ({
   gameFormat = 'cash',
   onUpdatePlayer,
   onRemovePlayer,
-  hasHero = false
+  hasHero = false,
+  isToAct = false,
+  currentStreet,
+  formData,
+  getAvailableActions,
+  updateAction,
+  handleBetSizeSelect
 }: ClickablePlayerSeatProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isActionOpen, setIsActionOpen] = useState(false);
 
   const handleSave = (newPlayer: Player) => {
     onUpdatePlayer(newPlayer);
@@ -35,6 +48,19 @@ const ClickablePlayerSeat = ({
   const handleRemove = () => {
     if (player) {
       onRemovePlayer(player.id);
+    }
+  };
+
+  const handleClick = () => {
+    if (!player) {
+      // No player - open edit dialog to add player
+      setIsEditOpen(true);
+    } else if (isToAct && currentStreet && getAvailableActions && updateAction) {
+      // Player exists and it's their turn - open action dialog
+      setIsActionOpen(true);
+    } else {
+      // Player exists but not their turn - open edit dialog
+      setIsEditOpen(true);
     }
   };
 
@@ -48,9 +74,10 @@ const ClickablePlayerSeat = ({
         top: `${positionCoords.y}%`
       }}
     >
+      {/* Player Edit Dialog */}
       <PlayerEditDialog
-        isOpen={isOpen}
-        onOpenChange={setIsOpen}
+        isOpen={isEditOpen}
+        onOpenChange={setIsEditOpen}
         position={position}
         player={player}
         gameFormat={gameFormat}
@@ -59,14 +86,30 @@ const ClickablePlayerSeat = ({
         onRemove={handleRemove}
       />
 
-      <div className="cursor-pointer" onClick={() => setIsOpen(true)}>
+      {/* Player Action Dialog */}
+      {player && currentStreet && (
+        <PlayerActionDialog
+          isOpen={isActionOpen}
+          onOpenChange={setIsActionOpen}
+          player={player}
+          position={position}
+          currentStreet={currentStreet}
+          formData={formData}
+          getAvailableActions={getAvailableActions}
+          updateAction={updateAction}
+          handleBetSizeSelect={handleBetSizeSelect}
+        />
+      )}
+
+      <div className="cursor-pointer" onClick={handleClick}>
         {isEmpty ? (
           <EmptySeatDisplay position={position} />
         ) : (
           <PlayerSeatDisplay 
             player={player} 
             position={position} 
-            gameFormat={gameFormat} 
+            gameFormat={gameFormat}
+            isToAct={isToAct}
           />
         )}
       </div>

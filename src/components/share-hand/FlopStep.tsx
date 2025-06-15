@@ -3,8 +3,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import CardInput from '@/components/CardInput';
 import PotDisplay from './PotDisplay';
-import ActionFlow from './ActionFlow';
+import { PokerTable } from './poker-table';
 import SelectedCardsDisplay from './SelectedCardsDisplay';
+import { usePlayerManagement } from '@/hooks/usePlayerManagement';
+import { getAvailablePositions } from '@/utils/positionUtils';
 
 interface FlopStepProps {
   formData: any;
@@ -34,21 +36,48 @@ const FlopStep = ({
   getAllSelectedCards
 }: FlopStepProps) => {
   const potSize = calculatePotSize();
+  const { players, updatePlayer, removePlayer } = usePlayerManagement(formData, setFormData);
+
+  const handleUpdatePlayer = (newPlayer: any) => {
+    // If this player is being set as hero, remove hero status from others
+    if (newPlayer.isHero) {
+      players.forEach(p => {
+        if (p.isHero && p.id !== newPlayer.id) {
+          updatePlayer(p.id, { isHero: false });
+        }
+      });
+    }
+
+    // Check if this is a new player or updating existing
+    const existingPlayer = players.find(p => p.position === newPlayer.position);
+    if (existingPlayer) {
+      updatePlayer(existingPlayer.id, newPlayer);
+    } else {
+      // Add new player to the array
+      const updatedPlayers = [...players, newPlayer];
+      setFormData({
+        ...formData,
+        players: updatedPlayers
+      });
+    }
+  };
+
+  const handleRemovePlayer = (playerId: string) => {
+    removePlayer(playerId);
+  };
 
   return (
-    <div className="space-y-3 w-full overflow-x-hidden">
+    <div className="space-y-4 w-full overflow-x-hidden">
       {showPot && (
         <PotDisplay potSize={potSize} getCurrencySymbol={getCurrencySymbol} />
       )}
 
       <h3 className="text-base font-medium text-slate-200 mb-2">Flop</h3>
       
-      <div className="flex flex-col space-y-2 w-full">
-        <div className="w-full">
+      <div className="space-y-3 w-full">
+        <div className="flex flex-wrap items-start gap-3">
           <SelectedCardsDisplay cards={formData.holeCards} label="Your Hole Cards" />
-        </div>
-        
-        <div className="w-full">
+          
           <CardInput
             label="Flop Cards"
             cards={formData.flopCards}
@@ -60,16 +89,20 @@ const FlopStep = ({
         </div>
       </div>
 
-      <div className="w-full overflow-x-hidden">
-        <ActionFlow
-          street="flopActions"
-          formData={formData}
-          getPositionName={getPositionName}
+      {/* Interactive Poker Table with Actions */}
+      <div className="bg-slate-900/30 rounded-lg p-4 border border-slate-700/30 w-full overflow-x-hidden">
+        <PokerTable 
+          players={players}
+          communityCards={formData.flopCards}
           getCurrencySymbol={getCurrencySymbol}
-          calculatePotSize={calculatePotSize}
+          gameFormat={formData.gameFormat}
+          onUpdatePlayer={handleUpdatePlayer}
+          onRemovePlayer={handleRemovePlayer}
+          availablePositions={getAvailablePositions(players, '')}
+          currentStreet="flopActions"
+          formData={formData}
           getAvailableActions={getAvailableActions}
           updateAction={updateAction}
-          getActionButtonClass={getActionButtonClass}
           handleBetSizeSelect={handleBetSizeSelect}
         />
       </div>

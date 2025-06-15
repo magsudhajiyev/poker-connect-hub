@@ -15,6 +15,11 @@ interface PokerTableProps {
   onUpdatePlayer: (player: Player) => void;
   onRemovePlayer: (playerId: string) => void;
   availablePositions: Array<{value: string, label: string}>;
+  currentStreet?: string;
+  formData?: any;
+  getAvailableActions?: (street: string, index: number, allActions: any[]) => string[];
+  updateAction?: (street: any, index: number, action: string, betAmount?: string) => void;
+  handleBetSizeSelect?: (street: any, index: number, amount: string) => void;
 }
 
 const PokerTable = ({ 
@@ -26,7 +31,12 @@ const PokerTable = ({
   gameFormat = 'cash',
   onUpdatePlayer,
   onRemovePlayer,
-  availablePositions
+  availablePositions,
+  currentStreet,
+  formData,
+  getAvailableActions,
+  updateAction,
+  handleBetSizeSelect
 }: PokerTableProps) => {
   const isMobile = useIsMobile();
   
@@ -78,6 +88,42 @@ const PokerTable = ({
   // Check if any player is already set as hero
   const hasHero = players.some(p => p.isHero);
 
+  // Get current action step for a player
+  const getCurrentActionStep = (position: string) => {
+    if (!currentStreet || !formData) return null;
+    
+    const actions = formData[currentStreet];
+    if (!actions) return null;
+    
+    const player = getPlayerAtPosition(position);
+    if (!player) return null;
+    
+    // Find the current action step for this player
+    const actionStep = actions.find((action: any, index: number) => {
+      return action.playerId === player.id && !action.completed;
+    });
+    
+    return actionStep;
+  };
+
+  // Check if it's this player's turn to act
+  const isPlayerToAct = (position: string) => {
+    if (!currentStreet || !formData) return false;
+    
+    const actions = formData[currentStreet];
+    if (!actions || actions.length === 0) return false;
+    
+    const player = getPlayerAtPosition(position);
+    if (!player) return false;
+    
+    // Find the first incomplete action
+    const nextActionIndex = actions.findIndex((action: any) => !action.completed);
+    if (nextActionIndex === -1) return false;
+    
+    const nextAction = actions[nextActionIndex];
+    return nextAction.playerId === player.id;
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
       {/* Pot Display */}
@@ -121,6 +167,7 @@ const PokerTable = ({
           const coords = isMobile ? positionData.mobile : positionData.desktop;
           const player = getPlayerAtPosition(position);
           const isCurrentPlayer = currentPlayer === position;
+          const isToAct = isPlayerToAct(position);
 
           return (
             <ClickablePlayerSeat
@@ -133,6 +180,12 @@ const PokerTable = ({
               onRemovePlayer={onRemovePlayer}
               availablePositions={availablePositions}
               hasHero={hasHero}
+              isToAct={isToAct}
+              currentStreet={currentStreet}
+              formData={formData}
+              getAvailableActions={getAvailableActions}
+              updateAction={updateAction}
+              handleBetSizeSelect={handleBetSizeSelect}
             />
           );
         })}
