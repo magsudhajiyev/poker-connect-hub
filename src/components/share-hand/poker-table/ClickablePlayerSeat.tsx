@@ -1,8 +1,8 @@
-
 import React, { useState } from 'react';
 import PlayerSeatDisplay from './PlayerSeatDisplay';
 import EmptySeatDisplay from './EmptySeatDisplay';
 import PlayerEditDialog from './PlayerEditDialog';
+import PlayerActionDialog from './PlayerActionDialog';
 import { Player } from '@/types/shareHand';
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2 } from 'lucide-react';
@@ -44,23 +44,34 @@ const ClickablePlayerSeat = ({
   updateAction,
   handleBetSizeSelect
 }: ClickablePlayerSeatProps) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
+
+  // Determine if we're in an action step (Preflop, Flop, Turn, River)
+  const isActionStep = currentStreet && ['preflopActions', 'flopActions', 'turnActions', 'riverActions'].includes(currentStreet);
 
   const handleSeatClick = () => {
-    console.log(`Seat ${position} clicked`);
-    setIsDialogOpen(true);
+    console.log(`Seat ${position} clicked - isActionStep: ${isActionStep}, hasPlayer: ${!!player}`);
+    
+    if (player && isActionStep) {
+      // If we have a player and we're in an action step, show action dialog
+      setIsActionDialogOpen(true);
+    } else {
+      // Otherwise, show edit dialog (for adding/editing player details)
+      setIsEditDialogOpen(true);
+    }
   };
 
   const handlePlayerSave = (newPlayer: Player) => {
     onUpdatePlayer(newPlayer);
-    setIsDialogOpen(false);
+    setIsEditDialogOpen(false);
   };
 
   const handlePlayerRemove = () => {
     if (player) {
       onRemovePlayer(player.id);
     }
-    setIsDialogOpen(false);
+    setIsEditDialogOpen(false);
   };
 
   return (
@@ -85,32 +96,34 @@ const ClickablePlayerSeat = ({
               />
             </div>
 
-            {/* Edit and Remove buttons - show on hover */}
-            <div className="absolute top-0 right-0 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="hover:bg-slate-700/50 w-6 h-6"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsDialogOpen(true);
-                }}
-              >
-                <Edit className="h-3 w-3 text-slate-400" />
-              </Button>
-              
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="hover:bg-red-700/50 w-6 h-6" 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePlayerRemove();
-                }}
-              >
-                <Trash2 className="h-3 w-3 text-red-400" />
-              </Button>
-            </div>
+            {/* Edit and Remove buttons - only show during non-action steps */}
+            {!isActionStep && (
+              <div className="absolute top-0 right-0 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="hover:bg-slate-700/50 w-6 h-6"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsEditDialogOpen(true);
+                  }}
+                >
+                  <Edit className="h-3 w-3 text-slate-400" />
+                </Button>
+                
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="hover:bg-red-700/50 w-6 h-6" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handlePlayerRemove();
+                  }}
+                >
+                  <Trash2 className="h-3 w-3 text-red-400" />
+                </Button>
+              </div>
+            )}
           </div>
         ) : (
           <div onClick={handleSeatClick} className="cursor-pointer">
@@ -119,10 +132,10 @@ const ClickablePlayerSeat = ({
         )}
       </div>
 
-      {/* Player Edit/Add Dialog */}
+      {/* Player Edit/Add Dialog - for adding/editing player details */}
       <PlayerEditDialog
-        isOpen={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+        isOpen={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
         position={position}
         player={player}
         gameFormat={gameFormat}
@@ -130,6 +143,21 @@ const ClickablePlayerSeat = ({
         onSave={handlePlayerSave}
         onRemove={handlePlayerRemove}
       />
+
+      {/* Player Action Dialog - for choosing poker actions */}
+      {player && isActionStep && (
+        <PlayerActionDialog
+          isOpen={isActionDialogOpen}
+          onOpenChange={setIsActionDialogOpen}
+          player={player}
+          position={position}
+          currentStreet={currentStreet}
+          formData={formData}
+          getAvailableActions={getAvailableActions}
+          updateAction={updateAction}
+          handleBetSizeSelect={handleBetSizeSelect}
+        />
+      )}
     </>
   );
 };
