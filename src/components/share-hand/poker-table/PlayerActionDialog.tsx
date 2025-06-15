@@ -38,7 +38,11 @@ const PlayerActionDialog = ({
     if (!formData || !currentStreet) return -1;
     
     const actions = formData[currentStreet];
-    if (!actions) return -1;
+    if (!actions || actions.length === 0) {
+      // If no actions exist yet, this means we need to create the first action
+      // Return 0 to indicate this should be the first action
+      return 0;
+    }
     
     return actions.findIndex((action: any) => 
       action.playerId === player.id && !action.completed
@@ -47,7 +51,12 @@ const PlayerActionDialog = ({
 
   const actionIndex = getCurrentActionIndex();
   const actions = formData?.[currentStreet] || [];
-  const availableActions = getAvailableActions ? getAvailableActions(currentStreet, actionIndex, actions) : [];
+  
+  // If no actions exist yet and this is the first action, use default available actions
+  const availableActions = getAvailableActions ? 
+    getAvailableActions(currentStreet, Math.max(0, actionIndex), actions) : 
+    ['fold', 'call', 'raise']; // Default actions if no function provided
+    
   const potSize = formData ? (parseFloat(formData.smallBlind) + parseFloat(formData.bigBlind)) : 0;
   const stackSize = player.stackSize[0];
 
@@ -117,9 +126,19 @@ const PlayerActionDialog = ({
     return formData?.gameFormat === 'cash' ? 'Bet Size ($)' : 'Bet Size (BB)';
   };
 
+  // Don't render if we can't determine a valid action index
   if (actionIndex < 0) {
+    console.log('PlayerActionDialog: Invalid action index', { actionIndex, player: player.name, currentStreet });
     return null;
   }
+
+  console.log('PlayerActionDialog rendering for:', { 
+    playerName: player.name, 
+    position, 
+    actionIndex, 
+    availableActions,
+    isOpen 
+  });
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
