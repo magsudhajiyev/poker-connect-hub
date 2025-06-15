@@ -1,21 +1,33 @@
-
 import React, { useState } from 'react';
-import { Player } from '@/types/shareHand';
-import EmptySeatDisplay from './EmptySeatDisplay';
 import PlayerSeatDisplay from './PlayerSeatDisplay';
-import PlayerEditDialog from './PlayerEditDialog';
-import PlayerActionDialog from './PlayerActionDialog';
+import EmptySeatDisplay from './EmptySeatDisplay';
+import { Player } from '@/types/shareHand';
+import { Button } from '@/components/ui/button';
+import { Edit, Trash2 } from 'lucide-react';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import PlayerForm from './PlayerForm';
 
 interface ClickablePlayerSeatProps {
   position: string;
   positionCoords: { x: number; y: number };
   player?: Player;
-  gameFormat?: string;
+  gameFormat: string;
   onUpdatePlayer: (player: Player) => void;
   onRemovePlayer: (playerId: string) => void;
   availablePositions: Array<{value: string, label: string}>;
-  hasHero?: boolean;
+  hasHero: boolean;
   isToAct?: boolean;
+  betAmount?: string | null;
+  getCurrencySymbol?: () => string;
   currentStreet?: string;
   formData?: any;
   getAvailableActions?: (street: string, index: number, allActions: any[]) => string[];
@@ -23,48 +35,41 @@ interface ClickablePlayerSeatProps {
   handleBetSizeSelect?: (street: any, index: number, amount: string) => void;
 }
 
-const ClickablePlayerSeat = ({ 
-  position, 
-  positionCoords, 
-  player, 
-  gameFormat = 'cash',
+const ClickablePlayerSeat = ({
+  position,
+  positionCoords,
+  player,
+  gameFormat,
   onUpdatePlayer,
   onRemovePlayer,
-  hasHero = false,
+  availablePositions,
+  hasHero,
   isToAct = false,
+  betAmount = null,
+  getCurrencySymbol = () => '$',
   currentStreet,
   formData,
   getAvailableActions,
   updateAction,
   handleBetSizeSelect
 }: ClickablePlayerSeatProps) => {
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isActionOpen, setIsActionOpen] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
 
-  const handleSave = (newPlayer: Player) => {
-    onUpdatePlayer(newPlayer);
+  const handleSeatClick = () => {
+    console.log(`Seat ${position} clicked`);
   };
 
-  const handleRemove = () => {
+  const handleEditPlayer = (player: Player) => {
+    onUpdatePlayer(player);
+    setOpenEditDialog(false);
+  };
+
+  const handleRemovePlayerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (player) {
       onRemovePlayer(player.id);
     }
   };
-
-  const handleClick = () => {
-    if (!player) {
-      // No player - open edit dialog to add player
-      setIsEditOpen(true);
-    } else if (isToAct && currentStreet && getAvailableActions && updateAction) {
-      // Player exists and it's their turn - open action dialog
-      setIsActionOpen(true);
-    } else {
-      // Player exists but not their turn - open edit dialog
-      setIsEditOpen(true);
-    }
-  };
-
-  const isEmpty = !player;
 
   return (
     <div
@@ -74,45 +79,83 @@ const ClickablePlayerSeat = ({
         top: `${positionCoords.y}%`
       }}
     >
-      {/* Player Edit Dialog */}
-      <PlayerEditDialog
-        isOpen={isEditOpen}
-        onOpenChange={setIsEditOpen}
-        position={position}
-        player={player}
-        gameFormat={gameFormat}
-        hasHero={hasHero}
-        onSave={handleSave}
-        onRemove={handleRemove}
-      />
+      {player ? (
+        <div className="relative group">
+          <div onClick={handleSeatClick} className="cursor-pointer">
+            <PlayerSeatDisplay
+              player={player}
+              position={position}
+              gameFormat={gameFormat}
+              isToAct={isToAct}
+              betAmount={betAmount}
+              getCurrencySymbol={getCurrencySymbol}
+            />
+          </div>
 
-      {/* Player Action Dialog */}
-      {player && currentStreet && (
-        <PlayerActionDialog
-          isOpen={isActionOpen}
-          onOpenChange={setIsActionOpen}
-          player={player}
-          position={position}
-          currentStreet={currentStreet}
-          formData={formData}
-          getAvailableActions={getAvailableActions}
-          updateAction={updateAction}
-          handleBetSizeSelect={handleBetSizeSelect}
-        />
+          {/* Edit and Remove buttons */}
+          <div className="absolute top-0 right-0 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <Dialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="hover:bg-slate-700/50">
+                  <Edit className="h-4 w-4 text-slate-400" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px] bg-slate-900 border border-slate-700 text-slate-200">
+                <DialogHeader>
+                  <DialogTitle>Edit Player</DialogTitle>
+                  <DialogDescription>
+                    Make changes to the player's details.
+                  </DialogDescription>
+                </DialogHeader>
+                <PlayerForm 
+                  player={player} 
+                  availablePositions={availablePositions} 
+                  hasHero={hasHero} 
+                  onSubmit={handleEditPlayer} 
+                  onCancel={() => setOpenEditDialog(false)} 
+                />
+              </DialogContent>
+            </Dialog>
+            
+            <Button variant="ghost" size="icon" className="hover:bg-red-700/50" onClick={handleRemovePlayerClick}>
+              <Trash2 className="h-4 w-4 text-red-400" />
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div onClick={handleSeatClick} className="cursor-pointer">
+          <EmptySeatDisplay position={position} />
+        </div>
       )}
 
-      <div className="cursor-pointer" onClick={handleClick}>
-        {isEmpty ? (
-          <EmptySeatDisplay position={position} />
-        ) : (
-          <PlayerSeatDisplay 
-            player={player} 
-            position={position} 
-            gameFormat={gameFormat}
-            isToAct={isToAct}
-          />
-        )}
-      </div>
+      {/* Edit Player Dialog */}
+      <Dialog>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit player</DialogTitle>
+            <DialogDescription>
+              Make changes to the player here. Click save when you're done.
+            </DialogDescription>
+          </DialogHeader>
+          {/* <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input id="name" value="Astrid" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="username" className="text-right">
+                Username
+              </Label>
+              <Input id="username" value="@astrid" className="col-span-3" />
+            </div>
+          </div> */}
+          <DialogFooter>
+            <Button type="submit">Save changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

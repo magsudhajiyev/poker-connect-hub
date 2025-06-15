@@ -124,6 +124,31 @@ const PokerTable = ({
     return nextAction.playerId === player.id;
   };
 
+  // Get the current bet amount for a player in this street
+  const getPlayerBetAmount = (position: string) => {
+    if (!currentStreet || !formData) return null;
+    
+    const actions = formData[currentStreet];
+    if (!actions) return null;
+    
+    const player = getPlayerAtPosition(position);
+    if (!player) return null;
+    
+    // Find the most recent completed bet or raise action for this player
+    const playerActions = actions.filter((action: any) => 
+      action.playerId === player.id && 
+      action.completed && 
+      (action.action === 'bet' || action.action === 'raise') &&
+      action.betAmount
+    );
+    
+    if (playerActions.length === 0) return null;
+    
+    // Get the most recent bet/raise
+    const latestAction = playerActions[playerActions.length - 1];
+    return latestAction.betAmount;
+  };
+
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
       {/* Pot Display */}
@@ -168,6 +193,7 @@ const PokerTable = ({
           const player = getPlayerAtPosition(position);
           const isCurrentPlayer = currentPlayer === position;
           const isToAct = isPlayerToAct(position);
+          const betAmount = getPlayerBetAmount(position);
 
           return (
             <ClickablePlayerSeat
@@ -181,6 +207,8 @@ const PokerTable = ({
               availablePositions={availablePositions}
               hasHero={hasHero}
               isToAct={isToAct}
+              betAmount={betAmount}
+              getCurrencySymbol={getCurrencySymbol}
               currentStreet={currentStreet}
               formData={formData}
               getAvailableActions={getAvailableActions}
