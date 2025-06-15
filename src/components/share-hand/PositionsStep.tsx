@@ -5,19 +5,38 @@ import { Plus } from 'lucide-react';
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';
 import { getAvailablePositions } from '@/utils/positionUtils';
 import PlayerRow from './PlayerRow';
+import { PokerTable } from './poker-table';
 
 interface PositionsStepProps {
   formData: any;
   setFormData: (data: any) => void;
   showValidationErrors?: boolean;
+  getCurrencySymbol?: () => string;
 }
 
-const PositionsStep = ({ formData, setFormData, showValidationErrors = false }: PositionsStepProps) => {
+const PositionsStep = ({ 
+  formData, 
+  setFormData, 
+  showValidationErrors = false,
+  getCurrencySymbol = () => '$'
+}: PositionsStepProps) => {
   const { players, updatePlayer, addPlayer, removePlayer } = usePlayerManagement(formData, setFormData);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <h3 className="text-base font-medium text-slate-200 mb-3">Player Positions & Stack Sizes</h3>
+
+      {/* Poker Table Visualization */}
+      {players.length >= 2 && (
+        <div className="bg-slate-900/30 rounded-lg p-4 border border-slate-700/30">
+          <h4 className="text-sm font-medium text-slate-200 mb-4 text-center">Table Preview</h4>
+          <PokerTable 
+            players={players}
+            getCurrencySymbol={getCurrencySymbol}
+            gameFormat={formData.gameFormat}
+          />
+        </div>
+      )}
 
       {/* Players Section */}
       <div className="space-y-4">
