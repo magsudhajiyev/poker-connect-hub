@@ -310,12 +310,19 @@ export const createGameStateFromFormData = (formData: ShareHandFormData, street:
 export const getAvailableActions = (street: string, actionIndex: number, allActions: ActionStep[]): string[] => {
   // Get the current action step to determine player position
   const currentAction = allActions[actionIndex];
-  if (!currentAction) return [];
+  if (!currentAction) {
+    // If no current action exists, we're starting fresh - return default preflop actions
+    const round = street.replace('Actions', '');
+    if (round === 'preflop') {
+      return ['fold', 'call', 'raise'];
+    } else {
+      return ['check', 'bet'];
+    }
+  }
   
   const position = standardizePosition(currentAction.position || '');
   const round = street.replace('Actions', '');
   
-  // Create a mock game state to determine current bet and action history
   // Get all previous actions in this street to determine current bet state
   const previousActions = allActions.slice(0, actionIndex);
   
