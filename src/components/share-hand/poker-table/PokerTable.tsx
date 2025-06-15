@@ -42,8 +42,9 @@ const PokerTable = ({
     const centerY = 50;
     
     // Ellipse radii (percentage of container)
-    const radiusX = isMobile ? 40 : 42; // Horizontal radius
-    const radiusY = isMobile ? 35 : 40; // Vertical radius
+    // Make mobile more vertically elliptical for better spacing
+    const radiusX = isMobile ? 35 : 42; // Smaller horizontal radius on mobile
+    const radiusY = isMobile ? 45 : 40; // Larger vertical radius on mobile
     
     // Starting angle (top center) - adjust to start at top
     const startAngle = -Math.PI / 2; // -90 degrees (top)
@@ -91,7 +92,7 @@ const PokerTable = ({
       )}
 
       {/* Poker Table */}
-      <div className="relative w-full" style={{ aspectRatio: isMobile ? '1.2/1' : '2/1' }}>
+      <div className="relative w-full" style={{ aspectRatio: isMobile ? '1/1.3' : '2/1' }}>
         {/* Table Surface */}
         <div 
           className={`absolute inset-0 bg-gradient-to-br from-green-800 to-green-900 border-4 border-amber-600 shadow-2xl rounded-full`}
