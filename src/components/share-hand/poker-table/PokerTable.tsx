@@ -3,6 +3,7 @@ import ClickablePlayerSeat from './ClickablePlayerSeat';
 import CommunityCards from './CommunityCards';
 import { Player } from '@/types/shareHand';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { standardizePosition, getActionOrder } from '@/utils/positionMapping';
 
 interface PokerTableProps {
   players: Player[];
@@ -95,46 +96,81 @@ const PokerTable = ({
     }
     
     const actions = formData[currentStreet];
-    if (!actions || actions.length === 0) {
-      console.log('No actions found for street:', currentStreet);
-      return false;
-    }
-    
     const player = getPlayerAtPosition(position);
     if (!player) {
       console.log('No player found at position:', position);
       return false;
     }
-    
-    // Find the first incomplete action (next to act)
-    const nextActionIndex = actions.findIndex((action: any) => !action.completed);
-    if (nextActionIndex === -1) {
-      console.log('No incomplete actions found');
-      return false;
+
+    // If no actions exist yet, determine first to act based on position order
+    if (!actions || actions.length === 0) {
+      console.log('No actions found, determining first to act based on positions');
+      
+      // Get all players with positions
+      const playersWithPositions = players.filter(p => p.position);
+      if (playersWithPositions.length < 2) {
+        console.log('Not enough players to determine action order');
+        return false;
+      }
+
+      // Get action order for this street
+      const uiPositions = playersWithPositions.map(p => p.position);
+      const isPreflop = currentStreet === 'preflopActions';
+      const orderedPositions = getActionOrder(uiPositions, isPreflop);
+      
+      // First position in order should be first to act
+      if (orderedPositions.length > 0) {
+        const firstToActStandardPos = orderedPositions[0];
+        const playerStandardPos = standardizePosition(position);
+        const isFirstToAct = playerStandardPos === firstToActStandardPos;
+        
+        console.log('First to act determination:', {
+          position,
+          playerStandardPos,
+          firstToActStandardPos,
+          isFirstToAct,
+          orderedPositions,
+          currentStreet
+        });
+        
+        return isFirstToAct;
+      }
     }
     
-    const nextAction = actions[nextActionIndex];
-    const isMatch = nextAction.playerId === player.id;
+    // If actions exist, use existing logic
+    if (actions && actions.length > 0) {
+      // Find the first incomplete action (next to act)
+      const nextActionIndex = actions.findIndex((action: any) => !action.completed);
+      if (nextActionIndex === -1) {
+        console.log('No incomplete actions found');
+        return false;
+      }
+      
+      const nextAction = actions[nextActionIndex];
+      const isMatch = nextAction.playerId === player.id;
+      
+      console.log('DETAILED isPlayerToAct check:', {
+        position,
+        playerName: player.name,
+        playerId: player.id,
+        nextActionPlayerId: nextAction.playerId,
+        nextActionPlayerName: nextAction.playerName,
+        isMatch,
+        currentStreet,
+        nextActionIndex,
+        nextAction,
+        allActions: actions.map((a: any) => ({ 
+          playerId: a.playerId, 
+          playerName: a.playerName, 
+          completed: a.completed,
+          action: a.action 
+        }))
+      });
+      
+      return isMatch;
+    }
     
-    console.log('DETAILED isPlayerToAct check:', {
-      position,
-      playerName: player.name,
-      playerId: player.id,
-      nextActionPlayerId: nextAction.playerId,
-      nextActionPlayerName: nextAction.playerName,
-      isMatch,
-      currentStreet,
-      nextActionIndex,
-      nextAction,
-      allActions: actions.map((a: any) => ({ 
-        playerId: a.playerId, 
-        playerName: a.playerName, 
-        completed: a.completed,
-        action: a.action 
-      }))
-    });
-    
-    return isMatch;
+    return false;
   };
 
   // Get the current bet amount for a player in this street
