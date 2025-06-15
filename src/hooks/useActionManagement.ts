@@ -1,4 +1,3 @@
-
 import { ShareHandFormData, StreetType, ActionStep } from '@/types/shareHand';
 import { 
   initializeActions, 
@@ -69,16 +68,15 @@ export const useActionManagement = (
       
       const newGameState = processAction(gameState, currentActionStep.position, action, amount);
       
-      // Update game state in UI
+      // Update game state in UI IMMEDIATELY for real-time UI updates
       if (gameStateUI?.updateGameState) {
+        console.log('IMMEDIATELY updating game state for UI sync:', {
+          currentPlayer: newGameState.currentPosition,
+          round: newGameState.round,
+          activePlayers: newGameState.activePlayers.filter(p => p.isActive).map(p => p.position)
+        });
         gameStateUI.updateGameState(newGameState);
       }
-      
-      console.log('Game state updated:', {
-        currentPlayer: newGameState.currentPosition,
-        round: newGameState.round,
-        activePlayers: newGameState.activePlayers.filter(p => p.isActive).map(p => p.position)
-      });
       
     } catch (error) {
       console.error('Error processing action in game state:', error);
@@ -102,12 +100,12 @@ export const useActionManagement = (
       // Ensure betAmount is properly handled
       const validBetAmount = betAmount !== undefined ? betAmount : updatedActions[index].betAmount || '';
       
-      // Update the current action
+      // Update the current action - MARK AS COMPLETED IMMEDIATELY
       updatedActions[index] = {
         ...updatedActions[index],
         action,
         betAmount: validBetAmount,
-        completed: action !== 'bet' && action !== 'raise'
+        completed: true // Mark as completed immediately for all actions
       };
       
       // If changing from bet/raise to something else, remove subsequent actions
@@ -117,34 +115,30 @@ export const useActionManagement = (
         const actionsToKeep = updatedActions.slice(0, index + 1);
         const newFormData = { ...prev, [street]: actionsToKeep };
         
+        // Advance to next player IMMEDIATELY (no setTimeout delay)
+        advanceToNextPlayer(street, index, action, validBetAmount);
+        
         // If the new action is bet or raise, add next action step
         if (shouldAddNextAction(action)) {
           setTimeout(() => {
             addNextActionStep(street, index);
-          }, 100);
+          }, 50);
         }
-        
-        // Advance to next player automatically
-        setTimeout(() => {
-          advanceToNextPlayer(street, index, action, validBetAmount);
-        }, 150);
         
         return newFormData;
       }
       
       const newFormData = { ...prev, [street]: updatedActions };
       
+      // Advance to next player IMMEDIATELY (no setTimeout delay)
+      advanceToNextPlayer(street, index, action, validBetAmount);
+      
       // If this is a bet or raise action, add next action step
       if (shouldAddNextAction(action)) {
         setTimeout(() => {
           addNextActionStep(street, index);
-        }, 100);
+        }, 50);
       }
-      
-      // Advance to next player automatically after any completed action
-      setTimeout(() => {
-        advanceToNextPlayer(street, index, action, validBetAmount);
-      }, 150);
       
       return newFormData;
     });
@@ -177,6 +171,9 @@ export const useActionManagement = (
         completed: true
       };
       
+      // Advance to next player IMMEDIATELY (no setTimeout delay)
+      advanceToNextPlayer(street, index, currentAction.action || '', amount);
+      
       // Add next action step if this is a bet or raise and it doesn't already exist
       if (currentAction.action && shouldAddNextAction(currentAction.action)) {
         const nextActionStep = createNextActionStep(currentAction, prev.players);
@@ -191,11 +188,6 @@ export const useActionManagement = (
           console.log(`Adding next action step for ${nextActionStep.playerName}`, updatedActions);
         }
       }
-      
-      // Advance to next player automatically after bet size selection
-      setTimeout(() => {
-        advanceToNextPlayer(street, index, currentAction.action || '', amount);
-      }, 150);
       
       return { ...prev, [street]: updatedActions };
     });

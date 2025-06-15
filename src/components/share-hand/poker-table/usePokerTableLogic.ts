@@ -2,9 +2,11 @@
 import { useIsMobile } from '@/hooks/use-mobile';
 import { standardizePosition, getActionOrder } from '@/utils/positionMapping';
 import { Player } from '@/types/shareHand';
+import { useShareHandContext } from '../ShareHandProvider';
 
 export const usePokerTableLogic = (players: Player[], currentStreet?: string, formData?: any) => {
   const isMobile = useIsMobile();
+  const { gameStateUI } = useShareHandContext();
   
   // All possible positions around the table in clockwise order starting from top
   const allPositions = ['utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn', 'sb', 'bb'];
@@ -54,8 +56,27 @@ export const usePokerTableLogic = (players: Player[], currentStreet?: string, fo
   // Check if any player is already set as hero
   const hasHero = players.some(p => p.isHero);
 
-  // Check if it's this player's turn to act
+  // Check if it's this player's turn to act - UPDATED to use game state
   const isPlayerToAct = (position: string) => {
+    // First priority: use game state if available
+    if (gameStateUI?.gameState && gameStateUI.isPlayerActive) {
+      const isActiveFromGameState = gameStateUI.isPlayerActive(position);
+      console.log('GAME STATE CHECK - isPlayerToAct:', {
+        position,
+        isActiveFromGameState,
+        currentPlayerFromGameState: gameStateUI.currentPlayerPosition,
+        gameStateRound: gameStateUI.currentRound,
+        currentStreet
+      });
+      
+      // Only use game state if we're on the matching street
+      const gameStateStreet = gameStateUI.currentRound + 'Actions';
+      if (gameStateStreet === currentStreet) {
+        return isActiveFromGameState;
+      }
+    }
+    
+    // Fallback to form data logic if no game state or different street
     if (!currentStreet || !formData) {
       console.log('No currentStreet or formData for isPlayerToAct check');
       return false;
@@ -90,7 +111,7 @@ export const usePokerTableLogic = (players: Player[], currentStreet?: string, fo
         const playerStandardPos = standardizePosition(position);
         const isFirstToAct = playerStandardPos === firstToActStandardPos;
         
-        console.log('First to act determination:', {
+        console.log('FALLBACK - First to act determination:', {
           position,
           playerStandardPos,
           firstToActStandardPos,
@@ -108,14 +129,14 @@ export const usePokerTableLogic = (players: Player[], currentStreet?: string, fo
       // Find the first incomplete action (next to act)
       const nextActionIndex = actions.findIndex((action: any) => !action.completed);
       if (nextActionIndex === -1) {
-        console.log('No incomplete actions found');
+        console.log('FALLBACK - No incomplete actions found');
         return false;
       }
       
       const nextAction = actions[nextActionIndex];
       const isMatch = nextAction.playerId === player.id;
       
-      console.log('DETAILED isPlayerToAct check:', {
+      console.log('FALLBACK - isPlayerToAct check:', {
         position,
         playerName: player.name,
         playerId: player.id,
@@ -123,14 +144,7 @@ export const usePokerTableLogic = (players: Player[], currentStreet?: string, fo
         nextActionPlayerName: nextAction.playerName,
         isMatch,
         currentStreet,
-        nextActionIndex,
-        nextAction,
-        allActions: actions.map((a: any) => ({ 
-          playerId: a.playerId, 
-          playerName: a.playerName, 
-          completed: a.completed,
-          action: a.action 
-        }))
+        nextActionIndex
       });
       
       return isMatch;
