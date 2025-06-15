@@ -1,4 +1,3 @@
-
 import { useIsMobile } from '@/hooks/use-mobile';
 import { standardizePosition, getActionOrder } from '@/utils/positionMapping';
 import { Player } from '@/types/shareHand';
@@ -54,13 +53,12 @@ export const usePokerTableLogic = (players: Player[], currentStreet?: string, fo
   // Check if any player is already set as hero
   const hasHero = players.some(p => p.isHero);
 
-  // Simple form-based implementation that was working originally
+  // Simplified approach: check if this player has the next incomplete action
   const isPlayerToAct = (position: string) => {
     console.log('🔍 DEBUGGING isPlayerToAct:', {
       position,
       currentStreet,
-      hasFormData: !!formData,
-      formDataKeys: formData ? Object.keys(formData) : null
+      hasFormData: !!formData
     });
 
     if (!currentStreet || !formData) {
@@ -78,8 +76,12 @@ export const usePokerTableLogic = (players: Player[], currentStreet?: string, fo
       playerName: player?.name,
       playerId: player?.id,
       actionsLength: actions?.length || 0,
-      actionsExist: !!actions,
-      fullActions: actions
+      allActions: actions?.map((a: any) => ({
+        name: a.playerName,
+        id: a.playerId,
+        completed: a.completed,
+        action: a.action
+      })) || []
     });
 
     if (!player) {
@@ -91,19 +93,16 @@ export const usePokerTableLogic = (players: Player[], currentStreet?: string, fo
     if (!actions || actions.length === 0) {
       console.log('🎯 No actions found, determining first to act based on positions');
       
-      // Get all players with positions
       const playersWithPositions = players.filter(p => p.position);
       if (playersWithPositions.length < 2) {
         console.log('❌ Not enough players to determine action order');
         return false;
       }
 
-      // Get action order for this street
       const uiPositions = playersWithPositions.map(p => p.position);
       const isPreflop = currentStreet === 'preflopActions';
       const orderedPositions = getActionOrder(uiPositions, isPreflop);
       
-      // First position in order should be first to act
       if (orderedPositions.length > 0) {
         const firstToActStandardPos = orderedPositions[0];
         const playerStandardPos = standardizePosition(position);
@@ -113,50 +112,39 @@ export const usePokerTableLogic = (players: Player[], currentStreet?: string, fo
           position,
           playerStandardPos,
           firstToActStandardPos,
-          isFirstToAct,
-          orderedPositions,
-          currentStreet,
-          playersWithPositions: playersWithPositions.map(p => ({ name: p.name, position: p.position }))
+          isFirstToAct
         });
         
         return isFirstToAct;
       }
     }
     
-    // If actions exist, find the first incomplete action (next to act)
+    // If actions exist, find the first incomplete action
     if (actions && actions.length > 0) {
-      console.log('🔍 Actions exist, checking for incomplete actions:', actions.map(a => ({
-        playerName: a.playerName,
-        playerId: a.playerId,
-        action: a.action,
-        completed: a.completed
-      })));
-
-      const nextActionIndex = actions.findIndex((action: any) => !action.completed);
+      const nextIncompleteAction = actions.find((action: any) => !action.completed);
       
-      console.log('🔍 Next action search result:', {
-        nextActionIndex,
-        totalActions: actions.length
+      console.log('🔍 Next incomplete action search:', {
+        nextIncompleteAction: nextIncompleteAction ? {
+          playerName: nextIncompleteAction.playerName,
+          playerId: nextIncompleteAction.playerId,
+          completed: nextIncompleteAction.completed
+        } : null
       });
 
-      if (nextActionIndex === -1) {
+      if (!nextIncompleteAction) {
         console.log('❌ No incomplete actions found - all actions completed');
         return false;
       }
       
-      const nextAction = actions[nextActionIndex];
-      const isMatch = nextAction.playerId === player.id;
+      const isMatch = nextIncompleteAction.playerId === player.id;
       
       console.log('🎯 isPlayerToAct final check:', {
         position,
         playerName: player.name,
         playerId: player.id,
-        nextActionPlayerId: nextAction.playerId,
-        nextActionPlayerName: nextAction.playerName,
-        nextActionCompleted: nextAction.completed,
-        isMatch,
-        currentStreet,
-        nextActionIndex
+        nextActionPlayerId: nextIncompleteAction.playerId,
+        nextActionPlayerName: nextIncompleteAction.playerName,
+        isMatch
       });
       
       return isMatch;
