@@ -5,6 +5,7 @@ import CardInput from '@/components/CardInput';
 import PotDisplay from './PotDisplay';
 import { PokerTable } from './poker-table';
 import SelectedCardsDisplay from './SelectedCardsDisplay';
+import DecisionTreeVisualization from './DecisionTreeVisualization';
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';
 import { getAvailablePositions } from '@/utils/positionUtils';
 
@@ -105,6 +106,12 @@ const PreflopStep = ({
           handleBetSizeSelect={handleBetSizeSelect}
         />
       </div>
+
+      {/* Decision Tree Visualization */}
+      <DecisionTreeVisualization 
+        formData={formData}
+        isVisible={true}
+      />
 
       <div>
         <Label htmlFor="preflop-description" className="text-slate-300 text-sm">Preflop Insights (Optional)</Label>

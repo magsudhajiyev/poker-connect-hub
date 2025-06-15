@@ -1,9 +1,12 @@
+
 import { useIsMobile } from '@/hooks/use-mobile';
 import { standardizePosition, getActionOrder } from '@/utils/positionMapping';
 import { Player } from '@/types/shareHand';
+import { useDecisionTree } from '@/hooks/useDecisionTree';
 
 export const usePokerTableLogic = (players: Player[], currentStreet?: string, formData?: any) => {
   const isMobile = useIsMobile();
+  const decisionTree = useDecisionTree(formData || {});
   
   // All possible positions around the table in clockwise order starting from top
   const allPositions = ['utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn', 'sb', 'bb'];
@@ -187,6 +190,7 @@ export const usePokerTableLogic = (players: Player[], currentStreet?: string, fo
     hasHero,
     isPlayerToAct,
     getPlayerBetAmount,
-    isMobile
+    isMobile,
+    decisionTree
   };
 };
