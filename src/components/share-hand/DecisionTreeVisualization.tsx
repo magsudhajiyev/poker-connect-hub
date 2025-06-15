@@ -22,15 +22,19 @@ const DecisionTreeNode = ({
   isLast?: boolean; 
   path?: string; 
 }) => {
-  const [isExpanded, setIsExpanded] = useState(depth < 2); // Auto-expand first 2 levels
+  const [isExpanded, setIsExpanded] = useState(depth < 3); // Auto-expand first 3 levels
   
   const hasChildren = node.children && node.children.length > 0;
-  const indent = depth * 20;
+  const indent = depth * 16;
+  
+  // Check if this is an action node (contains arrow ->) or actor node
+  const isActionNode = node.name.includes(' -> ');
+  const isRootNode = depth === 0;
   
   return (
     <div className="relative">
       <div 
-        className="flex items-center space-x-2 py-1 hover:bg-slate-800/30 rounded"
+        className="flex items-start space-x-2 py-1 hover:bg-slate-800/30 rounded transition-colors"
         style={{ paddingLeft: `${indent}px` }}
       >
         {hasChildren && (
@@ -38,39 +42,39 @@ const DecisionTreeNode = ({
             variant="ghost"
             size="sm"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1 h-6 w-6"
+            className="p-1 h-6 w-6 mt-0.5 flex-shrink-0"
           >
             {isExpanded ? '−' : '+'}
           </Button>
         )}
         
-        {!hasChildren && <div className="w-6" />}
+        {!hasChildren && <div className="w-6 flex-shrink-0" />}
         
-        <div className="flex-1 text-sm">
-          <span className="text-slate-300">{node.name}</span>
-          {node.pot !== undefined && (
-            <Badge variant="secondary" className="ml-2 text-xs bg-emerald-500/20 text-emerald-400">
-              Pot: ${node.pot}
-            </Badge>
-          )}
-          {node.isAllIn && (
-            <Badge variant="secondary" className="ml-1 text-xs bg-red-500/20 text-red-400">
-              ALL-IN
-            </Badge>
-          )}
-          {node.isFinal && (
-            <Badge variant="secondary" className="ml-1 text-xs bg-blue-500/20 text-blue-400">
-              FINAL
-            </Badge>
+        <div className="flex-1 min-w-0">
+          {isActionNode ? (
+            // Action node - display the full formatted label
+            <div className="text-sm">
+              <span className="text-slate-300 break-all">{node.name}</span>
+            </div>
+          ) : (
+            // Actor node (root) - display just the actor name
+            <div className="text-sm">
+              <span className="text-slate-200 font-medium">{node.name}</span>
+              {node.pot !== undefined && (
+                <Badge variant="secondary" className="ml-2 text-xs bg-emerald-500/20 text-emerald-400">
+                  Starting Pot: ${node.pot}
+                </Badge>
+              )}
+            </div>
           )}
         </div>
       </div>
       
       {hasChildren && isExpanded && (
-        <div className="ml-2">
+        <div className="mt-1">
           {node.children!.map((child, index) => (
             <DecisionTreeNode
-              key={index}
+              key={`${path}-${index}`}
               node={child}
               depth={depth + 1}
               isLast={index === node.children!.length - 1}
@@ -158,7 +162,11 @@ const DecisionTreeVisualization = ({
           {treeData ? (
             <div className="space-y-2">
               <div className="text-sm text-slate-400 mb-4">
-                Explore all possible action paths from the current hand state
+                Explore all possible action paths from the current hand state. Each node shows the format:
+                <br />
+                <span className="font-mono text-xs bg-slate-800/50 px-2 py-1 rounded mt-1 inline-block">
+                  STREET - [ACTOR] → [ACTION] | Pot: $[amount] | Stacks: &#123;...&#125; [| FINAL]
+                </span>
               </div>
               <div className="bg-slate-800/40 rounded-lg p-4 max-h-96 overflow-y-auto">
                 <DecisionTreeNode node={treeData} />
