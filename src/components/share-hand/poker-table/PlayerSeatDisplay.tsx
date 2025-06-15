@@ -38,6 +38,13 @@ const PlayerSeatDisplay = ({
     return labels[pos] || pos.toUpperCase();
   };
 
+  console.log('PlayerSeatDisplay rendering:', {
+    playerName: player.name,
+    position,
+    isToAct,
+    betAmount
+  });
+
   return (
     <div className="flex flex-col items-center space-y-1 relative">
       {/* Bet Amount Display */}
@@ -75,9 +82,12 @@ const PlayerSeatDisplay = ({
           {gameFormat === 'cash' ? '$' : ''}{player.stackSize[0]}{gameFormat === 'mtt' ? 'BB' : ''}
         </div>
 
-        {/* Action Indicator */}
+        {/* Action Indicator - Enhanced flashing effect */}
         {isToAct && (
-          <div className={`absolute -top-1 -right-1 ${isMobile ? 'w-3 h-3' : 'w-4 h-4'} bg-emerald-400 rounded-full animate-pulse shadow-lg border-2 border-emerald-200`} />
+          <div className={`absolute -top-1 -right-1 ${isMobile ? 'w-3 h-3' : 'w-4 h-4'} bg-emerald-400 rounded-full shadow-lg border-2 border-emerald-200`} 
+               style={{
+                 animation: 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+               }} />
         )}
       </div>
 

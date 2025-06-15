@@ -88,24 +88,6 @@ const PokerTable = ({
   // Check if any player is already set as hero
   const hasHero = players.some(p => p.isHero);
 
-  // Get current action step for a player
-  const getCurrentActionStep = (position: string) => {
-    if (!currentStreet || !formData) return null;
-    
-    const actions = formData[currentStreet];
-    if (!actions) return null;
-    
-    const player = getPlayerAtPosition(position);
-    if (!player) return null;
-    
-    // Find the current action step for this player
-    const actionStep = actions.find((action: any, index: number) => {
-      return action.playerId === player.id && !action.completed;
-    });
-    
-    return actionStep;
-  };
-
   // Check if it's this player's turn to act
   const isPlayerToAct = (position: string) => {
     if (!currentStreet || !formData) return false;
@@ -121,6 +103,15 @@ const PokerTable = ({
     if (nextActionIndex === -1) return false;
     
     const nextAction = actions[nextActionIndex];
+    console.log('Checking if player to act:', {
+      position,
+      playerId: player.id,
+      nextActionPlayerId: nextAction.playerId,
+      isMatch: nextAction.playerId === player.id,
+      currentStreet,
+      nextActionIndex
+    });
+    
     return nextAction.playerId === player.id;
   };
 
@@ -146,6 +137,7 @@ const PokerTable = ({
     
     // Get the most recent bet/raise
     const latestAction = playerActions[playerActions.length - 1];
+    console.log('Player bet amount for', position, ':', latestAction.betAmount);
     return latestAction.betAmount;
   };
 
@@ -194,6 +186,14 @@ const PokerTable = ({
           const isCurrentPlayer = currentPlayer === position;
           const isToAct = isPlayerToAct(position);
           const betAmount = getPlayerBetAmount(position);
+
+          console.log('Rendering seat:', {
+            position,
+            hasPlayer: !!player,
+            isToAct,
+            betAmount,
+            currentStreet
+          });
 
           return (
             <ClickablePlayerSeat
