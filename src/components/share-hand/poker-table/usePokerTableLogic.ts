@@ -56,49 +56,23 @@ export const usePokerTableLogic = (players: Player[], currentStreet?: string, fo
   // Check if any player is already set as hero
   const hasHero = players.some(p => p.isHero);
 
-  // Simplified approach: check if this player has the next incomplete action
+  // Determine which player should be acting (flashing) based on action order
   const isPlayerToAct = (position: string) => {
-    console.log('🔍 DEBUGGING isPlayerToAct:', {
-      position,
-      currentStreet,
-      hasFormData: !!formData
-    });
-
     if (!currentStreet || !formData) {
-      console.log('❌ No currentStreet or formData for isPlayerToAct check');
       return false;
     }
     
     const actions = formData[currentStreet];
     const player = getPlayerAtPosition(position);
     
-    console.log('🔍 isPlayerToAct debug data:', {
-      position,
-      currentStreet,
-      hasPlayer: !!player,
-      playerName: player?.name,
-      playerId: player?.id,
-      actionsLength: actions?.length || 0,
-      allActions: actions?.map((a: any) => ({
-        name: a.playerName,
-        id: a.playerId,
-        completed: a.completed,
-        action: a.action
-      })) || []
-    });
-
     if (!player) {
-      console.log('❌ No player found at position:', position);
       return false;
     }
 
     // If no actions exist yet, determine first to act based on position order
     if (!actions || actions.length === 0) {
-      console.log('🎯 No actions found, determining first to act based on positions');
-      
       const playersWithPositions = players.filter(p => p.position);
       if (playersWithPositions.length < 2) {
-        console.log('❌ Not enough players to determine action order');
         return false;
       }
 
@@ -109,51 +83,24 @@ export const usePokerTableLogic = (players: Player[], currentStreet?: string, fo
       if (orderedPositions.length > 0) {
         const firstToActStandardPos = orderedPositions[0];
         const playerStandardPos = standardizePosition(position);
-        const isFirstToAct = playerStandardPos === firstToActStandardPos;
-        
-        console.log('🎯 First to act determination:', {
-          position,
-          playerStandardPos,
-          firstToActStandardPos,
-          isFirstToAct
-        });
-        
-        return isFirstToAct;
+        return playerStandardPos === firstToActStandardPos;
       }
     }
     
-    // If actions exist, find the first incomplete action
+    // If actions exist, find the first incomplete action and check if it's this player
     if (actions && actions.length > 0) {
+      // Find the first action that is not completed
       const nextIncompleteAction = actions.find((action: any) => !action.completed);
       
-      console.log('🔍 Next incomplete action search:', {
-        nextIncompleteAction: nextIncompleteAction ? {
-          playerName: nextIncompleteAction.playerName,
-          playerId: nextIncompleteAction.playerId,
-          completed: nextIncompleteAction.completed
-        } : null
-      });
-
       if (!nextIncompleteAction) {
-        console.log('❌ No incomplete actions found - all actions completed');
+        // All actions are completed - no one should be flashing
         return false;
       }
       
-      const isMatch = nextIncompleteAction.playerId === player.id;
-      
-      console.log('🎯 isPlayerToAct final check:', {
-        position,
-        playerName: player.name,
-        playerId: player.id,
-        nextActionPlayerId: nextIncompleteAction.playerId,
-        nextActionPlayerName: nextIncompleteAction.playerName,
-        isMatch
-      });
-      
-      return isMatch;
+      // Check if this player matches the incomplete action
+      return nextIncompleteAction.playerId === player.id;
     }
     
-    console.log('❌ Fallback: no conditions met');
     return false;
   };
 
