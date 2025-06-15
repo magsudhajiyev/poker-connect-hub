@@ -27,7 +27,7 @@ const DecisionTreeNode = ({
   const hasChildren = node.children && node.children.length > 0;
   const indent = depth * 16;
   
-  // Check if this is an action node (contains arrow ->) or actor node
+  // Check if this is an action node (contains arrow ->) or actor node (root)
   const isActionNode = node.name.includes(' -> ');
   const isRootNode = depth === 0;
   
@@ -51,22 +51,22 @@ const DecisionTreeNode = ({
         {!hasChildren && <div className="w-6 flex-shrink-0" />}
         
         <div className="flex-1 min-w-0">
-          {isActionNode ? (
-            // Action node - display the full formatted label
-            <div className="text-sm">
-              <span className="text-slate-300 break-all">{node.name}</span>
-            </div>
-          ) : (
-            // Actor node (root) - display just the actor name
-            <div className="text-sm">
-              <span className="text-slate-200 font-medium">{node.name}</span>
-              {node.pot !== undefined && (
-                <Badge variant="secondary" className="ml-2 text-xs bg-emerald-500/20 text-emerald-400">
-                  Starting Pot: ${node.pot}
-                </Badge>
-              )}
-            </div>
-          )}
+          <div className="text-sm">
+            {isActionNode ? (
+              // Action node - display the full formatted label exactly as generated
+              <span className="text-slate-300 break-all font-mono text-xs">{node.name}</span>
+            ) : (
+              // Actor node (root) - display just the actor name with starting pot
+              <div>
+                <span className="text-slate-200 font-medium">{node.name}</span>
+                {node.pot !== undefined && (
+                  <Badge variant="secondary" className="ml-2 text-xs bg-emerald-500/20 text-emerald-400">
+                    Starting Pot: ${node.pot}
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
       

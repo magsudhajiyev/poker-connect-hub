@@ -126,29 +126,38 @@ export interface VisualActionNode {
   isFinal?: boolean;
 }
 
+// Updated to create the exact format you specified
 export function convertToVisualTree(node: ActionNode | null): VisualActionNode | null {
   if (!node) return null;
 
   const children: VisualActionNode[] = [];
+  
+  // For each action option, create a child node with the proper label
   for (const [action, childNode] of Object.entries(node.children)) {
-    const visualChild = convertToVisualTree(childNode);
-    const label = `${node.street.toUpperCase()} - ${node.actor} -> ${action}` +
-      ` | Pot: ${node.pot} | Stacks: ${JSON.stringify(node.stacks)}` +
-      (childNode?.isAllIn ? " | ALL-IN" : "") +
-      (childNode?.isFinal ? " | FINAL" : "");
-    children.push({
-      name: label,
-      pot: node.pot,
-      stacks: node.stacks,
-      isAllIn: childNode?.isAllIn,
-      isFinal: childNode?.isFinal,
-      ...(visualChild ? { children: [visualChild] } : {}),
-    });
+    if (childNode) {
+      // Create the label in the exact format: STREET - [ACTOR] -> [ACTION] | Pot: $[amount] | Stacks: {...} [| FINAL]
+      const stacksStr = JSON.stringify(childNode.stacks);
+      const finalStr = childNode.isFinal ? " | FINAL" : "";
+      const label = `${node.street.toUpperCase()} - ${node.actor} -> ${action} | Pot: $${childNode.pot} | Stacks: ${stacksStr}${finalStr}`;
+      
+      // Recursively convert the child node
+      const visualChild = convertToVisualTree(childNode);
+      
+      children.push({
+        name: label,
+        pot: childNode.pot,
+        stacks: childNode.stacks,
+        isAllIn: childNode.isAllIn,
+        isFinal: childNode.isFinal,
+        children: visualChild && !childNode.isFinal ? [visualChild] : undefined,
+      });
+    }
   }
 
+  // Return the root node with its children
   return { 
     name: node.actor, 
-    children,
+    children: children.length > 0 ? children : undefined,
     pot: node.pot,
     stacks: node.stacks,
     isAllIn: node.isAllIn,
