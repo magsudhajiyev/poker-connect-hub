@@ -38,6 +38,12 @@ const PokerTable = ({
     'bb': { mobile: { x: 5, y: 40 }, desktop: { x: 8, y: 35 } }
   };
 
+  // Filter players that have valid positions
+  const validPlayers = players.filter(player => player.position && seatPositions[player.position as keyof typeof seatPositions]);
+
+  console.log('PokerTable players:', players);
+  console.log('Valid players with positions:', validPlayers);
+
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
       {/* Pot Display */}
@@ -76,12 +82,12 @@ const PokerTable = ({
         </div>
 
         {/* Player Seats */}
-        {players.map((player) => {
+        {validPlayers.map((player) => {
           const position = seatPositions[player.position as keyof typeof seatPositions];
-          if (!position) return null;
-
           const coords = isMobile ? position.mobile : position.desktop;
           const isCurrentPlayer = currentPlayer === player.position;
+
+          console.log(`Rendering player ${player.name} at position ${player.position}:`, coords);
 
           return (
             <PlayerSeat
@@ -95,7 +101,7 @@ const PokerTable = ({
         })}
 
         {/* Dealer Button */}
-        {players.find(p => p.position === 'btn') && (
+        {validPlayers.find(p => p.position === 'btn') && (
           <div 
             className="absolute w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-full border-2 border-gray-800 flex items-center justify-center font-bold text-gray-800 text-xs shadow-lg z-10"
             style={{
@@ -105,6 +111,16 @@ const PokerTable = ({
             }}
           >
             D
+          </div>
+        )}
+
+        {/* Debug Info - Show if no valid players */}
+        {validPlayers.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-slate-400 text-sm text-center">
+              <p>No players with positions assigned yet</p>
+              <p className="text-xs mt-1">Add players and assign positions to see them on the table</p>
+            </div>
           </div>
         )}
       </div>
