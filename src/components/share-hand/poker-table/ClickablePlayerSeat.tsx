@@ -16,6 +16,7 @@ interface ClickablePlayerSeatProps {
   onUpdatePlayer: (player: Player) => void;
   onRemovePlayer: (playerId: string) => void;
   availablePositions: Array<{value: string, label: string}>;
+  hasHero?: boolean;
 }
 
 const ClickablePlayerSeat = ({ 
@@ -24,7 +25,8 @@ const ClickablePlayerSeat = ({
   player, 
   gameFormat = 'cash',
   onUpdatePlayer,
-  onRemovePlayer
+  onRemovePlayer,
+  hasHero = false
 }: ClickablePlayerSeatProps) => {
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
@@ -68,6 +70,9 @@ const ClickablePlayerSeat = ({
       setIsOpen(false);
     }
   };
+
+  // Determine if hero checkbox should be disabled
+  const isHeroCheckboxDisabled = hasHero && !player?.isHero;
 
   const isEmpty = !player;
 
@@ -169,11 +174,20 @@ const ClickablePlayerSeat = ({
                 id="is-hero"
                 checked={isHero}
                 onChange={(e) => setIsHero(e.target.checked)}
+                disabled={isHeroCheckboxDisabled}
                 className="rounded"
               />
-              <Label htmlFor="is-hero" className="text-slate-300 text-sm flex items-center gap-1">
+              <Label 
+                htmlFor="is-hero" 
+                className={`text-sm flex items-center gap-1 ${
+                  isHeroCheckboxDisabled ? 'text-slate-500' : 'text-slate-300'
+                }`}
+              >
                 <Crown className="w-4 h-4 text-yellow-400" />
                 This is the Hero
+                {isHeroCheckboxDisabled && (
+                  <span className="text-xs text-slate-500 ml-2">(Hero already selected)</span>
+                )}
               </Label>
             </div>
 

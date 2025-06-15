@@ -33,23 +33,26 @@ const PokerTable = ({
   // All possible positions around the table
   const allPositions = ['utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn', 'sb', 'bb'];
   
-  // Position mapping for seat arrangement around the table
+  // Position mapping for evenly distributed seats around the table
   const seatPositions = {
-    'utg': { mobile: { x: 50, y: 10 }, desktop: { x: 50, y: 8 } },
-    'utg1': { mobile: { x: 80, y: 20 }, desktop: { x: 75, y: 15 } },
-    'mp': { mobile: { x: 95, y: 40 }, desktop: { x: 92, y: 35 } },
-    'lj': { mobile: { x: 95, y: 60 }, desktop: { x: 92, y: 65 } },
-    'hj': { mobile: { x: 80, y: 80 }, desktop: { x: 75, y: 85 } },
-    'co': { mobile: { x: 50, y: 90 }, desktop: { x: 50, y: 92 } },
-    'btn': { mobile: { x: 20, y: 80 }, desktop: { x: 25, y: 85 } },
-    'sb': { mobile: { x: 5, y: 60 }, desktop: { x: 8, y: 65 } },
-    'bb': { mobile: { x: 5, y: 40 }, desktop: { x: 8, y: 35 } }
+    'utg': { mobile: { x: 50, y: 5 }, desktop: { x: 50, y: 5 } },      // Top center
+    'utg1': { mobile: { x: 80, y: 15 }, desktop: { x: 78, y: 18 } },   // Top right
+    'mp': { mobile: { x: 95, y: 40 }, desktop: { x: 92, y: 40 } },     // Right middle-top
+    'lj': { mobile: { x: 95, y: 60 }, desktop: { x: 92, y: 60 } },     // Right middle-bottom
+    'hj': { mobile: { x: 80, y: 85 }, desktop: { x: 78, y: 82 } },     // Bottom right
+    'co': { mobile: { x: 50, y: 95 }, desktop: { x: 50, y: 95 } },     // Bottom center
+    'btn': { mobile: { x: 20, y: 85 }, desktop: { x: 22, y: 82 } },    // Bottom left
+    'sb': { mobile: { x: 5, y: 60 }, desktop: { x: 8, y: 60 } },       // Left middle-bottom
+    'bb': { mobile: { x: 5, y: 40 }, desktop: { x: 8, y: 40 } }        // Left middle-top
   };
 
   // Get player for a specific position
   const getPlayerAtPosition = (position: string) => {
     return players.find(p => p.position === position);
   };
+
+  // Check if any player is already set as hero
+  const hasHero = players.some(p => p.isHero);
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
@@ -105,6 +108,7 @@ const PokerTable = ({
               onUpdatePlayer={onUpdatePlayer}
               onRemovePlayer={onRemovePlayer}
               availablePositions={availablePositions}
+              hasHero={hasHero}
             />
           );
         })}
@@ -114,8 +118,8 @@ const PokerTable = ({
           <div 
             className="absolute w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-full border-2 border-gray-800 flex items-center justify-center font-bold text-gray-800 text-xs shadow-lg z-10"
             style={{
-              left: `${isMobile ? 12 : 18}%`,
-              top: `${isMobile ? 72 : 78}%`,
+              left: `${isMobile ? 12 : 15}%`,
+              top: `${isMobile ? 77 : 74}%`,
               transform: 'translate(-50%, -50%)'
             }}
           >
