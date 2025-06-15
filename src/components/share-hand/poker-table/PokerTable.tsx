@@ -30,21 +30,44 @@ const PokerTable = ({
 }: PokerTableProps) => {
   const isMobile = useIsMobile();
   
-  // All possible positions around the table
+  // All possible positions around the table in clockwise order starting from top
   const allPositions = ['utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn', 'sb', 'bb'];
   
-  // Position mapping for evenly distributed seats around the table
-  const seatPositions = {
-    'utg': { mobile: { x: 50, y: 5 }, desktop: { x: 50, y: 5 } },      // Top center
-    'utg1': { mobile: { x: 80, y: 15 }, desktop: { x: 78, y: 18 } },   // Top right
-    'mp': { mobile: { x: 95, y: 40 }, desktop: { x: 92, y: 40 } },     // Right middle-top
-    'lj': { mobile: { x: 95, y: 60 }, desktop: { x: 92, y: 60 } },     // Right middle-bottom
-    'hj': { mobile: { x: 80, y: 85 }, desktop: { x: 78, y: 82 } },     // Bottom right
-    'co': { mobile: { x: 50, y: 95 }, desktop: { x: 50, y: 95 } },     // Bottom center
-    'btn': { mobile: { x: 20, y: 85 }, desktop: { x: 22, y: 82 } },    // Bottom left
-    'sb': { mobile: { x: 5, y: 60 }, desktop: { x: 8, y: 60 } },       // Left middle-bottom
-    'bb': { mobile: { x: 5, y: 40 }, desktop: { x: 8, y: 40 } }        // Left middle-top
+  // Calculate evenly spaced positions around an ellipse
+  const calculatePositions = () => {
+    const positions: { [key: string]: { mobile: { x: number; y: number }, desktop: { x: number; y: number } } } = {};
+    
+    // Center coordinates
+    const centerX = 50;
+    const centerY = 50;
+    
+    // Ellipse radii (percentage of container)
+    const radiusX = isMobile ? 40 : 42; // Horizontal radius
+    const radiusY = isMobile ? 35 : 40; // Vertical radius
+    
+    // Starting angle (top center) - adjust to start at top
+    const startAngle = -Math.PI / 2; // -90 degrees (top)
+    
+    // Calculate angular step for 9 positions
+    const angleStep = (2 * Math.PI) / 9;
+    
+    allPositions.forEach((position, index) => {
+      const angle = startAngle + (index * angleStep);
+      
+      // Calculate position on ellipse
+      const x = centerX + radiusX * Math.cos(angle);
+      const y = centerY + radiusY * Math.sin(angle);
+      
+      positions[position] = {
+        mobile: { x, y },
+        desktop: { x, y }
+      };
+    });
+    
+    return positions;
   };
+
+  const seatPositions = calculatePositions();
 
   // Get player for a specific position
   const getPlayerAtPosition = (position: string) => {
@@ -93,7 +116,7 @@ const PokerTable = ({
 
         {/* All Position Seats (clickable) */}
         {allPositions.map((position) => {
-          const positionData = seatPositions[position as keyof typeof seatPositions];
+          const positionData = seatPositions[position];
           const coords = isMobile ? positionData.mobile : positionData.desktop;
           const player = getPlayerAtPosition(position);
           const isCurrentPlayer = currentPlayer === position;
@@ -118,8 +141,8 @@ const PokerTable = ({
           <div 
             className="absolute w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-full border-2 border-gray-800 flex items-center justify-center font-bold text-gray-800 text-xs shadow-lg z-10"
             style={{
-              left: `${isMobile ? 12 : 15}%`,
-              top: `${isMobile ? 77 : 74}%`,
+              left: `${seatPositions['btn'][isMobile ? 'mobile' : 'desktop'].x - 8}%`,
+              top: `${seatPositions['btn'][isMobile ? 'mobile' : 'desktop'].y + 8}%`,
               transform: 'translate(-50%, -50%)'
             }}
           >
