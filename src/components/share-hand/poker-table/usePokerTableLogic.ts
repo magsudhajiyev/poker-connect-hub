@@ -56,26 +56,45 @@ export const usePokerTableLogic = (players: Player[], currentStreet?: string, fo
 
   // Simple form-based implementation that was working originally
   const isPlayerToAct = (position: string) => {
+    console.log('🔍 DEBUGGING isPlayerToAct:', {
+      position,
+      currentStreet,
+      hasFormData: !!formData,
+      formDataKeys: formData ? Object.keys(formData) : null
+    });
+
     if (!currentStreet || !formData) {
-      console.log('No currentStreet or formData for isPlayerToAct check');
+      console.log('❌ No currentStreet or formData for isPlayerToAct check');
       return false;
     }
     
     const actions = formData[currentStreet];
     const player = getPlayerAtPosition(position);
+    
+    console.log('🔍 isPlayerToAct debug data:', {
+      position,
+      currentStreet,
+      hasPlayer: !!player,
+      playerName: player?.name,
+      playerId: player?.id,
+      actionsLength: actions?.length || 0,
+      actionsExist: !!actions,
+      fullActions: actions
+    });
+
     if (!player) {
-      console.log('No player found at position:', position);
+      console.log('❌ No player found at position:', position);
       return false;
     }
 
     // If no actions exist yet, determine first to act based on position order
     if (!actions || actions.length === 0) {
-      console.log('No actions found, determining first to act based on positions');
+      console.log('🎯 No actions found, determining first to act based on positions');
       
       // Get all players with positions
       const playersWithPositions = players.filter(p => p.position);
       if (playersWithPositions.length < 2) {
-        console.log('Not enough players to determine action order');
+        console.log('❌ Not enough players to determine action order');
         return false;
       }
 
@@ -90,13 +109,14 @@ export const usePokerTableLogic = (players: Player[], currentStreet?: string, fo
         const playerStandardPos = standardizePosition(position);
         const isFirstToAct = playerStandardPos === firstToActStandardPos;
         
-        console.log('First to act determination:', {
+        console.log('🎯 First to act determination:', {
           position,
           playerStandardPos,
           firstToActStandardPos,
           isFirstToAct,
           orderedPositions,
-          currentStreet
+          currentStreet,
+          playersWithPositions: playersWithPositions.map(p => ({ name: p.name, position: p.position }))
         });
         
         return isFirstToAct;
@@ -105,21 +125,35 @@ export const usePokerTableLogic = (players: Player[], currentStreet?: string, fo
     
     // If actions exist, find the first incomplete action (next to act)
     if (actions && actions.length > 0) {
+      console.log('🔍 Actions exist, checking for incomplete actions:', actions.map(a => ({
+        playerName: a.playerName,
+        playerId: a.playerId,
+        action: a.action,
+        completed: a.completed
+      })));
+
       const nextActionIndex = actions.findIndex((action: any) => !action.completed);
+      
+      console.log('🔍 Next action search result:', {
+        nextActionIndex,
+        totalActions: actions.length
+      });
+
       if (nextActionIndex === -1) {
-        console.log('No incomplete actions found');
+        console.log('❌ No incomplete actions found - all actions completed');
         return false;
       }
       
       const nextAction = actions[nextActionIndex];
       const isMatch = nextAction.playerId === player.id;
       
-      console.log('isPlayerToAct check:', {
+      console.log('🎯 isPlayerToAct final check:', {
         position,
         playerName: player.name,
         playerId: player.id,
         nextActionPlayerId: nextAction.playerId,
         nextActionPlayerName: nextAction.playerName,
+        nextActionCompleted: nextAction.completed,
         isMatch,
         currentStreet,
         nextActionIndex
@@ -128,6 +162,7 @@ export const usePokerTableLogic = (players: Player[], currentStreet?: string, fo
       return isMatch;
     }
     
+    console.log('❌ Fallback: no conditions met');
     return false;
   };
 
