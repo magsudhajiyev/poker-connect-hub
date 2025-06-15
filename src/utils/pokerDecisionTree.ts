@@ -51,6 +51,7 @@ export function buildActionTree(
     let isAllIn = false;
 
     if (action === "fold") {
+      // Fold: stacks stay the same, mark as final
       node.children[action] = {
         actor: actor,
         street,
@@ -99,6 +100,7 @@ export function buildActionTree(
         updatedPot += raiseAmount;
         updatedStacks[actor] -= raiseAmount;
       }
+      // After a raise, action goes back to the first player
       node.children[action] = buildActionTree(actors, street, updatedStacks, updatedPot, 0, maxDepth - 1);
     }
 
@@ -126,13 +128,13 @@ export interface VisualActionNode {
   isFinal?: boolean;
 }
 
-// Updated to create the exact format you specified
-export function convertToVisualTree(node: ActionNode | null): VisualActionNode | null {
-  if (!node) return null;
+// Convert to visual tree - creates a flat array of action nodes as specified
+export function convertToVisualTree(node: ActionNode | null): VisualActionNode[] {
+  if (!node) return [];
 
-  const children: VisualActionNode[] = [];
+  const results: VisualActionNode[] = [];
   
-  // For each action option, create a child node with the proper label
+  // For each action option, create a node with the proper label
   for (const [action, childNode] of Object.entries(node.children)) {
     if (childNode) {
       // Create the label in the exact format: STREET - [ACTOR] -> [ACTION] | Pot: $[amount] | Stacks: {...} [| FINAL]
@@ -140,29 +142,28 @@ export function convertToVisualTree(node: ActionNode | null): VisualActionNode |
       const finalStr = childNode.isFinal ? " | FINAL" : "";
       const label = `${node.street.toUpperCase()} - ${node.actor} -> ${action} | Pot: $${childNode.pot} | Stacks: ${stacksStr}${finalStr}`;
       
-      // Recursively convert the child node
-      const visualChild = convertToVisualTree(childNode);
-      
-      children.push({
+      // Create the action node
+      const actionNode: VisualActionNode = {
         name: label,
         pot: childNode.pot,
         stacks: childNode.stacks,
         isAllIn: childNode.isAllIn,
-        isFinal: childNode.isFinal,
-        children: visualChild && !childNode.isFinal ? [visualChild] : undefined,
-      });
+        isFinal: childNode.isFinal
+      };
+
+      // If this action doesn't end the hand, recursively get children
+      if (!childNode.isFinal) {
+        const childResults = convertToVisualTree(childNode);
+        if (childResults.length > 0) {
+          actionNode.children = childResults;
+        }
+      }
+      
+      results.push(actionNode);
     }
   }
 
-  // Return the root node with its children
-  return { 
-    name: node.actor, 
-    children: children.length > 0 ? children : undefined,
-    pot: node.pot,
-    stacks: node.stacks,
-    isAllIn: node.isAllIn,
-    isFinal: node.isFinal
-  };
+  return results;
 }
 
 // Helper function to build tree from current form data
@@ -190,6 +191,14 @@ export function buildTreeFromFormData(formData: any): VisualActionNode | null {
   // Build the decision tree
   const tree = buildActionTree(orderedActors, "preflop", initialStacks);
   
-  // Convert to visual format
-  return convertToVisualTree(tree);
+  // Convert to visual format - return as a wrapper node
+  if (tree) {
+    const children = convertToVisualTree(tree);
+    return {
+      name: "Decision Tree",
+      children: children.length > 0 ? children : undefined
+    };
+  }
+  
+  return null;
 }

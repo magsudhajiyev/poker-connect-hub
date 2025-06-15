@@ -27,9 +27,8 @@ const DecisionTreeNode = ({
   const hasChildren = node.children && node.children.length > 0;
   const indent = depth * 16;
   
-  // Check if this is an action node (contains arrow ->) or actor node (root)
-  const isActionNode = node.name.includes(' -> ');
-  const isRootNode = depth === 0;
+  // Check if this is the root "Decision Tree" node
+  const isRootNode = node.name === "Decision Tree";
   
   return (
     <div className="relative">
@@ -52,19 +51,12 @@ const DecisionTreeNode = ({
         
         <div className="flex-1 min-w-0">
           <div className="text-sm">
-            {isActionNode ? (
+            {isRootNode ? (
+              // Root node - just show the title
+              <span className="text-slate-200 font-medium">{node.name}</span>
+            ) : (
               // Action node - display the full formatted label exactly as generated
               <span className="text-slate-300 break-all font-mono text-xs">{node.name}</span>
-            ) : (
-              // Actor node (root) - display just the actor name with starting pot
-              <div>
-                <span className="text-slate-200 font-medium">{node.name}</span>
-                {node.pot !== undefined && (
-                  <Badge variant="secondary" className="ml-2 text-xs bg-emerald-500/20 text-emerald-400">
-                    Starting Pot: ${node.pot}
-                  </Badge>
-                )}
-              </div>
             )}
           </div>
         </div>
