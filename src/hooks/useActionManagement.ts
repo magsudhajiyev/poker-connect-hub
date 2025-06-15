@@ -14,9 +14,15 @@ export const useActionManagement = (
     const actions = formData[street];
     const currentAction = actions[currentIndex];
     
+    // Check if currentAction exists and has an action property
+    if (!currentAction || !currentAction.action) {
+      console.warn(`Cannot add next action step: currentAction is undefined or has no action at index ${currentIndex}`);
+      return;
+    }
+    
     console.log(`Adding next action step after ${currentAction.action} by ${currentAction.playerName}`);
     
-    if (shouldAddNextAction(currentAction.action!)) {
+    if (shouldAddNextAction(currentAction.action)) {
       const nextActionStep = createNextActionStep(currentAction, formData.players);
       
       // Check if next action already exists
@@ -38,6 +44,13 @@ export const useActionManagement = (
     
     setFormData((prev: ShareHandFormData) => {
       const updatedActions = [...prev[street]];
+      
+      // Check if the action at the index exists
+      if (!updatedActions[index]) {
+        console.warn(`Cannot update action: no action exists at index ${index}`);
+        return prev;
+      }
+      
       const previousAction = updatedActions[index].action;
       
       // Ensure betAmount is properly handled
@@ -95,6 +108,12 @@ export const useActionManagement = (
       const updatedActions = [...prev[street]];
       const currentAction = updatedActions[index];
       
+      // Check if currentAction exists
+      if (!currentAction) {
+        console.warn(`Cannot handle bet size select: no action exists at index ${index}`);
+        return prev;
+      }
+      
       // Update the current action with bet amount and mark as completed
       updatedActions[index] = {
         ...currentAction,
@@ -103,7 +122,7 @@ export const useActionManagement = (
       };
       
       // Add next action step if this is a bet or raise and it doesn't already exist
-      if (shouldAddNextAction(currentAction.action!)) {
+      if (currentAction.action && shouldAddNextAction(currentAction.action)) {
         const nextActionStep = createNextActionStep(currentAction, prev.players);
         
         // Check if next action already exists
