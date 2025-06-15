@@ -50,27 +50,24 @@ const PlayerSeat = ({ player, position, isActive = false, gameFormat = 'cash' }:
                 : 'border-slate-300 bg-slate-600/40 shadow-md'
           }`}
         >
+          {/* Player Name */}
+          <div className={`${isMobile ? 'text-[7px]' : 'text-[9px] sm:text-[10px]'} font-medium text-center ${isMobile ? 'max-w-8' : 'max-w-12'} truncate ${
+            isActive ? 'text-emerald-200' : player.isHero ? 'text-blue-200' : 'text-slate-100'
+          }`}>
+            {player.name}
+          </div>
+
           {/* Stack Size */}
-          <div className={`${isMobile ? 'text-[9px]' : 'text-xs sm:text-sm'} font-bold ${
+          <div className={`${isMobile ? 'text-[7px]' : 'text-[9px] sm:text-[10px]'} font-bold ${
             isActive ? 'text-emerald-200' : player.isHero ? 'text-blue-200' : 'text-slate-100'
           }`}>
             {gameFormat === 'cash' ? '$' : ''}{player.stackSize[0]}{gameFormat === 'mtt' ? 'BB' : ''}
           </div>
         </div>
 
-        {/* Player Info */}
-        <div className="flex flex-col items-center space-y-0.5">
-          {/* Player Name */}
-          <div className={`${isMobile ? 'text-[10px]' : 'text-sm sm:text-base'} font-medium px-2 py-1 rounded bg-slate-800/80 text-center ${isMobile ? 'max-w-20' : 'max-w-24'} truncate border ${
-            player.isHero ? 'text-blue-200 border-blue-400/30' : 'text-slate-100 border-slate-500/30'
-          }`}>
-            {player.name}
-          </div>
-          
-          {/* Position Label */}
-          <div className={`${isMobile ? 'text-[8px]' : 'text-xs'} text-slate-300 font-bold bg-slate-700/50 px-1 py-0.5 rounded`}>
-            {getPositionLabel(player.position)}
-          </div>
+        {/* Position Label */}
+        <div className={`${isMobile ? 'text-[8px]' : 'text-xs'} text-slate-300 font-bold bg-slate-700/50 px-1 py-0.5 rounded`}>
+          {getPositionLabel(player.position)}
         </div>
 
         {/* Active Player Indicator */}
