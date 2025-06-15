@@ -5,48 +5,31 @@ import { Player, ShareHandFormData } from '@/types/shareHand';
 export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (data: ShareHandFormData) => void) => {
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize players in useEffect to avoid state update during render
+  // Initialize empty players array if needed
   useEffect(() => {
     if (!isInitialized && (!formData.players || formData.players.length === 0)) {
-      console.log('Initializing players for the first time');
+      console.log('Initializing empty players array');
       
-      const heroPlayer: Player = {
-        id: 'hero',
-        name: 'Hero',
-        position: formData.heroPosition || '',
-        stackSize: [...(formData.heroStackSize || [100])],
-        isHero: true
-      };
-      
-      const villainPlayer: Player = {
-        id: 'villain',
-        name: 'Villain 1',
-        position: formData.villainPosition || '',
-        stackSize: [...(formData.villainStackSize || [100])]
-      };
-
       setFormData({
         ...formData,
-        players: [heroPlayer, villainPlayer]
+        players: []
       });
       
       setIsInitialized(true);
     }
-  }, [formData.heroPosition, formData.villainPosition, isInitialized, formData, setFormData]);
+  }, [isInitialized, formData, setFormData]);
 
   const players: Player[] = formData.players || [];
 
   // Update a player
   const updatePlayer = (playerId: string, updates: Partial<Player>) => {
     console.log(`Updating player ${playerId} with:`, updates);
-    console.log('Current players before update:', players);
     
     const updatedPlayers = players.map(player => {
       if (player.id === playerId) {
         const updatedPlayer = { 
           ...player, 
           ...updates,
-          // Ensure stackSize is always a new array to prevent circular references
           stackSize: updates.stackSize ? [...updates.stackSize] : [...player.stackSize]
         };
         console.log(`Player ${playerId} updated:`, updatedPlayer);
@@ -55,11 +38,9 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
       return player;
     });
     
-    console.log('Updated players array:', updatedPlayers);
-    
-    // Also update legacy formData fields for backwards compatibility
+    // Update legacy formData fields for backwards compatibility
     const heroPlayer = updatedPlayers.find(p => p.isHero);
-    const villainPlayer = updatedPlayers.find(p => p.id === 'villain');
+    const villainPlayer = updatedPlayers.find(p => !p.isHero);
     
     const newFormData = {
       ...formData,
@@ -74,37 +55,27 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
     setFormData(newFormData);
   };
 
-  // Add a new player
+  // Add a new player - not needed anymore since we add players directly via table clicks
   const addPlayer = () => {
-    // Calculate the next villain number based on existing players
-    // Count all non-hero players (villain + manually added players)
-    const nonHeroPlayers = players.filter(p => !p.isHero);
-    const nextVillainNumber = nonHeroPlayers.length + 1;
-    
-    const newPlayer: Player = {
-      id: `player_${Date.now()}`,
-      name: `Villain ${nextVillainNumber}`,
-      position: '',
-      stackSize: [100]
-    };
-    
-    const newFormData = {
-      ...formData,
-      players: [...players, newPlayer]
-    };
-    
-    console.log('New player added, triggering action reinitialization:', newFormData);
-    setFormData(newFormData);
+    // This method is kept for backwards compatibility but won't be used
+    console.log('addPlayer called - not needed with new table interface');
   };
 
-  // Remove a player (except hero and villain)
+  // Remove a player
   const removePlayer = (playerId: string) => {
-    if (playerId === 'hero' || playerId === 'villain') return;
-    
     const updatedPlayers = players.filter(p => p.id !== playerId);
+    
+    // Update legacy formData fields
+    const heroPlayer = updatedPlayers.find(p => p.isHero);
+    const villainPlayer = updatedPlayers.find(p => !p.isHero);
+    
     const newFormData = {
       ...formData,
-      players: updatedPlayers
+      players: updatedPlayers,
+      heroPosition: heroPlayer?.position || '',
+      villainPosition: villainPlayer?.position || '',
+      heroStackSize: heroPlayer?.stackSize ? [...heroPlayer.stackSize] : [100],
+      villainStackSize: villainPlayer?.stackSize ? [...villainPlayer.stackSize] : [100]
     };
     
     console.log('Player removed, triggering action reinitialization:', newFormData);

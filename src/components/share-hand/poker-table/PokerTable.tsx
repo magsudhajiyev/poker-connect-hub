@@ -1,6 +1,6 @@
 
 import React from 'react';
-import PlayerSeat from './PlayerSeat';
+import ClickablePlayerSeat from './ClickablePlayerSeat';
 import CommunityCards from './CommunityCards';
 import { Player } from '@/types/shareHand';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -12,6 +12,9 @@ interface PokerTableProps {
   pot?: number;
   getCurrencySymbol?: () => string;
   gameFormat?: string;
+  onUpdatePlayer: (player: Player) => void;
+  onRemovePlayer: (playerId: string) => void;
+  availablePositions: Array<{value: string, label: string}>;
 }
 
 const PokerTable = ({ 
@@ -20,12 +23,17 @@ const PokerTable = ({
   currentPlayer,
   pot = 0,
   getCurrencySymbol = () => '$',
-  gameFormat = 'cash'
+  gameFormat = 'cash',
+  onUpdatePlayer,
+  onRemovePlayer,
+  availablePositions
 }: PokerTableProps) => {
   const isMobile = useIsMobile();
   
+  // All possible positions around the table
+  const allPositions = ['utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn', 'sb', 'bb'];
+  
   // Position mapping for seat arrangement around the table
-  // Mobile positions are more spread out to prevent overlap
   const seatPositions = {
     'utg': { mobile: { x: 50, y: 10 }, desktop: { x: 50, y: 8 } },
     'utg1': { mobile: { x: 80, y: 20 }, desktop: { x: 75, y: 15 } },
@@ -38,11 +46,10 @@ const PokerTable = ({
     'bb': { mobile: { x: 5, y: 40 }, desktop: { x: 8, y: 35 } }
   };
 
-  // Filter players that have valid positions
-  const validPlayers = players.filter(player => player.position && seatPositions[player.position as keyof typeof seatPositions]);
-
-  console.log('PokerTable players:', players);
-  console.log('Valid players with positions:', validPlayers);
+  // Get player for a specific position
+  const getPlayerAtPosition = (position: string) => {
+    return players.find(p => p.position === position);
+  };
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
@@ -81,27 +88,29 @@ const PokerTable = ({
           <CommunityCards cards={communityCards} />
         </div>
 
-        {/* Player Seats */}
-        {validPlayers.map((player) => {
-          const position = seatPositions[player.position as keyof typeof seatPositions];
-          const coords = isMobile ? position.mobile : position.desktop;
-          const isCurrentPlayer = currentPlayer === player.position;
-
-          console.log(`Rendering player ${player.name} at position ${player.position}:`, coords);
+        {/* All Position Seats (clickable) */}
+        {allPositions.map((position) => {
+          const positionData = seatPositions[position as keyof typeof seatPositions];
+          const coords = isMobile ? positionData.mobile : positionData.desktop;
+          const player = getPlayerAtPosition(position);
+          const isCurrentPlayer = currentPlayer === position;
 
           return (
-            <PlayerSeat
-              key={player.id}
+            <ClickablePlayerSeat
+              key={position}
+              position={position}
+              positionCoords={coords}
               player={player}
-              position={coords}
-              isActive={isCurrentPlayer}
               gameFormat={gameFormat}
+              onUpdatePlayer={onUpdatePlayer}
+              onRemovePlayer={onRemovePlayer}
+              availablePositions={availablePositions}
             />
           );
         })}
 
         {/* Dealer Button */}
-        {validPlayers.find(p => p.position === 'btn') && (
+        {getPlayerAtPosition('btn') && (
           <div 
             className="absolute w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-full border-2 border-gray-800 flex items-center justify-center font-bold text-gray-800 text-xs shadow-lg z-10"
             style={{
@@ -111,16 +120,6 @@ const PokerTable = ({
             }}
           >
             D
-          </div>
-        )}
-
-        {/* Debug Info - Show if no valid players */}
-        {validPlayers.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-slate-400 text-sm text-center">
-              <p>No players with positions assigned yet</p>
-              <p className="text-xs mt-1">Add players and assign positions to see them on the table</p>
-            </div>
           </div>
         )}
       </div>
