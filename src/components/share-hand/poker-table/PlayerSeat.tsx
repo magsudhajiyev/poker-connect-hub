@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Player } from '@/types/shareHand';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface PlayerSeatProps {
   player: Player;
@@ -10,6 +11,8 @@ interface PlayerSeatProps {
 }
 
 const PlayerSeat = ({ player, position, isActive = false, gameFormat = 'cash' }: PlayerSeatProps) => {
+  const isMobile = useIsMobile();
+  
   const getPositionLabel = (pos: string) => {
     const labels: { [key: string]: string } = {
       'utg': 'UTG',
@@ -37,7 +40,7 @@ const PlayerSeat = ({ player, position, isActive = false, gameFormat = 'cash' }:
       <div className={`flex flex-col items-center space-y-1 ${isActive ? 'z-10' : 'z-0'}`}>
         {/* Player Avatar/Chip Stack */}
         <div 
-          className={`w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 flex flex-col items-center justify-center text-xs font-bold transition-all duration-300 ${
+          className={`${isMobile ? 'w-10 h-10' : 'w-12 h-12 sm:w-16 sm:h-16'} rounded-full border-2 flex flex-col items-center justify-center text-xs font-bold transition-all duration-300 ${
             isActive 
               ? 'border-emerald-400 bg-emerald-500/20 shadow-lg shadow-emerald-400/30' 
               : player.isHero
@@ -46,7 +49,7 @@ const PlayerSeat = ({ player, position, isActive = false, gameFormat = 'cash' }:
           }`}
         >
           {/* Stack Size */}
-          <div className={`text-[10px] sm:text-xs font-bold ${
+          <div className={`${isMobile ? 'text-[9px]' : 'text-[10px] sm:text-xs'} font-bold ${
             isActive ? 'text-emerald-300' : player.isHero ? 'text-blue-300' : 'text-slate-300'
           }`}>
             {gameFormat === 'cash' ? '$' : ''}{player.stackSize[0]}{gameFormat === 'mtt' ? 'BB' : ''}
@@ -56,21 +59,21 @@ const PlayerSeat = ({ player, position, isActive = false, gameFormat = 'cash' }:
         {/* Player Info */}
         <div className="flex flex-col items-center space-y-0.5">
           {/* Player Name */}
-          <div className={`text-xs sm:text-sm font-medium px-2 py-0.5 rounded text-center max-w-20 truncate ${
+          <div className={`${isMobile ? 'text-[10px]' : 'text-xs sm:text-sm'} font-medium px-1 py-0.5 rounded text-center ${isMobile ? 'max-w-16' : 'max-w-20'} truncate ${
             player.isHero ? 'text-blue-300' : 'text-slate-200'
           }`}>
             {player.name}
           </div>
           
           {/* Position Label */}
-          <div className="text-[10px] text-slate-400 font-medium">
+          <div className={`${isMobile ? 'text-[8px]' : 'text-[10px]'} text-slate-400 font-medium`}>
             {getPositionLabel(player.position)}
           </div>
         </div>
 
         {/* Active Player Indicator */}
         {isActive && (
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full animate-pulse shadow-lg" />
+          <div className={`absolute -top-1 -right-1 ${isMobile ? 'w-2 h-2' : 'w-3 h-3'} bg-emerald-400 rounded-full animate-pulse shadow-lg`} />
         )}
       </div>
     </div>

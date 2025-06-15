@@ -25,16 +25,17 @@ const PokerTable = ({
   const isMobile = useIsMobile();
   
   // Position mapping for seat arrangement around the table
+  // Mobile positions are more spread out to prevent overlap
   const seatPositions = {
-    'utg': { mobile: { x: 50, y: 20 }, desktop: { x: 50, y: 15 } },
-    'utg1': { mobile: { x: 80, y: 25 }, desktop: { x: 75, y: 20 } },
-    'mp': { mobile: { x: 90, y: 50 }, desktop: { x: 85, y: 40 } },
-    'lj': { mobile: { x: 80, y: 75 }, desktop: { x: 75, y: 80 } },
-    'hj': { mobile: { x: 50, y: 80 }, desktop: { x: 50, y: 85 } },
-    'co': { mobile: { x: 20, y: 75 }, desktop: { x: 25, y: 80 } },
-    'btn': { mobile: { x: 10, y: 50 }, desktop: { x: 15, y: 40 } },
-    'sb': { mobile: { x: 20, y: 25 }, desktop: { x: 25, y: 20 } },
-    'bb': { mobile: { x: 35, y: 15 }, desktop: { x: 35, y: 15 } }
+    'utg': { mobile: { x: 50, y: 10 }, desktop: { x: 50, y: 8 } },
+    'utg1': { mobile: { x: 80, y: 20 }, desktop: { x: 75, y: 15 } },
+    'mp': { mobile: { x: 95, y: 40 }, desktop: { x: 92, y: 35 } },
+    'lj': { mobile: { x: 95, y: 60 }, desktop: { x: 92, y: 65 } },
+    'hj': { mobile: { x: 80, y: 80 }, desktop: { x: 75, y: 85 } },
+    'co': { mobile: { x: 50, y: 90 }, desktop: { x: 50, y: 92 } },
+    'btn': { mobile: { x: 20, y: 80 }, desktop: { x: 25, y: 85 } },
+    'sb': { mobile: { x: 5, y: 60 }, desktop: { x: 8, y: 65 } },
+    'bb': { mobile: { x: 5, y: 40 }, desktop: { x: 8, y: 35 } }
   };
 
   return (
@@ -54,9 +55,7 @@ const PokerTable = ({
       <div className="relative w-full" style={{ aspectRatio: isMobile ? '1.2/1' : '2/1' }}>
         {/* Table Surface */}
         <div 
-          className={`absolute inset-0 bg-gradient-to-br from-green-800 to-green-900 border-4 border-amber-600 shadow-2xl ${
-            isMobile ? 'rounded-full' : 'rounded-full'
-          }`}
+          className={`absolute inset-0 bg-gradient-to-br from-green-800 to-green-900 border-4 border-amber-600 shadow-2xl rounded-full`}
           style={{
             background: 'radial-gradient(ellipse at center, #1f7a3c, #15593f, #0d3520)',
             boxShadow: 'inset 0 0 50px rgba(0,0,0,0.3), 0 10px 30px rgba(0,0,0,0.4)'
@@ -98,10 +97,10 @@ const PokerTable = ({
         {/* Dealer Button */}
         {players.find(p => p.position === 'btn') && (
           <div 
-            className="absolute w-8 h-8 bg-white rounded-full border-2 border-gray-800 flex items-center justify-center font-bold text-gray-800 text-xs shadow-lg"
+            className="absolute w-6 h-6 sm:w-8 sm:h-8 bg-white rounded-full border-2 border-gray-800 flex items-center justify-center font-bold text-gray-800 text-xs shadow-lg z-10"
             style={{
-              left: `${isMobile ? 5 : 10}%`,
-              top: `${isMobile ? 45 : 35}%`,
+              left: `${isMobile ? 12 : 18}%`,
+              top: `${isMobile ? 72 : 78}%`,
               transform: 'translate(-50%, -50%)'
             }}
           >
