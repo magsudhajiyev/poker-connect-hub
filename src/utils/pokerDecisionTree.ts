@@ -17,10 +17,12 @@ export interface ActionNode {
   street: string;
   options: string[];
   pot: number;
-  stacks: Record<string, number>; // stack per player
-  children: Record<string, ActionNode | null>; // action -> next node
+  stacks: Record<string, number>;
+  children: Record<string, ActionNode | null>;
   isAllIn?: boolean;
   isFinal?: boolean;
+  currentBet?: number; // Track current bet amount on this street
+  lastAggressor?: string; // Track who made the last bet/raise
 }
 
 // Builds the action tree for the given ordered positions
@@ -30,12 +32,24 @@ export function buildActionTree(
   stacks: Record<string, number>,
   pot = 0,
   currentIndex = 0,
-  maxDepth = 10
+  maxDepth = 8,
+  currentBet = 0,
+  lastAggressor = ""
 ): ActionNode | null {
   if (currentIndex >= actors.length || maxDepth <= 0) return null;
 
   const actor = actors[currentIndex];
-  const options = ["fold", "call", "raise"];
+  
+  // Determine available actions based on current bet state
+  let options: string[] = [];
+  if (currentBet === 0) {
+    // No bet made yet - can check or bet
+    options = ["check", "bet"];
+  } else {
+    // Bet has been made - can fold, call, or raise
+    options = ["fold", "call", "raise"];
+  }
+
   const node: ActionNode = {
     actor,
     street,
@@ -43,15 +57,19 @@ export function buildActionTree(
     pot,
     stacks: { ...stacks },
     children: {},
+    currentBet,
+    lastAggressor
   };
 
   for (const action of options) {
     const updatedStacks = { ...stacks };
     let updatedPot = pot;
+    let updatedCurrentBet = currentBet;
+    let updatedLastAggressor = lastAggressor;
     let isAllIn = false;
 
     if (action === "fold") {
-      // Fold: stacks stay the same, mark as final
+      // Player folds - hand ends
       node.children[action] = {
         actor: actor,
         street,
@@ -59,12 +77,48 @@ export function buildActionTree(
         pot: updatedPot,
         stacks: updatedStacks,
         children: {},
-        isFinal: true
+        isFinal: true,
+        currentBet: updatedCurrentBet,
+        lastAggressor: updatedLastAggressor
       };
 
+    } else if (action === "check") {
+      // Player checks - move to next player or next street
+      const nextIndex = currentIndex + 1;
+      if (nextIndex < actors.length) {
+        // More players to act
+        node.children[action] = buildActionTree(
+          actors, street, updatedStacks, updatedPot, nextIndex, maxDepth - 1, 
+          updatedCurrentBet, updatedLastAggressor
+        );
+      } else {
+        // All players have acted, move to next street
+        const nextStreet = getNextStreet(street);
+        if (nextStreet) {
+          node.children[action] = buildActionTree(
+            actors, nextStreet, updatedStacks, updatedPot, 0, maxDepth - 1, 0, ""
+          );
+        } else {
+          // No more streets - showdown
+          node.children[action] = {
+            actor: actor,
+            street,
+            options: [],
+            pot: updatedPot,
+            stacks: updatedStacks,
+            children: {},
+            isFinal: true,
+            currentBet: 0,
+            lastAggressor: ""
+          };
+        }
+      }
+
     } else if (action === "call") {
-      const callAmount = 10; // example flat call
+      // Player calls the current bet
+      const callAmount = currentBet;
       if (updatedStacks[actor] <= callAmount) {
+        // All-in call
         updatedPot += updatedStacks[actor];
         updatedStacks[actor] = 0;
         isAllIn = true;
@@ -75,36 +129,95 @@ export function buildActionTree(
 
       const nextIndex = currentIndex + 1;
       if (nextIndex < actors.length) {
-        node.children[action] = buildActionTree(actors, street, updatedStacks, updatedPot, nextIndex, maxDepth - 1);
+        // More players to act
+        node.children[action] = buildActionTree(
+          actors, street, updatedStacks, updatedPot, nextIndex, maxDepth - 1,
+          updatedCurrentBet, updatedLastAggressor
+        );
       } else {
+        // All players have acted and called, move to next street
         const nextStreet = getNextStreet(street);
-        node.children[action] = nextStreet
-          ? buildActionTree(actors, nextStreet, updatedStacks, updatedPot, 0, maxDepth - 1)
-          : {
-              actor: actor,
-              street,
-              options: [],
-              pot: updatedPot,
-              stacks: updatedStacks,
-              children: {},
-              isFinal: true
-            };
+        if (nextStreet) {
+          node.children[action] = buildActionTree(
+            actors, nextStreet, updatedStacks, updatedPot, 0, maxDepth - 1, 0, ""
+          );
+        } else {
+          // No more streets - showdown
+          node.children[action] = {
+            actor: actor,
+            street,
+            options: [],
+            pot: updatedPot,
+            stacks: updatedStacks,
+            children: {},
+            isFinal: true,
+            currentBet: 0,
+            lastAggressor: ""
+          };
+        }
       }
-    } else if (action === "raise") {
-      const raiseAmount = 20; // example flat raise
-      if (updatedStacks[actor] <= raiseAmount) {
+
+    } else if (action === "bet") {
+      // Player bets (first bet on this street)
+      const betAmount = Math.min(20, updatedStacks[actor]); // Example bet size
+      
+      if (updatedStacks[actor] <= betAmount) {
+        // All-in bet
         updatedPot += updatedStacks[actor];
+        updatedCurrentBet = updatedStacks[actor];
+        updatedStacks[actor] = 0;
+        isAllIn = true;
+      } else {
+        updatedPot += betAmount;
+        updatedCurrentBet = betAmount;
+        updatedStacks[actor] -= betAmount;
+      }
+      
+      updatedLastAggressor = actor;
+      
+      // After a bet, action goes back to first player (unless current player is last)
+      const nextIndex = currentIndex + 1;
+      if (nextIndex < actors.length) {
+        node.children[action] = buildActionTree(
+          actors, street, updatedStacks, updatedPot, nextIndex, maxDepth - 1,
+          updatedCurrentBet, updatedLastAggressor
+        );
+      } else {
+        // Current player was last to act, go back to first player
+        node.children[action] = buildActionTree(
+          actors, street, updatedStacks, updatedPot, 0, maxDepth - 1,
+          updatedCurrentBet, updatedLastAggressor
+        );
+      }
+
+    } else if (action === "raise") {
+      // Player raises the current bet
+      const raiseAmount = Math.min(currentBet * 2, updatedStacks[actor]); // Example: 2x raise
+      
+      if (updatedStacks[actor] <= raiseAmount) {
+        // All-in raise
+        updatedPot += updatedStacks[actor];
+        updatedCurrentBet = updatedStacks[actor];
         updatedStacks[actor] = 0;
         isAllIn = true;
       } else {
         updatedPot += raiseAmount;
+        updatedCurrentBet = raiseAmount;
         updatedStacks[actor] -= raiseAmount;
       }
-      // After a raise, action goes back to the first player
-      node.children[action] = buildActionTree(actors, street, updatedStacks, updatedPot, 0, maxDepth - 1);
+      
+      updatedLastAggressor = actor;
+      
+      // After a raise, action goes back to first player
+      node.children[action] = buildActionTree(
+        actors, street, updatedStacks, updatedPot, 0, maxDepth - 1,
+        updatedCurrentBet, updatedLastAggressor
+      );
     }
 
-    if (node.children[action]) node.children[action]!.isAllIn = isAllIn;
+    if (node.children[action]) {
+      node.children[action]!.isAllIn = isAllIn;
+    }
   }
 
   return node;
@@ -118,7 +231,7 @@ function getNextStreet(current: string): string | null {
   return STREETS[index + 1];
 }
 
-// For frontend use: convert the tree into a format for D3.js or JSON
+// For frontend use: convert the tree into a format for visualization
 export interface VisualActionNode {
   name: string;
   children?: VisualActionNode[];
@@ -128,13 +241,13 @@ export interface VisualActionNode {
   isFinal?: boolean;
 }
 
-// Convert to visual tree - creates a flat array of action nodes as specified
+// Convert to visual tree - creates properly formatted action nodes
 export function convertToVisualTree(node: ActionNode | null): VisualActionNode[] {
   if (!node) return [];
 
   const results: VisualActionNode[] = [];
   
-  // For each action option, create a node with the proper label
+  // For each action option, create a node with the proper label format
   for (const [action, childNode] of Object.entries(node.children)) {
     if (childNode) {
       // Create the label in the exact format: STREET - [ACTOR] -> [ACTION] | Pot: $[amount] | Stacks: {...} [| FINAL]
@@ -188,8 +301,16 @@ export function buildTreeFromFormData(formData: any): VisualActionNode | null {
     }
   });
 
-  // Build the decision tree
-  const tree = buildActionTree(orderedActors, "preflop", initialStacks);
+  // Calculate initial pot (blinds)
+  const smallBlind = parseFloat(formData.smallBlind) || 1;
+  const bigBlind = parseFloat(formData.bigBlind) || 2;
+  const initialPot = smallBlind + bigBlind;
+
+  // Adjust stacks for blinds (simplified - assumes SB and BB are in the game)
+  const adjustedStacks = { ...initialStacks };
+  
+  // Build the decision tree starting with preflop
+  const tree = buildActionTree(orderedActors, "preflop", adjustedStacks, initialPot, 0, 8, bigBlind, "");
   
   // Convert to visual format - return as a wrapper node
   if (tree) {
