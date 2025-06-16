@@ -94,3 +94,9 @@ export class GetLegalActionsDto {
   @IsOptional()
   playerId?: string;
 }
+
+export class GetNextGameStateDto {
+  @ValidateNested()
+  @Type(() => GameStateDto)
+  gameState: GameStateDto;
+}

@@ -1,11 +1,15 @@
 import { Controller, Post, Body, HttpException, HttpStatus } from '@nestjs/common';
 import { PokerService } from './poker.service';
-import { GetLegalActionsDto } from './dto/game-state.dto';
-import { LegalActionsResponse } from './interfaces/poker.interfaces';
+import { OpenAIService } from './services/openai.service';
+import { GetLegalActionsDto, GetNextGameStateDto } from './dto/game-state.dto';
+import { LegalActionsResponse, GameState } from './interfaces/poker.interfaces';
 
 @Controller('api/poker')
 export class PokerController {
-  constructor(private readonly pokerService: PokerService) {}
+  constructor(
+    private readonly pokerService: PokerService,
+    private readonly openaiService: OpenAIService,
+  ) {}
 
   @Post('actions')
   getLegalActions(@Body() getLegalActionsDto: GetLegalActionsDto): LegalActionsResponse {
@@ -32,6 +36,38 @@ export class PokerController {
       throw new HttpException(
         {
           message: 'Failed to calculate legal actions',
+          error: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post('next-state')
+  async getNextGameState(@Body() getNextGameStateDto: GetNextGameStateDto): Promise<GameState> {
+    try {
+      const { gameState } = getNextGameStateDto;
+
+      // Validate the game state
+      if (!this.pokerService.validateGameState(gameState)) {
+        throw new HttpException(
+          'Invalid game state provided',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Get the next game state using OpenAI
+      const nextGameState = await this.openaiService.getNextGameState(gameState);
+
+      return nextGameState;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        {
+          message: 'Failed to get next game state',
           error: error.message,
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
