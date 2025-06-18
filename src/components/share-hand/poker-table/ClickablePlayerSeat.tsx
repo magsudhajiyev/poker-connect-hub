@@ -21,7 +21,7 @@ interface ClickablePlayerSeatProps {
   getAvailableActions?: (street: string, index: number, allActions: any[]) => string[];
   updateAction?: (street: any, index: number, action: string, betAmount?: string) => void;
   handleBetSizeSelect?: (street: any, index: number, amount: string) => void;
-  isPositionsStep?: boolean; // New prop to determine if we're in positions step
+  isPositionsStep?: boolean;
 }
 
 const ClickablePlayerSeat = ({ 
@@ -54,6 +54,15 @@ const ClickablePlayerSeat = ({
   };
 
   const handleClick = () => {
+    console.log('Player seat clicked:', {
+      position,
+      player: player?.name,
+      isPositionsStep,
+      currentStreet,
+      hasGetAvailableActions: !!getAvailableActions,
+      hasUpdateAction: !!updateAction
+    });
+
     // If we're in the positions step, allow adding/editing players
     if (isPositionsStep) {
       setIsEditOpen(true);
@@ -62,17 +71,21 @@ const ClickablePlayerSeat = ({
 
     // If we're not in positions step and there's no player, do nothing (disable adding)
     if (!player) {
+      console.log('No player at position, ignoring click');
       return;
     }
 
-    // If player exists and it's their turn to act, show action dialog
-    if (isToAct && currentStreet && getAvailableActions && updateAction) {
+    // If we're in an action step and have required functions, show action dialog
+    if (currentStreet && getAvailableActions && updateAction) {
+      console.log('Opening action dialog for player:', player.name);
       setIsActionOpen(true);
-    } else if (currentStreet && getAvailableActions && updateAction) {
-      // If player exists but not their turn, still show action dialog (they might have pending actions)
-      setIsActionOpen(true);
+    } else {
+      console.log('Missing requirements for action dialog:', {
+        currentStreet,
+        hasGetAvailableActions: !!getAvailableActions,
+        hasUpdateAction: !!updateAction
+      });
     }
-    // Don't show edit dialog for existing players outside of positions step
   };
 
   const isEmpty = !player;
@@ -99,14 +112,14 @@ const ClickablePlayerSeat = ({
         />
       )}
 
-      {/* Player Action Dialog - only show when not in positions step */}
-      {!isPositionsStep && player && currentStreet && (
+      {/* Player Action Dialog - only show when not in positions step and player exists */}
+      {!isPositionsStep && player && (
         <PlayerActionDialog
           isOpen={isActionOpen}
           onOpenChange={setIsActionOpen}
           player={player}
           position={position}
-          currentStreet={currentStreet}
+          currentStreet={currentStreet || 'preflopActions'}
           formData={formData}
           getAvailableActions={getAvailableActions}
           updateAction={updateAction}
