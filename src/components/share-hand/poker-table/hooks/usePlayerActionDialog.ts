@@ -46,29 +46,42 @@ export const usePlayerActionDialog = ({
   // Get available actions from poker algorithm if available and player is to act
   let availableActions: string[] = [];
   
-  if (pokerActions && pokerActions.isPlayerToAct && pokerActions.isPlayerToAct(player.id)) {
+  console.log('usePlayerActionDialog - determining available actions:', {
+    playerId: player.id,
+    playerName: player.name,
+    hasPokerActions: !!pokerActions,
+    hasAlgorithm: !!pokerActions?.algorithm,
+    isPlayerToAct: pokerActions?.isPlayerToAct?.(player.id)
+  });
+  
+  if (pokerActions && pokerActions.algorithm && pokerActions.isPlayerToAct && pokerActions.isPlayerToAct(player.id)) {
     console.log('Getting actions from poker algorithm for player:', player.name);
     const validActions = pokerActions.getValidActionsForPlayer(player.id);
-    availableActions = validActions.map((action: any) => action.type || action);
-    console.log('Valid actions from algorithm:', availableActions);
+    console.log('Raw valid actions from algorithm:', validActions);
+    
+    // Extract action types from the algorithm response
+    if (Array.isArray(validActions)) {
+      availableActions = validActions.map((action: any) => {
+        if (typeof action === 'string') {
+          return action;
+        }
+        return action.type || action;
+      });
+    }
+    
+    console.log('Processed available actions:', availableActions);
   } else if (getAvailableActions) {
     // Fall back to the original logic only if poker algorithm doesn't indicate this player should act
+    console.log('Using fallback getAvailableActions');
     availableActions = getAvailableActions(currentStreet, actionIndex >= 0 ? actionIndex : 0, actions);
-    console.log('Using fallback actions:', availableActions);
+    console.log('Fallback available actions:', availableActions);
   } else {
     // Final fallback - basic poker actions
-    availableActions = ['fold', 'check', 'call', 'bet', 'raise'];
     console.log('Using default actions as last resort');
+    availableActions = ['fold', 'check', 'call', 'bet', 'raise'];
   }
   
-  console.log('PlayerActionDialog rendered:', {
-    player: player.name,
-    currentStreet,
-    actionIndex,
-    availableActions,
-    isPlayerToAct: pokerActions?.isPlayerToAct?.(player.id),
-    hasPokerActions: !!pokerActions
-  });
+  console.log('Final available actions for player', player.name, ':', availableActions);
   
   const potSize = formData ? (parseFloat(formData.smallBlind || '1') + parseFloat(formData.bigBlind || '2')) : 3;
   const stackSize = player.stackSize[0];

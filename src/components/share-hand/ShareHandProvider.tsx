@@ -25,14 +25,19 @@ export const ShareHandProvider = ({ children }: ShareHandProviderProps) => {
   const shareHandLogic = useShareHandLogic();
   const gameStateUI = useGameStateUI();
   
+  // Get current street based on step
+  const getCurrentStreet = () => {
+    if (shareHandLogic.currentStep < 2) return 'preflopActions';
+    const streetMap = ['preflopActions', 'flopActions', 'turnActions', 'riverActions'];
+    return streetMap[shareHandLogic.currentStep - 2] || 'preflopActions';
+  };
+  
   // Initialize poker actions algorithm
   const pokerActions = usePokerActionsAlgorithm({
     players: shareHandLogic.formData.players || [],
-    smallBlind: shareHandLogic.formData.smallBlind || '',
-    bigBlind: shareHandLogic.formData.bigBlind || '',
-    currentStreet: shareHandLogic.currentStep >= 2 ? 
-      ['preflopActions', 'flopActions', 'turnActions', 'riverActions'][shareHandLogic.currentStep - 2] || 'preflopActions' : 
-      'preflopActions'
+    smallBlind: shareHandLogic.formData.smallBlind || '1',
+    bigBlind: shareHandLogic.formData.bigBlind || '2',
+    currentStreet: getCurrentStreet()
   });
 
   // Initialize game when players are set up
@@ -43,6 +48,15 @@ export const ShareHandProvider = ({ children }: ShareHandProviderProps) => {
     const hasValidPlayers = formData.players && formData.players.length >= 2;
     const hasValidBlinds = formData.smallBlind && formData.bigBlind;
     const allPlayersHavePositions = formData.players?.every(p => p.position && p.position.trim() !== '');
+    
+    console.log('ShareHandProvider validation:', {
+      hasValidPlayers,
+      hasValidBlinds,
+      allPlayersHavePositions,
+      smallBlind: formData.smallBlind,
+      bigBlind: formData.bigBlind,
+      players: formData.players
+    });
     
     if (hasValidPlayers && hasValidBlinds && allPlayersHavePositions) {
       
@@ -62,7 +76,9 @@ export const ShareHandProvider = ({ children }: ShareHandProviderProps) => {
         hasValidPlayers,
         hasValidBlinds,
         allPlayersHavePositions,
-        players: formData.players
+        players: formData.players,
+        smallBlindValue: formData.smallBlind,
+        bigBlindValue: formData.bigBlind
       });
     }
   }, [shareHandLogic.formData.players, shareHandLogic.formData.smallBlind, shareHandLogic.formData.bigBlind, gameStateUI]);

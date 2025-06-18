@@ -24,27 +24,52 @@ export const usePokerActionsAlgorithm = ({
 
   // Initialize algorithm when players and blinds are available
   useEffect(() => {
+    console.log('usePokerActionsAlgorithm effect triggered:', {
+      players: players?.length,
+      smallBlind,
+      bigBlind,
+      currentStreet
+    });
+
     if (players && players.length >= 2 && smallBlind && bigBlind) {
       const sb = parseFloat(smallBlind);
       const bb = parseFloat(bigBlind);
       
       if (!isNaN(sb) && !isNaN(bb) && sb > 0 && bb > 0) {
-        console.log('Initializing poker actions algorithm:', { players, sb, bb });
+        console.log('Initializing poker actions algorithm:', { 
+          playersCount: players.length, 
+          sb, 
+          bb,
+          playerDetails: players.map(p => ({ id: p.id, name: p.name, position: p.position }))
+        });
         
-        const newAlgorithm = new PokerActionsAlgorithm(sb, bb, players);
-        setAlgorithm(newAlgorithm);
-        algorithmRef.current = newAlgorithm;
-        
-        // Get initial state
-        const currentState = newAlgorithm.getCurrentPlayerActions();
-        console.log('Initial algorithm state:', currentState);
-        
-        if (currentState.playerId) {
-          setCurrentPlayerToAct(currentState.playerId);
-          setAvailableActions(currentState.actions || []);
+        try {
+          const newAlgorithm = new PokerActionsAlgorithm(sb, bb, players);
+          setAlgorithm(newAlgorithm);
+          algorithmRef.current = newAlgorithm;
+          
+          // Get initial state
+          const currentState = newAlgorithm.getCurrentPlayerActions();
+          console.log('Initial algorithm state:', currentState);
+          
+          if (currentState.playerId) {
+            setCurrentPlayerToAct(currentState.playerId);
+            setAvailableActions(currentState.actions || []);
+          }
+          setPotAmount(currentState.pot || newAlgorithm.pot);
+        } catch (error) {
+          console.error('Error initializing poker algorithm:', error);
         }
-        setPotAmount(currentState.pot || newAlgorithm.pot);
+      } else {
+        console.warn('Invalid blind values for algorithm:', { sb, bb, smallBlind, bigBlind });
       }
+    } else {
+      console.log('Algorithm initialization skipped:', {
+        hasPlayers: !!players,
+        playersLength: players?.length,
+        hasSmallBlind: !!smallBlind,
+        hasBigBlind: !!bigBlind
+      });
     }
   }, [players, smallBlind, bigBlind]);
 
@@ -112,19 +137,27 @@ export const usePokerActionsAlgorithm = ({
   };
 
   const getValidActionsForPlayer = (playerId: string) => {
-    if (!algorithmRef.current) return [];
+    if (!algorithmRef.current) {
+      console.log('No algorithm available for getValidActionsForPlayer');
+      return [];
+    }
     
     const currentState = algorithmRef.current.getCurrentPlayerActions();
+    console.log('Getting valid actions for player:', playerId, 'Current state:', currentState);
     
     if (currentState.playerId === playerId) {
+      console.log('Player matches current player to act, returning actions:', currentState.actions);
       return currentState.actions || [];
     }
     
+    console.log('Player does not match current player to act');
     return [];
   };
 
   const isPlayerToAct = (playerId: string) => {
-    return currentPlayerToAct === playerId;
+    const result = currentPlayerToAct === playerId;
+    console.log('isPlayerToAct check:', { playerId, currentPlayerToAct, result });
+    return result;
   };
 
   const getCurrentPot = () => {
