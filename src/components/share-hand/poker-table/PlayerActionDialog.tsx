@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -35,21 +35,43 @@ const PlayerActionDialog = ({
 
   // Get current action step for this player
   const getCurrentActionIndex = () => {
-    if (!formData || !currentStreet) return -1;
+    if (!formData || !currentStreet) {
+      console.log('No formData or currentStreet:', { formData: !!formData, currentStreet });
+      return -1;
+    }
     
     const actions = formData[currentStreet];
-    if (!actions) return -1;
+    console.log('Actions for street:', currentStreet, actions);
     
-    return actions.findIndex((action: any) => 
+    if (!actions) {
+      console.log('No actions found for street:', currentStreet);
+      return -1;
+    }
+    
+    const actionIndex = actions.findIndex((action: any) => 
       action.playerId === player.id && !action.completed
     );
+    
+    console.log('Found action index for player:', player.id, actionIndex);
+    return actionIndex;
   };
 
   const actionIndex = getCurrentActionIndex();
   const actions = formData?.[currentStreet] || [];
-  const availableActions = getAvailableActions ? getAvailableActions(currentStreet, actionIndex, actions) : [];
+  const availableActions = getAvailableActions ? getAvailableActions(currentStreet, actionIndex >= 0 ? actionIndex : 0, actions) : ['fold', 'call', 'raise'];
   const potSize = formData ? (parseFloat(formData.smallBlind) + parseFloat(formData.bigBlind)) : 0;
   const stackSize = player.stackSize[0];
+
+  console.log('PlayerActionDialog render:', {
+    isOpen,
+    player: player.name,
+    position,
+    currentStreet,
+    actionIndex,
+    availableActions,
+    hasGetAvailableActions: !!getAvailableActions,
+    hasUpdateAction: !!updateAction
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -93,13 +115,22 @@ const PlayerActionDialog = ({
     if (handleBetSizeSelect && actionIndex >= 0) {
       handleBetSizeSelect(currentStreet, actionIndex, amount);
       onOpenChange(false);
+    } else {
+      // If no handleBetSizeSelect function, just submit the bet action
+      submitAction(selectedAction, amount);
     }
   };
 
   const submitAction = (action: string, amount?: string) => {
-    if (updateAction && actionIndex >= 0) {
-      updateAction(currentStreet, actionIndex, action, amount || betAmount);
+    console.log('Submitting action:', { action, amount, actionIndex, currentStreet });
+    
+    if (updateAction) {
+      // Use actionIndex if valid, otherwise use 0 as fallback
+      const indexToUse = actionIndex >= 0 ? actionIndex : 0;
+      updateAction(currentStreet, indexToUse, action, amount || betAmount);
       onOpenChange(false);
+    } else {
+      console.log('No updateAction function available');
     }
   };
 
@@ -117,10 +148,8 @@ const PlayerActionDialog = ({
     return formData?.gameFormat === 'cash' ? 'Bet Size ($)' : 'Bet Size (BB)';
   };
 
-  if (actionIndex < 0) {
-    return null;
-  }
-
+  // Always render the dialog - don't return null based on actionIndex
+  // This allows users to take actions even if the action flow isn't perfectly set up
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="bg-slate-900 border-slate-700 text-slate-200 max-w-md">
@@ -128,6 +157,9 @@ const PlayerActionDialog = ({
           <DialogTitle className="text-slate-200">
             {player.name} Action ({position.toUpperCase()})
           </DialogTitle>
+          <DialogDescription className="text-slate-400">
+            Choose an action for this player
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
