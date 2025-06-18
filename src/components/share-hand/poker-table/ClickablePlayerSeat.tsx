@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Player } from '@/types/shareHand';
 import EmptySeatDisplay from './EmptySeatDisplay';
@@ -75,16 +74,12 @@ const ClickablePlayerSeat = ({
       return;
     }
 
-    // If we're in an action step and have required functions, show action dialog
-    if (currentStreet && getAvailableActions && updateAction) {
+    // If we're in an action step, show action dialog
+    if (currentStreet) {
       console.log('Opening action dialog for player:', player.name);
       setIsActionOpen(true);
     } else {
-      console.log('Missing requirements for action dialog:', {
-        currentStreet,
-        hasGetAvailableActions: !!getAvailableActions,
-        hasUpdateAction: !!updateAction
-      });
+      console.log('No current street defined');
     }
   };
 
@@ -121,6 +116,7 @@ const ClickablePlayerSeat = ({
           position={position}
           currentStreet={currentStreet || 'preflopActions'}
           formData={formData}
+          pokerActions={formData?.pokerActions}
           getAvailableActions={getAvailableActions}
           updateAction={updateAction}
           handleBetSizeSelect={handleBetSizeSelect}

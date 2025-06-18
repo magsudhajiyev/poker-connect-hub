@@ -7,6 +7,7 @@ interface UsePlayerActionDialogProps {
   player: Player;
   currentStreet: string;
   formData: any;
+  pokerActions?: any;
   getAvailableActions?: (street: string, index: number, allActions: any[]) => string[];
 }
 
@@ -15,6 +16,7 @@ export const usePlayerActionDialog = ({
   player,
   currentStreet,
   formData,
+  pokerActions,
   getAvailableActions
 }: UsePlayerActionDialogProps) => {
   const [selectedAction, setSelectedAction] = useState<string>('');
@@ -41,16 +43,22 @@ export const usePlayerActionDialog = ({
   const actionIndex = getCurrentActionIndex();
   const actions = formData?.[currentStreet] || [];
   
-  // Always provide poker actions - make sure these are always available
-  const defaultActions = ['fold', 'check', 'call', 'bet', 'raise'];
-  let availableActions = defaultActions;
+  // Get available actions from poker algorithm if available and player is to act
+  let availableActions: string[] = [];
   
-  // Only use getAvailableActions if it returns a non-empty array
-  if (getAvailableActions) {
-    const customActions = getAvailableActions(currentStreet, actionIndex >= 0 ? actionIndex : 0, actions);
-    if (customActions && customActions.length > 0) {
-      availableActions = customActions;
-    }
+  if (pokerActions && pokerActions.isPlayerToAct && pokerActions.isPlayerToAct(player.id)) {
+    console.log('Getting actions from poker algorithm for player:', player.name);
+    const validActions = pokerActions.getValidActionsForPlayer(player.id);
+    availableActions = validActions.map((action: any) => action.type || action);
+    console.log('Valid actions from algorithm:', availableActions);
+  } else if (getAvailableActions) {
+    // Fall back to the original logic only if poker algorithm doesn't indicate this player should act
+    availableActions = getAvailableActions(currentStreet, actionIndex >= 0 ? actionIndex : 0, actions);
+    console.log('Using fallback actions:', availableActions);
+  } else {
+    // Final fallback - basic poker actions
+    availableActions = ['fold', 'check', 'call', 'bet', 'raise'];
+    console.log('Using default actions as last resort');
   }
   
   console.log('PlayerActionDialog rendered:', {
@@ -58,7 +66,8 @@ export const usePlayerActionDialog = ({
     currentStreet,
     actionIndex,
     availableActions,
-    hasGetAvailableActions: !!getAvailableActions
+    isPlayerToAct: pokerActions?.isPlayerToAct?.(player.id),
+    hasPokerActions: !!pokerActions
   });
   
   const potSize = formData ? (parseFloat(formData.smallBlind || '1') + parseFloat(formData.bigBlind || '2')) : 3;

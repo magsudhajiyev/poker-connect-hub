@@ -13,6 +13,7 @@ interface PlayerActionDialogProps {
   position: string;
   currentStreet: string;
   formData: any;
+  pokerActions?: any;
   getAvailableActions?: (street: string, index: number, allActions: any[]) => string[];
   updateAction?: (street: any, index: number, action: string, betAmount?: string) => void;
   handleBetSizeSelect?: (street: any, index: number, amount: string) => void;
@@ -25,6 +26,7 @@ const PlayerActionDialog = ({
   position,
   currentStreet,
   formData,
+  pokerActions,
   getAvailableActions,
   updateAction,
   handleBetSizeSelect
@@ -43,6 +45,7 @@ const PlayerActionDialog = ({
     player,
     currentStreet,
     formData,
+    pokerActions,
     getAvailableActions
   });
 
@@ -73,14 +76,27 @@ const PlayerActionDialog = ({
   const submitAction = (action: string, amount?: string) => {
     console.log('Submitting action:', { action, amount, actionIndex, currentStreet });
     
+    // First, try to execute action through poker algorithm
+    if (pokerActions && pokerActions.executeAction) {
+      const numericAmount = amount ? parseFloat(amount) : 0;
+      const success = pokerActions.executeAction(action, numericAmount);
+      
+      if (success) {
+        console.log('Action executed successfully through poker algorithm');
+        onOpenChange(false);
+        return;
+      } else {
+        console.warn('Failed to execute action through poker algorithm');
+      }
+    }
+    
+    // Fall back to form data update if poker algorithm isn't available
     if (updateAction) {
-      // Use a valid index - if actionIndex is -1, use 0 as fallback
       const validIndex = actionIndex >= 0 ? actionIndex : 0;
       updateAction(currentStreet, validIndex, action, amount || betAmount);
       onOpenChange(false);
     } else {
       console.log('No updateAction function available');
-      // Close dialog even if no updateAction function
       onOpenChange(false);
     }
   };

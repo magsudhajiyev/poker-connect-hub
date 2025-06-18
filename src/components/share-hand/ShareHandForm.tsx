@@ -1,4 +1,3 @@
-
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { useShareHandContext } from './ShareHandProvider';
 import ShareHandProgress from './ShareHandProgress';
@@ -60,7 +59,10 @@ const ShareHandForm = () => {
     const showPot = currentStep > 1;
 
     const commonProps = {
-      formData,
+      formData: {
+        ...formData,
+        pokerActions // Pass poker actions through form data
+      },
       setFormData,
       getPositionName,
       getCurrencySymbol,
@@ -71,17 +73,22 @@ const ShareHandForm = () => {
           return getAvailableActions(street, index, allActions);
         }
         
-        // For action steps, use poker actions algorithm
-        const currentPlayer = formData.players?.find(p => 
-          pokerActions.isPlayerToAct(p.id)
-        );
+        // For action steps, try to get actions from poker algorithm first
+        console.log('Getting available actions for street:', street, 'index:', index);
         
-        if (currentPlayer) {
-          const validActions = pokerActions.getValidActionsForPlayer(currentPlayer.id);
-          return validActions.map((action: any) => action.type);
+        // Find the player that should be acting at this index
+        const actionStep = allActions[index];
+        if (actionStep && actionStep.playerId) {
+          if (pokerActions.isPlayerToAct(actionStep.playerId)) {
+            const validActions = pokerActions.getValidActionsForPlayer(actionStep.playerId);
+            const actionTypes = validActions.map((action: any) => action.type || action);
+            console.log('Poker algorithm actions for player:', actionStep.playerId, actionTypes);
+            return actionTypes;
+          }
         }
         
-        return ['fold', 'check', 'call', 'bet', 'raise'];
+        // Fall back to original logic
+        return getAvailableActions(street, index, allActions);
       },
       updateAction: (street: any, index: number, action: string, betAmount?: string) => {
         // Execute action using poker algorithm if we're in action steps
