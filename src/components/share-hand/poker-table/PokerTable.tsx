@@ -20,6 +20,7 @@ interface PokerTableProps {
   getAvailableActions?: (street: string, index: number, allActions: any[]) => string[];
   updateAction?: (street: any, index: number, action: string, betAmount?: string) => void;
   handleBetSizeSelect?: (street: any, index: number, amount: string) => void;
+  isPositionsStep?: boolean; // New prop to determine step
 }
 
 const PokerTable = ({ 
@@ -36,7 +37,8 @@ const PokerTable = ({
   formData,
   getAvailableActions,
   updateAction,
-  handleBetSizeSelect
+  handleBetSizeSelect,
+  isPositionsStep = false
 }: PokerTableProps) => {
   const isMobile = useIsMobile();
   
@@ -186,6 +188,7 @@ const PokerTable = ({
               getAvailableActions={getAvailableActions}
               updateAction={updateAction}
               handleBetSizeSelect={handleBetSizeSelect}
+              isPositionsStep={isPositionsStep}
             />
           );
         })}

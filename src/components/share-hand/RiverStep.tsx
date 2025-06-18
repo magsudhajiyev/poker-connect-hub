@@ -48,32 +48,15 @@ const RiverStep = ({
   const potSize = calculatePotSize();
   const { players, updatePlayer, removePlayer } = usePlayerManagement(formData, setFormData);
 
+  // Don't allow player updates in action steps - players should be locked
   const handleUpdatePlayer = (newPlayer: any) => {
-    // If this player is being set as hero, remove hero status from others
-    if (newPlayer.isHero) {
-      players.forEach(p => {
-        if (p.isHero && p.id !== newPlayer.id) {
-          updatePlayer(p.id, { isHero: false });
-        }
-      });
-    }
-
-    // Check if this is a new player or updating existing
-    const existingPlayer = players.find(p => p.position === newPlayer.position);
-    if (existingPlayer) {
-      updatePlayer(existingPlayer.id, newPlayer);
-    } else {
-      // Add new player to the array
-      const updatedPlayers = [...players, newPlayer];
-      setFormData({
-        ...formData,
-        players: updatedPlayers
-      });
-    }
+    // Do nothing - players are locked after positions step
+    console.log('Player updates disabled in action steps');
   };
 
   const handleRemovePlayer = (playerId: string) => {
-    removePlayer(playerId);
+    // Do nothing - players are locked after positions step
+    console.log('Player removal disabled in action steps');
   };
 
   return (
@@ -116,6 +99,7 @@ const RiverStep = ({
           getAvailableActions={getAvailableActions}
           updateAction={updateAction}
           handleBetSizeSelect={handleBetSizeSelect}
+          isPositionsStep={false}
         />
       </div>
 

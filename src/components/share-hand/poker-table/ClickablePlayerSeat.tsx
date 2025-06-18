@@ -21,6 +21,7 @@ interface ClickablePlayerSeatProps {
   getAvailableActions?: (street: string, index: number, allActions: any[]) => string[];
   updateAction?: (street: any, index: number, action: string, betAmount?: string) => void;
   handleBetSizeSelect?: (street: any, index: number, amount: string) => void;
+  isPositionsStep?: boolean; // New prop to determine if we're in positions step
 }
 
 const ClickablePlayerSeat = ({ 
@@ -36,7 +37,8 @@ const ClickablePlayerSeat = ({
   formData,
   getAvailableActions,
   updateAction,
-  handleBetSizeSelect
+  handleBetSizeSelect,
+  isPositionsStep = false
 }: ClickablePlayerSeatProps) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isActionOpen, setIsActionOpen] = useState(false);
@@ -52,16 +54,25 @@ const ClickablePlayerSeat = ({
   };
 
   const handleClick = () => {
-    if (!player) {
-      // No player - open edit dialog to add player
+    // If we're in the positions step, allow adding/editing players
+    if (isPositionsStep) {
       setIsEditOpen(true);
-    } else if (isToAct && currentStreet && getAvailableActions && updateAction) {
-      // Player exists and it's their turn - open action dialog
-      setIsActionOpen(true);
-    } else {
-      // Player exists but not their turn - open edit dialog
-      setIsEditOpen(true);
+      return;
     }
+
+    // If we're not in positions step and there's no player, do nothing (disable adding)
+    if (!player) {
+      return;
+    }
+
+    // If player exists and it's their turn to act, show action dialog
+    if (isToAct && currentStreet && getAvailableActions && updateAction) {
+      setIsActionOpen(true);
+    } else if (currentStreet && getAvailableActions && updateAction) {
+      // If player exists but not their turn, still show action dialog (they might have pending actions)
+      setIsActionOpen(true);
+    }
+    // Don't show edit dialog for existing players outside of positions step
   };
 
   const isEmpty = !player;
@@ -74,20 +85,22 @@ const ClickablePlayerSeat = ({
         top: `${positionCoords.y}%`
       }}
     >
-      {/* Player Edit Dialog */}
-      <PlayerEditDialog
-        isOpen={isEditOpen}
-        onOpenChange={setIsEditOpen}
-        position={position}
-        player={player}
-        gameFormat={gameFormat}
-        hasHero={hasHero}
-        onSave={handleSave}
-        onRemove={handleRemove}
-      />
+      {/* Player Edit Dialog - only show in positions step */}
+      {isPositionsStep && (
+        <PlayerEditDialog
+          isOpen={isEditOpen}
+          onOpenChange={setIsEditOpen}
+          position={position}
+          player={player}
+          gameFormat={gameFormat}
+          hasHero={hasHero}
+          onSave={handleSave}
+          onRemove={handleRemove}
+        />
+      )}
 
-      {/* Player Action Dialog */}
-      {player && currentStreet && (
+      {/* Player Action Dialog - only show when not in positions step */}
+      {!isPositionsStep && player && currentStreet && (
         <PlayerActionDialog
           isOpen={isActionOpen}
           onOpenChange={setIsActionOpen}
@@ -101,7 +114,10 @@ const ClickablePlayerSeat = ({
         />
       )}
 
-      <div className="cursor-pointer" onClick={handleClick}>
+      <div 
+        className={`${isPositionsStep || player ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}`} 
+        onClick={handleClick}
+      >
         {isEmpty ? (
           <EmptySeatDisplay position={position} />
         ) : (

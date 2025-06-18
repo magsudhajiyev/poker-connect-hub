@@ -63,6 +63,7 @@ const PositionsStep = ({
           onUpdatePlayer={handleUpdatePlayer}
           onRemovePlayer={handleRemovePlayer}
           availablePositions={getAvailablePositions(players, '')}
+          isPositionsStep={true}
         />
       </div>
 
