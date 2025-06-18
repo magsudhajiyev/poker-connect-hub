@@ -1,4 +1,3 @@
-
 // Streamlined Poker Actions Algorithm - Outputs Valid Actions Only
 
 export class PokerActionsAlgorithm {
@@ -120,7 +119,8 @@ export class PokerActionsAlgorithm {
   getCurrentPlayerActions() {
     const playerIndex = this.getCurrentPlayerIndex();
     if (playerIndex === -1) {
-      return this.checkStreetComplete();
+      // No current player to act, check if street/hand is complete
+      return this.getStreetCompletionState();
     }
 
     const player = this.players[playerIndex];
@@ -419,7 +419,8 @@ export class PokerActionsAlgorithm {
     }
   }
 
-  checkStreetComplete() {
+  // NEW METHOD: Get street completion state without causing recursion
+  getStreetCompletionState() {
     const activePlayers = this.players.filter((p: any) => p.isActive && !p.isFolded);
     
     // Hand complete if only one player left
@@ -442,8 +443,22 @@ export class PokerActionsAlgorithm {
       return this.advanceToNextStreet();
     }
 
-    // More action needed on current street
-    return this.getCurrentPlayerActions();
+    // If we get here, there's an issue with action order - rebuild it
+    console.log('Rebuilding action order - no valid current player found');
+    this.updateActionOrder();
+    
+    // Return waiting state instead of calling getCurrentPlayerActions again
+    return {
+      street: this.currentStreet,
+      waiting: true,
+      pot: this.pot,
+      message: 'Waiting for next player action'
+    };
+  }
+
+  // RENAMED METHOD: This was causing the recursion
+  checkStreetComplete() {
+    return this.getStreetCompletionState();
   }
 
   advanceToNextStreet() {
@@ -464,7 +479,13 @@ export class PokerActionsAlgorithm {
       this.currentBet = 0;
       this.updateActionOrder();
       
-      return this.getCurrentPlayerActions();
+      // Return new street state, not a recursive call
+      return {
+        street: this.currentStreet,
+        newStreet: true,
+        pot: this.pot,
+        message: `Advanced to ${this.currentStreet}`
+      };
     } else {
       // Hand complete
       return {
