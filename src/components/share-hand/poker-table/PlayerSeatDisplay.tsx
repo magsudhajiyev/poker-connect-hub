@@ -34,11 +34,14 @@ const PlayerSeatDisplay = ({ player, position, gameFormat, isToAct = false }: Pl
       <div 
         className={`${isMobile ? 'w-11 h-11' : 'w-16 h-16 sm:w-20 sm:h-20'} rounded-full border-3 flex flex-col items-center justify-center text-xs font-bold transition-all duration-300 hover:scale-105 relative ${
           isToAct
-            ? 'border-emerald-400 bg-emerald-500/30 shadow-lg shadow-emerald-400/50 animate-pulse'
+            ? 'border-emerald-400 bg-emerald-500/30 shadow-lg shadow-emerald-400/50 animate-pulse ring-4 ring-emerald-400/30 ring-pulse'
             : player.isHero
             ? 'border-blue-400 bg-blue-500/30 shadow-md'
             : 'border-slate-300 bg-slate-600/40 shadow-md'
         }`}
+        style={isToAct ? {
+          animation: 'pulse 2s cubic-bezier(0.4,0,0.6,1) infinite, ring-pulse 2s ease-in-out infinite'
+        } : {}}
       >
         {/* Hero Crown */}
         {player.isHero && (
@@ -59,15 +62,19 @@ const PlayerSeatDisplay = ({ player, position, gameFormat, isToAct = false }: Pl
           {gameFormat === 'cash' ? '$' : ''}{player.stackSize[0]}{gameFormat === 'mtt' ? 'BB' : ''}
         </div>
 
-        {/* Action Indicator */}
+        {/* Action Indicator with Enhanced Animation */}
         {isToAct && (
-          <div className={`absolute -top-1 -right-1 ${isMobile ? 'w-3 h-3' : 'w-4 h-4'} bg-emerald-400 rounded-full animate-pulse shadow-lg border-2 border-emerald-200`} />
+          <div className={`absolute -top-1 -right-1 ${isMobile ? 'w-3 h-3' : 'w-4 h-4'} bg-emerald-400 rounded-full shadow-lg border-2 border-emerald-200`}
+            style={{
+              animation: 'pulse 1.5s ease-in-out infinite, bounce 2s infinite'
+            }}
+          />
         )}
       </div>
 
       {/* Position Label */}
-      <div className={`${isMobile ? 'text-[8px]' : 'text-xs'} text-slate-300 font-bold bg-slate-700/50 px-1 py-0.5 rounded ${
-        isToAct ? 'text-emerald-300 bg-emerald-900/50' : ''
+      <div className={`${isMobile ? 'text-[8px]' : 'text-xs'} text-slate-300 font-bold bg-slate-700/50 px-1 py-0.5 rounded transition-all duration-300 ${
+        isToAct ? 'text-emerald-300 bg-emerald-900/50 shadow-md' : ''
       }`}>
         {getPositionLabel(position)}
       </div>

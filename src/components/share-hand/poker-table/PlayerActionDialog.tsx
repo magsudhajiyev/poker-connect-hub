@@ -58,7 +58,13 @@ const PlayerActionDialog = ({
 
   const actionIndex = getCurrentActionIndex();
   const actions = formData?.[currentStreet] || [];
-  const availableActions = getAvailableActions ? getAvailableActions(currentStreet, actionIndex >= 0 ? actionIndex : 0, actions) : ['fold', 'call', 'raise'];
+  
+  // Default to basic poker actions if no specific actions are available
+  const defaultActions = ['check', 'call', 'bet', 'raise'];
+  const availableActions = getAvailableActions ? 
+    getAvailableActions(currentStreet, actionIndex >= 0 ? actionIndex : 0, actions) : 
+    defaultActions;
+  
   const potSize = formData ? (parseFloat(formData.smallBlind) + parseFloat(formData.bigBlind)) : 0;
   const stackSize = player.stackSize[0];
 
@@ -121,8 +127,37 @@ const PlayerActionDialog = ({
     }
   };
 
+  const calculatePotIncrease = (action: string, amount?: string) => {
+    const betAmountNum = parseFloat(amount || betAmount) || 0;
+    
+    switch (action) {
+      case 'call':
+        // For call, we need to determine the call amount
+        const currentBet = formData?.bigBlind ? parseFloat(formData.bigBlind) : 2;
+        return currentBet;
+      case 'bet':
+      case 'raise':
+        return betAmountNum;
+      case 'check':
+      case 'fold':
+      default:
+        return 0;
+    }
+  };
+
   const submitAction = (action: string, amount?: string) => {
     console.log('Submitting action:', { action, amount, actionIndex, currentStreet });
+    
+    // Calculate pot increase and update pot
+    const potIncrease = calculatePotIncrease(action, amount);
+    if (potIncrease > 0 && formData) {
+      // Update the pot in form data
+      const currentPot = parseFloat(formData.pot) || potSize;
+      const newPot = currentPot + potIncrease;
+      
+      // This would need to be passed down as a prop to update the form data
+      console.log('Pot would increase by:', potIncrease, 'New pot:', newPot);
+    }
     
     if (updateAction) {
       // Use actionIndex if valid, otherwise use 0 as fallback
@@ -131,6 +166,8 @@ const PlayerActionDialog = ({
       onOpenChange(false);
     } else {
       console.log('No updateAction function available');
+      // Close dialog even if no updateAction function
+      onOpenChange(false);
     }
   };
 
