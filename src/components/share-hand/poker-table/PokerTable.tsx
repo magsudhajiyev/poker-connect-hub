@@ -1,3 +1,4 @@
+
 import React from 'react';
 import ClickablePlayerSeat from './ClickablePlayerSeat';
 import CommunityCards from './CommunityCards';
@@ -91,16 +92,18 @@ const PokerTable = ({
   // Check if any player is already set as hero
   const hasHero = players.some(p => p.isHero);
 
-  // Check if it's this player's turn to act
+  // Check if it's this player's turn to act (for flashing animation)
   const isPlayerToAct = (position: string) => {
     if (isPositionsStep) return false;
     
     const player = getPlayerAtPosition(position);
     if (!player) return false;
     
-    // Use poker actions algorithm if available
+    // Use poker actions algorithm if available - this is the key fix
     if (pokerActions && pokerActions.isPlayerToAct) {
-      return pokerActions.isPlayerToAct(player.id);
+      const shouldAct = pokerActions.isPlayerToAct(player.id);
+      console.log(`Checking if player ${player.name} (${player.id}) should act:`, shouldAct);
+      return shouldAct;
     }
     
     // Fall back to original logic

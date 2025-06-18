@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Player } from '@/types/shareHand';
 import EmptySeatDisplay from './EmptySeatDisplay';
