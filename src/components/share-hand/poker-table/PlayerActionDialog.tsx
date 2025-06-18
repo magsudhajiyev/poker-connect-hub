@@ -36,15 +36,11 @@ const PlayerActionDialog = ({
   // Get current action step for this player
   const getCurrentActionIndex = () => {
     if (!formData || !currentStreet) {
-      console.log('No formData or currentStreet:', { formData: !!formData, currentStreet });
       return -1;
     }
     
     const actions = formData[currentStreet];
-    console.log('Actions for street:', currentStreet, actions);
-    
     if (!actions) {
-      console.log('No actions found for street:', currentStreet);
       return -1;
     }
     
@@ -52,32 +48,20 @@ const PlayerActionDialog = ({
       action.playerId === player.id && !action.completed
     );
     
-    console.log('Found action index for player:', player.id, actionIndex);
     return actionIndex;
   };
 
   const actionIndex = getCurrentActionIndex();
   const actions = formData?.[currentStreet] || [];
   
-  // Default to basic poker actions if no specific actions are available
+  // Always provide default poker actions
   const defaultActions = ['check', 'call', 'bet', 'raise'];
   const availableActions = getAvailableActions ? 
     getAvailableActions(currentStreet, actionIndex >= 0 ? actionIndex : 0, actions) : 
     defaultActions;
   
-  const potSize = formData ? (parseFloat(formData.smallBlind) + parseFloat(formData.bigBlind)) : 0;
+  const potSize = formData ? (parseFloat(formData.smallBlind || '1') + parseFloat(formData.bigBlind || '2')) : 3;
   const stackSize = player.stackSize[0];
-
-  console.log('PlayerActionDialog render:', {
-    isOpen,
-    player: player.name,
-    position,
-    currentStreet,
-    actionIndex,
-    availableActions,
-    hasGetAvailableActions: !!getAvailableActions,
-    hasUpdateAction: !!updateAction
-  });
 
   useEffect(() => {
     if (isOpen) {
@@ -127,37 +111,8 @@ const PlayerActionDialog = ({
     }
   };
 
-  const calculatePotIncrease = (action: string, amount?: string) => {
-    const betAmountNum = parseFloat(amount || betAmount) || 0;
-    
-    switch (action) {
-      case 'call':
-        // For call, we need to determine the call amount
-        const currentBet = formData?.bigBlind ? parseFloat(formData.bigBlind) : 2;
-        return currentBet;
-      case 'bet':
-      case 'raise':
-        return betAmountNum;
-      case 'check':
-      case 'fold':
-      default:
-        return 0;
-    }
-  };
-
   const submitAction = (action: string, amount?: string) => {
     console.log('Submitting action:', { action, amount, actionIndex, currentStreet });
-    
-    // Calculate pot increase and update pot
-    const potIncrease = calculatePotIncrease(action, amount);
-    if (potIncrease > 0 && formData) {
-      // Update the pot in form data
-      const currentPot = parseFloat(formData.pot) || potSize;
-      const newPot = currentPot + potIncrease;
-      
-      // This would need to be passed down as a prop to update the form data
-      console.log('Pot would increase by:', potIncrease, 'New pot:', newPot);
-    }
     
     if (updateAction) {
       // Use actionIndex if valid, otherwise use 0 as fallback
@@ -185,8 +140,6 @@ const PlayerActionDialog = ({
     return formData?.gameFormat === 'cash' ? 'Bet Size ($)' : 'Bet Size (BB)';
   };
 
-  // Always render the dialog - don't return null based on actionIndex
-  // This allows users to take actions even if the action flow isn't perfectly set up
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="bg-slate-900 border-slate-700 text-slate-200 max-w-md">

@@ -20,7 +20,7 @@ interface PokerTableProps {
   getAvailableActions?: (street: string, index: number, allActions: any[]) => string[];
   updateAction?: (street: any, index: number, action: string, betAmount?: string) => void;
   handleBetSizeSelect?: (street: any, index: number, amount: string) => void;
-  isPositionsStep?: boolean; // New prop to determine step
+  isPositionsStep?: boolean;
 }
 
 const PokerTable = ({ 
@@ -90,30 +90,18 @@ const PokerTable = ({
   // Check if any player is already set as hero
   const hasHero = players.some(p => p.isHero);
 
-  // Get current action step for a player
-  const getCurrentActionStep = (position: string) => {
-    if (!currentStreet || !formData) return null;
-    
-    const actions = formData[currentStreet];
-    if (!actions) return null;
-    
-    const player = getPlayerAtPosition(position);
-    if (!player) return null;
-    
-    // Find the current action step for this player
-    const actionStep = actions.find((action: any, index: number) => {
-      return action.playerId === player.id && !action.completed;
-    });
-    
-    return actionStep;
-  };
-
   // Check if it's this player's turn to act
   const isPlayerToAct = (position: string) => {
-    if (!currentStreet || !formData) return false;
+    if (!currentStreet || !formData || isPositionsStep) return false;
     
     const actions = formData[currentStreet];
-    if (!actions || actions.length === 0) return false;
+    if (!actions || actions.length === 0) {
+      // If no actions exist yet, the first player (UTG for preflop) should act
+      if (currentStreet === 'preflopActions') {
+        return position === 'utg';
+      }
+      return position === 'sb'; // For other streets, SB acts first
+    }
     
     const player = getPlayerAtPosition(position);
     if (!player) return false;
