@@ -57,8 +57,12 @@ const PlayerActionDialog = ({
 
   const handleBetSizeButtonSelect = (amount: string) => {
     setBetAmount(amount);
-    if (handleBetSizeSelect && actionIndex >= 0) {
-      handleBetSizeSelect(currentStreet, actionIndex, amount);
+    
+    // Use a valid index - if actionIndex is -1, use 0 as fallback
+    const validIndex = actionIndex >= 0 ? actionIndex : 0;
+    
+    if (handleBetSizeSelect) {
+      handleBetSizeSelect(currentStreet, validIndex, amount);
       onOpenChange(false);
     } else {
       // If no handleBetSizeSelect function, just submit the bet action
@@ -70,9 +74,9 @@ const PlayerActionDialog = ({
     console.log('Submitting action:', { action, amount, actionIndex, currentStreet });
     
     if (updateAction) {
-      // Use actionIndex if valid, otherwise use 0 as fallback
-      const indexToUse = actionIndex >= 0 ? actionIndex : 0;
-      updateAction(currentStreet, indexToUse, action, amount || betAmount);
+      // Use a valid index - if actionIndex is -1, use 0 as fallback
+      const validIndex = actionIndex >= 0 ? actionIndex : 0;
+      updateAction(currentStreet, validIndex, action, amount || betAmount);
       onOpenChange(false);
     } else {
       console.log('No updateAction function available');

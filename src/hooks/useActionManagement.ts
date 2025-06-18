@@ -12,11 +12,24 @@ export const useActionManagement = (
 ) => {
   const addNextActionStep = (street: StreetType, currentIndex: number) => {
     const actions = formData[street];
+    
+    // Add bounds checking to prevent undefined access
+    if (currentIndex < 0 || currentIndex >= actions.length) {
+      console.warn(`Invalid action index ${currentIndex} for street ${street}. Actions length: ${actions.length}`);
+      return;
+    }
+    
     const currentAction = actions[currentIndex];
+    
+    // Additional safety check
+    if (!currentAction || !currentAction.action) {
+      console.warn(`Current action is undefined or missing action property:`, currentAction);
+      return;
+    }
     
     console.log(`Adding next action step after ${currentAction.action} by ${currentAction.playerName}`);
     
-    if (shouldAddNextAction(currentAction.action!)) {
+    if (shouldAddNextAction(currentAction.action)) {
       const nextActionStep = createNextActionStep(currentAction, formData.players);
       
       // Check if next action already exists
@@ -38,6 +51,15 @@ export const useActionManagement = (
     
     setFormData((prev: ShareHandFormData) => {
       const updatedActions = [...prev[street]];
+      
+      // Add bounds checking
+      if (index < 0 || index >= updatedActions.length) {
+        console.warn(`Invalid action index ${index} for street ${street}. Actions length: ${updatedActions.length}`);
+        // If index is invalid, try to find the first incomplete action for this player
+        // or create a new action step if none exists
+        return prev;
+      }
+      
       const previousAction = updatedActions[index].action;
       
       // Ensure betAmount is properly handled
@@ -93,6 +115,13 @@ export const useActionManagement = (
     
     setFormData((prev: ShareHandFormData) => {
       const updatedActions = [...prev[street]];
+      
+      // Add bounds checking
+      if (index < 0 || index >= updatedActions.length) {
+        console.warn(`Invalid action index ${index} for street ${street}. Actions length: ${updatedActions.length}`);
+        return prev;
+      }
+      
       const currentAction = updatedActions[index];
       
       // Update the current action with bet amount and mark as completed
@@ -103,7 +132,7 @@ export const useActionManagement = (
       };
       
       // Add next action step if this is a bet or raise and it doesn't already exist
-      if (shouldAddNextAction(currentAction.action!)) {
+      if (currentAction.action && shouldAddNextAction(currentAction.action)) {
         const nextActionStep = createNextActionStep(currentAction, prev.players);
         
         // Check if next action already exists
