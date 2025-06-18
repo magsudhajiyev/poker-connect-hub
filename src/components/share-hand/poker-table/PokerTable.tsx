@@ -1,4 +1,3 @@
-
 import React from 'react';
 import ClickablePlayerSeat from './ClickablePlayerSeat';
 import CommunityCards from './CommunityCards';
@@ -21,6 +20,7 @@ interface PokerTableProps {
   updateAction?: (street: any, index: number, action: string, betAmount?: string) => void;
   handleBetSizeSelect?: (street: any, index: number, amount: string) => void;
   isPositionsStep?: boolean;
+  pokerActions?: any;
 }
 
 const PokerTable = ({ 
@@ -38,8 +38,9 @@ const PokerTable = ({
   getAvailableActions,
   updateAction,
   handleBetSizeSelect,
-  isPositionsStep = false
-}: PokerTableProps) => {
+  isPositionsStep = false,
+  pokerActions
+}: PokerTableProps & { pokerActions?: any }) => {
   const isMobile = useIsMobile();
   
   // All possible positions around the table in clockwise order starting from top
@@ -92,7 +93,18 @@ const PokerTable = ({
 
   // Check if it's this player's turn to act
   const isPlayerToAct = (position: string) => {
-    if (!currentStreet || !formData || isPositionsStep) return false;
+    if (isPositionsStep) return false;
+    
+    const player = getPlayerAtPosition(position);
+    if (!player) return false;
+    
+    // Use poker actions algorithm if available
+    if (pokerActions && pokerActions.isPlayerToAct) {
+      return pokerActions.isPlayerToAct(player.id);
+    }
+    
+    // Fall back to original logic
+    if (!currentStreet || !formData) return false;
     
     const actions = formData[currentStreet];
     if (!actions || actions.length === 0) {
@@ -103,9 +115,6 @@ const PokerTable = ({
       return position === 'sb'; // For other streets, SB acts first
     }
     
-    const player = getPlayerAtPosition(position);
-    if (!player) return false;
-    
     // Find the first incomplete action
     const nextActionIndex = actions.findIndex((action: any) => !action.completed);
     if (nextActionIndex === -1) return false;
@@ -114,14 +123,17 @@ const PokerTable = ({
     return nextAction.playerId === player.id;
   };
 
+  // Use poker actions pot if available
+  const displayPot = pokerActions?.getCurrentPot ? pokerActions.getCurrentPot() : pot;
+
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
       {/* Pot Display */}
-      {pot > 0 && (
+      {displayPot > 0 && (
         <div className="text-center mb-4">
           <div className="inline-block bg-emerald-900/30 border border-emerald-500/30 rounded-lg px-4 py-2">
             <span className="text-emerald-400 font-bold text-lg">
-              Pot: {getCurrencySymbol()}{pot}
+              Pot: {getCurrencySymbol()}{displayPot}
             </span>
           </div>
         </div>

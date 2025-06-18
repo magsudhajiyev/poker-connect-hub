@@ -47,7 +47,8 @@ const ShareHandForm = () => {
     getActionButtonClass,
     handleBetSizeSelect,
     getAllSelectedCards,
-    gameStateUI
+    gameStateUI,
+    pokerActions
   } = contextData;
 
   // Reset validation errors when step changes
@@ -63,13 +64,61 @@ const ShareHandForm = () => {
       setFormData,
       getPositionName,
       getCurrencySymbol,
-      calculatePotSize,
-      getAvailableActions,
-      updateAction,
+      calculatePotSize: () => pokerActions.getCurrentPot() || calculatePotSize(),
+      getAvailableActions: (street: string, index: number, allActions: any[]) => {
+        // For positions step, use the original logic
+        if (currentStep === 1) {
+          return getAvailableActions(street, index, allActions);
+        }
+        
+        // For action steps, use poker actions algorithm
+        const currentPlayer = formData.players?.find(p => 
+          pokerActions.isPlayerToAct(p.id)
+        );
+        
+        if (currentPlayer) {
+          const validActions = pokerActions.getValidActionsForPlayer(currentPlayer.id);
+          return validActions.map((action: any) => action.type);
+        }
+        
+        return ['fold', 'check', 'call', 'bet', 'raise'];
+      },
+      updateAction: (street: any, index: number, action: string, betAmount?: string) => {
+        // Execute action using poker algorithm if we're in action steps
+        if (currentStep > 1 && pokerActions.algorithm) {
+          const amount = betAmount ? parseFloat(betAmount) : 0;
+          const success = pokerActions.executeAction(action, amount);
+          
+          if (success) {
+            console.log(`Action ${action} executed successfully`);
+            // Update the form data as well for consistency
+            updateAction(street, index, action, betAmount);
+          }
+        } else {
+          // Fall back to original logic for positions step
+          updateAction(street, index, action, betAmount);
+        }
+      },
       getActionButtonClass,
-      handleBetSizeSelect,
+      handleBetSizeSelect: (street: any, index: number, amount: string) => {
+        // Use poker algorithm for action steps
+        if (currentStep > 1 && pokerActions.algorithm) {
+          const numericAmount = parseFloat(amount);
+          const success = pokerActions.executeAction('bet', numericAmount);
+          
+          if (success) {
+            console.log(`Bet size ${amount} executed successfully`);
+            // Update the form data as well for consistency
+            handleBetSizeSelect(street, index, amount);
+          }
+        } else {
+          // Fall back to original logic
+          handleBetSizeSelect(street, index, amount);
+        }
+      },
       getAllSelectedCards,
-      gameState: gameStateUI.gameState
+      gameState: gameStateUI.gameState,
+      pokerActions
     };
 
     switch (currentStep) {

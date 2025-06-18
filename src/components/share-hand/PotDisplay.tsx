@@ -7,13 +7,20 @@ interface PotDisplayProps {
   getCurrencySymbol: () => string;
   isFinal?: boolean;
   gameState?: GameState | null;
+  pokerActions?: any;
 }
 
-const PotDisplay = ({ potSize, getCurrencySymbol, isFinal = false, gameState }: PotDisplayProps) => {
+const PotDisplay = ({ potSize, getCurrencySymbol, isFinal = false, gameState, pokerActions }: PotDisplayProps) => {
   const { potAmount } = useGameStateUI(gameState);
   
-  // Use game state pot if available, otherwise fall back to calculated pot
-  const displayPot = gameState ? potAmount : potSize;
+  // Use poker actions pot if available, otherwise use game state pot, otherwise fall back to calculated pot
+  let displayPot = potSize;
+  
+  if (pokerActions?.getCurrentPot) {
+    displayPot = pokerActions.getCurrentPot();
+  } else if (gameState) {
+    displayPot = potAmount;
+  }
   
   return (
     <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4">

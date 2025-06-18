@@ -2,8 +2,12 @@
 import React, { createContext, useContext, useEffect } from 'react';
 import { useShareHandLogic } from '@/hooks/useShareHandLogic';
 import { useGameStateUI } from '@/hooks/useGameStateUI';
+import { usePokerActionsAlgorithm } from '@/hooks/usePokerActionsAlgorithm';
 
-const ShareHandContext = createContext<ReturnType<typeof useShareHandLogic> & { gameStateUI: ReturnType<typeof useGameStateUI> } | null>(null);
+const ShareHandContext = createContext<ReturnType<typeof useShareHandLogic> & { 
+  gameStateUI: ReturnType<typeof useGameStateUI>;
+  pokerActions: ReturnType<typeof usePokerActionsAlgorithm>;
+} | null>(null);
 
 export const useShareHandContext = () => {
   const context = useContext(ShareHandContext);
@@ -20,6 +24,16 @@ interface ShareHandProviderProps {
 export const ShareHandProvider = ({ children }: ShareHandProviderProps) => {
   const shareHandLogic = useShareHandLogic();
   const gameStateUI = useGameStateUI();
+  
+  // Initialize poker actions algorithm
+  const pokerActions = usePokerActionsAlgorithm({
+    players: shareHandLogic.formData.players || [],
+    smallBlind: shareHandLogic.formData.smallBlind || '',
+    bigBlind: shareHandLogic.formData.bigBlind || '',
+    currentStreet: shareHandLogic.currentStep >= 2 ? 
+      ['preflopActions', 'flopActions', 'turnActions', 'riverActions'][shareHandLogic.currentStep - 2] || 'preflopActions' : 
+      'preflopActions'
+  });
 
   // Initialize game when players are set up
   useEffect(() => {
@@ -54,7 +68,7 @@ export const ShareHandProvider = ({ children }: ShareHandProviderProps) => {
   }, [shareHandLogic.formData.players, shareHandLogic.formData.smallBlind, shareHandLogic.formData.bigBlind, gameStateUI]);
 
   return (
-    <ShareHandContext.Provider value={{ ...shareHandLogic, gameStateUI }}>
+    <ShareHandContext.Provider value={{ ...shareHandLogic, gameStateUI, pokerActions }}>
       {children}
     </ShareHandContext.Provider>
   );
