@@ -14,6 +14,24 @@ import { useState, useEffect } from 'react';
 const ShareHandForm = () => {
   const [showValidationErrors, setShowValidationErrors] = useState(false);
   
+  // Check if we're within the ShareHandProvider context
+  let contextData;
+  try {
+    contextData = useShareHandContext();
+  } catch (error) {
+    // If we're not within the provider, show a message or return null
+    console.warn('ShareHandForm used outside of ShareHandProvider context');
+    return (
+      <div className="w-full overflow-x-hidden">
+        <Card className="bg-slate-800/40 border-slate-700/30 w-full">
+          <CardContent className="p-6 text-center">
+            <p className="text-slate-400">Share Hand form is not available on this page.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const {
     currentStep,
     formData,
@@ -30,7 +48,7 @@ const ShareHandForm = () => {
     handleBetSizeSelect,
     getAllSelectedCards,
     gameStateUI
-  } = useShareHandContext();
+  } = contextData;
 
   // Reset validation errors when step changes
   useEffect(() => {
