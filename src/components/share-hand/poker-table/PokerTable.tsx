@@ -175,24 +175,28 @@ const PokerTable = ({
           const isToAct = isPlayerToAct(position);
 
           return (
-            <ClickablePlayerSeat
+            <div
               key={position}
-              position={position}
-              positionCoords={coords}
-              player={player}
-              gameFormat={gameFormat}
-              onUpdatePlayer={onUpdatePlayer}
-              onRemovePlayer={onRemovePlayer}
-              availablePositions={availablePositions}
-              hasHero={hasHero}
-              isToAct={isToAct}
-              currentStreet={currentStreet}
-              formData={formData}
-              getAvailableActions={getAvailableActions}
-              updateAction={updateAction}
-              handleBetSizeSelect={handleBetSizeSelect}
-              isPositionsStep={isPositionsStep}
-            />
+              className={`${isToAct ? 'animate-pulse' : ''}`}
+            >
+              <ClickablePlayerSeat
+                position={position}
+                positionCoords={coords}
+                player={player}
+                gameFormat={gameFormat}
+                onUpdatePlayer={onUpdatePlayer}
+                onRemovePlayer={onRemovePlayer}
+                availablePositions={availablePositions}
+                hasHero={hasHero}
+                isToAct={isToAct}
+                currentStreet={currentStreet}
+                formData={formData}
+                getAvailableActions={getAvailableActions}
+                updateAction={updateAction}
+                handleBetSizeSelect={handleBetSizeSelect}
+                isPositionsStep={isPositionsStep}
+              />
+            </div>
           );
         })}
 

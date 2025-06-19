@@ -22,7 +22,7 @@ export class PokerGameEngine {
       bet: 0,
       folded: false,
       allIn: false,
-      position: i,
+      position: p.position,
     }));
 
     this.smallBlind = smallBlind;
@@ -63,6 +63,17 @@ export class PokerGameEngine {
       this.street = 'complete';
       return;
     }
+    
+    // For preflop, action starts with UTG (first player after BB)
+    if (this.street === 'preflop') {
+      const bbIndex = this.players.findIndex(p => p.position === 'bb');
+      if (bbIndex !== -1) {
+        // Start with the player after BB (wrapping around if needed)
+        this.currentPlayerIndex = (bbIndex + 1) % this.players.length;
+        return;
+      }
+    }
+    
     this.currentPlayerIndex = startIndex;
   }
 
