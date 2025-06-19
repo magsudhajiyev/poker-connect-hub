@@ -69,8 +69,17 @@ export class PokerGameEngine {
       const bbIndex = this.players.findIndex(p => p.position === 'bb');
       if (bbIndex !== -1) {
         // Start with the player after BB (wrapping around if needed)
-        this.currentPlayerIndex = (bbIndex + 1) % this.players.length;
-        return;
+        let nextIndex = (bbIndex + 1) % this.players.length;
+        // Find the first active player starting from after BB
+        for (let i = 0; i < this.players.length; i++) {
+          const playerIndex = (bbIndex + 1 + i) % this.players.length;
+          const player = this.players[playerIndex];
+          if (!player.folded && !player.allIn) {
+            this.currentPlayerIndex = playerIndex;
+            console.log(`First to act preflop: ${player.name} (${player.position}) at index ${playerIndex}`);
+            return;
+          }
+        }
       }
     }
     
@@ -93,10 +102,13 @@ export class PokerGameEngine {
     if (toCall === 0) {
       actions.push('check');
     } else if (player.stack > 0) {
-      actions.push('fold', 'call');
+      actions.push('fold');
+      if (player.stack >= toCall) {
+        actions.push('call');
+      }
     }
 
-    if (canRaise) {
+    if (canRaise && player.stack > toCall) {
       actions.push('raise');
     }
 
@@ -104,6 +116,7 @@ export class PokerGameEngine {
       actions.push('all-in');
     }
 
+    console.log(`Legal actions for ${player.name}: ${actions.join(', ')} (toCall: ${toCall}, stack: ${player.stack}, currentBet: ${this.currentBet})`);
     return [...new Set(actions)];
   }
 
@@ -113,6 +126,8 @@ export class PokerGameEngine {
 
     const toCall = this.currentBet - player.bet;
     let move = { id: player.id, action, amount, street: this.street };
+
+    console.log(`${player.name} attempting ${action} (amount: ${amount}, toCall: ${toCall})`);
 
     switch (action) {
       case 'fold':
@@ -160,10 +175,12 @@ export class PokerGameEngine {
       const p = this.players[next];
       if (!p.folded && !p.allIn) {
         this.currentPlayerIndex = next;
+        console.log(`Next to act: ${p.name} (${p.position})`);
         return;
       }
     }
     this.currentPlayerIndex = null;
+    console.log('No more players to act');
   }
 
   getState() {
