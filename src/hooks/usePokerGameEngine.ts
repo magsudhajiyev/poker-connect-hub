@@ -21,27 +21,16 @@ export const usePokerGameEngine = ({
   const [potAmount, setPotAmount] = useState<number>(0);
   const [availableActions, setAvailableActions] = useState<string[]>([]);
   const engineRef = useRef<PokerGameEngine | null>(null);
+  const initializedRef = useRef<boolean>(false);
 
   // Initialize engine when players and blinds are available
   useEffect(() => {
-    console.log('usePokerGameEngine effect triggered:', {
-      players: players?.length,
-      smallBlind,
-      bigBlind,
-      currentStreet
-    });
-
-    if (players && players.length >= 2 && smallBlind && bigBlind) {
+    if (players && players.length >= 2 && smallBlind && bigBlind && !initializedRef.current) {
       const sb = parseFloat(smallBlind);
       const bb = parseFloat(bigBlind);
       
       if (!isNaN(sb) && !isNaN(bb) && sb > 0 && bb > 0) {
-        console.log('Initializing poker game engine:', { 
-          playersCount: players.length, 
-          sb, 
-          bb,
-          playerDetails: players.map(p => ({ id: p.id, name: p.name, position: p.position }))
-        });
+        console.log('Initializing poker game engine');
         
         try {
           const newEngine = new PokerGameEngine(players, sb, bb);
@@ -62,12 +51,13 @@ export const usePokerGameEngine = ({
           
           setEngine(newEngine);
           engineRef.current = newEngine;
+          initializedRef.current = true;
           
           // Get initial state
           const currentPlayer = newEngine.getCurrentPlayer();
           const legalActions = newEngine.getLegalActions();
           
-          console.log('Initial engine state:', { currentPlayer, legalActions, pot: newEngine.pot });
+          console.log('Engine initialized successfully');
           
           if (currentPlayer) {
             setCurrentPlayerToAct(currentPlayer.id);
@@ -83,11 +73,16 @@ export const usePokerGameEngine = ({
         }
       }
     }
-  }, [players, smallBlind, bigBlind]);
+    
+    // Reset when players change significantly
+    if (!players || players.length < 2) {
+      initializedRef.current = false;
+    }
+  }, [players?.length, smallBlind, bigBlind]);
 
   // Update street when it changes
   useEffect(() => {
-    if (engine && currentStreet) {
+    if (engine && currentStreet && initializedRef.current) {
       const streetMapping: { [key: string]: string } = {
         'preflopActions': 'preflop',
         'flopActions': 'flop',
@@ -98,7 +93,6 @@ export const usePokerGameEngine = ({
       const engineStreet = streetMapping[currentStreet] || 'preflop';
       
       if (engine.street !== engineStreet) {
-        console.log(`Updating engine street to: ${engineStreet}`);
         engine.street = engineStreet;
         
         // Reset betting for new street
@@ -116,8 +110,6 @@ export const usePokerGameEngine = ({
         const currentPlayer = engine.getCurrentPlayer();
         const legalActions = engine.getLegalActions();
         
-        console.log('Updated engine state after street change:', { currentPlayer, legalActions });
-        
         if (currentPlayer) {
           setCurrentPlayerToAct(currentPlayer.id);
           setAvailableActions(legalActions);
@@ -129,23 +121,18 @@ export const usePokerGameEngine = ({
         setPotAmount(engine.pot);
       }
     }
-  }, [engine, currentStreet, players]);
+  }, [currentStreet]);
 
   const executeAction = (actionType: string, amount?: number): boolean => {
     if (!engineRef.current) {
-      console.warn('No engine available to execute action');
       return false;
     }
 
-    console.log(`Executing action: ${actionType}`, { amount });
-    
     const success = engineRef.current.takeAction(actionType, amount || 0);
     
     if (success) {
       const currentPlayer = engineRef.current.getCurrentPlayer();
       const legalActions = engineRef.current.getLegalActions();
-      
-      console.log('New state after action:', { currentPlayer, legalActions, pot: engineRef.current.pot });
       
       // Update state
       setPotAmount(engineRef.current.pot);
@@ -166,7 +153,6 @@ export const usePokerGameEngine = ({
 
   const getValidActionsForPlayer = (playerId: string): string[] => {
     if (!engineRef.current) {
-      console.log('No engine available for getValidActionsForPlayer');
       return [];
     }
     
@@ -174,18 +160,14 @@ export const usePokerGameEngine = ({
     
     if (currentPlayer && currentPlayer.id === playerId) {
       const actions = engineRef.current.getLegalActions();
-      console.log('Player matches current player to act, returning actions:', actions);
       return actions;
     }
     
-    console.log('Player does not match current player to act');
     return [];
   };
 
   const isPlayerToAct = (playerId: string): boolean => {
-    const result = currentPlayerToAct === playerId;
-    console.log('isPlayerToAct check:', { playerId, currentPlayerToAct, result });
-    return result;
+    return currentPlayerToAct === playerId;
   };
 
   const getCurrentPot = (): number => {
