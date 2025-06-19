@@ -45,9 +45,8 @@ export const usePokerGameEngine = ({
             newEngine.postBlinds(sbIndex, bbIndex);
           }
           
-          // Start preflop betting (UTG or first player after BB)
-          const startIndex = players.length === 2 ? 0 : (players.findIndex(p => p.position === 'bb') + 1) % players.length;
-          newEngine.startBettingRound(startIndex);
+          // Start preflop betting with proper position ordering
+          newEngine.startBettingRound();
           
           setEngine(newEngine);
           engineRef.current = newEngine;
@@ -103,9 +102,8 @@ export const usePokerGameEngine = ({
         });
         engine.currentBet = 0;
         
-        // Start new betting round
-        const sbIndex = players.findIndex(p => p.position === 'sb');
-        engine.startBettingRound(sbIndex >= 0 ? sbIndex : 0);
+        // Start new betting round with proper position ordering
+        engine.startBettingRound();
         
         const currentPlayer = engine.getCurrentPlayer();
         const legalActions = engine.getLegalActions();

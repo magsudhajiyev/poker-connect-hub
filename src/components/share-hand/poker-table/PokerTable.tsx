@@ -195,6 +195,7 @@ const PokerTable = ({
                 updateAction={updateAction}
                 handleBetSizeSelect={handleBetSizeSelect}
                 isPositionsStep={isPositionsStep}
+                pokerActions={pokerActions}
               />
             </div>
           );

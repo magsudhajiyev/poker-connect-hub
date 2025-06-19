@@ -315,23 +315,38 @@ export const getAvailableActions = (street: string, actionIndex: number, allActi
   const position = standardizePosition(currentAction.position || '');
   const round = street.replace('Actions', '');
   
-  // Create a mock game state to determine current bet and action history
+  console.log('DEBUG - getAvailableActions called:', {
+    street,
+    round,
+    position,
+    playerPosition: currentAction.position,
+    actionIndex,
+    totalActions: allActions.length
+  });
+  
   // Get all previous actions in this street to determine current bet state
   const previousActions = allActions.slice(0, actionIndex);
   
   // Calculate current bet from previous actions
   let currentBet = 0;
+  let hasActiveBet = false;
+  
+  // For preflop, BB is the initial bet
   if (round === 'preflop') {
-    currentBet = 2; // Start with BB amount for preflop
+    currentBet = 2; // BB amount
+    hasActiveBet = true;
   }
   
   // Update current bet based on previous actions
   for (const action of previousActions) {
-    if (action.action === 'bet' || action.action === 'raise') {
+    if (action.action === 'bet') {
       const betAmount = parseFloat(action.betAmount || '0');
-      if (betAmount > currentBet) {
-        currentBet = betAmount;
-      }
+      currentBet = betAmount;
+      hasActiveBet = true;
+    } else if (action.action === 'raise') {
+      const raiseAmount = parseFloat(action.betAmount || '0');
+      currentBet = raiseAmount;
+      hasActiveBet = true;
     }
   }
   
@@ -342,21 +357,42 @@ export const getAvailableActions = (street: string, actionIndex: number, allActi
     player: action.playerName
   }));
   
-  // Special case for BB preflop when no one has raised
-  if (round === 'preflop' && 
-      position === 'BB' && 
-      currentBet === 2 && // BB amount
-      !hasRaiseInRound(actionHistory, round)) {
-    return ['check', 'bet'];
+  // Determine available actions
+  const actions: string[] = ['fold']; // Can always fold
+  
+  // For preflop, there's always the BB bet to consider
+  if (round === 'preflop') {
+    // Special case: BB can check if no one raised before them
+    if (position === 'BB' && !hasRaiseInRound(actionHistory, round)) {
+      actions.push('check');
+      actions.push('raise');
+      return actions;
+    }
+    
+    // All other positions preflop must call the BB or raise
+    actions.push('call');
+    actions.push('raise');
+    return actions;
   }
   
-  // No bet has been made in current round
-  if (currentBet === 0) {
-    return ['check', 'bet'];
+  // Post-flop logic
+  if (!hasActiveBet || currentBet === 0) {
+    // No bet this round - can check or bet
+    actions.push('check');
+    actions.push('bet');
+  } else {
+    // There's a bet - can call or raise
+    actions.push('call');
+    actions.push('raise');
   }
   
-  // Bet has been made
-  return ['fold', 'call', 'raise'];
+  console.log('DEBUG - getAvailableActions result:', {
+    position,
+    round,
+    actions
+  });
+  
+  return actions;
 };
 
 export const getActionButtonClass = (action: string, isSelected: boolean): string => {

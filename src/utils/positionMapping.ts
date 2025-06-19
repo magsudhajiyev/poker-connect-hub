@@ -7,7 +7,7 @@ export const positionMap: { [key: string]: string } = {
   'utg': 'UTG',
   'utg1': 'UTG+1', 
   'mp': 'MP',
-  'lj': 'HJ', // Lojack maps to Hijack in standard notation
+  'lj': 'LJ', // Lojack is its own position
   'hj': 'HJ',
   'co': 'CO',
   'btn': 'BTN',
@@ -19,7 +19,8 @@ export const positionMap: { [key: string]: string } = {
 export const reversePositionMap: { [key: string]: string } = {
   'UTG': 'utg',
   'UTG+1': 'utg1',
-  'MP': 'mp', 
+  'MP': 'mp',
+  'LJ': 'lj',
   'HJ': 'hj',
   'CO': 'co',
   'BTN': 'btn',
@@ -44,11 +45,11 @@ export function getActionOrder(positions: string[], isPreflop: boolean = false):
   
   if (isPreflop) {
     // Preflop: action starts after BB, wraps around
-    const preflopOrder = ['UTG', 'UTG+1', 'MP', 'HJ', 'CO', 'BTN', 'SB', 'BB'];
+    const preflopOrder = ['UTG', 'UTG+1', 'MP', 'LJ', 'HJ', 'CO', 'BTN', 'SB', 'BB'];
     return preflopOrder.filter(pos => standardPositions.includes(pos));
   } else {
     // Post-flop: action starts with SB
-    const postflopOrder = ['SB', 'BB', 'UTG', 'UTG+1', 'MP', 'HJ', 'CO', 'BTN'];
+    const postflopOrder = ['SB', 'BB', 'UTG', 'UTG+1', 'MP', 'LJ', 'HJ', 'CO', 'BTN'];
     return postflopOrder.filter(pos => standardPositions.includes(pos));
   }
 }

@@ -129,6 +129,8 @@ const PlayerActionDialog = ({
             availableActions={availableActions}
             selectedAction={selectedAction}
             onActionSelect={handleActionSelect}
+            position={player.position}
+            street={currentStreet}
           />
 
           {/* Betting Interface */}

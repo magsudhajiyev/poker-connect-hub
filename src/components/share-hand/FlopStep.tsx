@@ -4,6 +4,7 @@ import { Textarea } from '@/components/ui/textarea';
 import CardInput from '@/components/CardInput';
 import PotDisplay from './PotDisplay';
 import { PokerTable } from './poker-table';
+import { useShareHandContext } from './ShareHandProvider';
 import SelectedCardsDisplay from './SelectedCardsDisplay';
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';
 import { getAvailablePositions } from '@/utils/positionUtils';
@@ -37,6 +38,7 @@ const FlopStep = ({
 }: FlopStepProps) => {
   const potSize = calculatePotSize();
   const { players, updatePlayer, removePlayer } = usePlayerManagement(formData, setFormData);
+  const { pokerActions } = useShareHandContext();
 
   const handleUpdatePlayer = (newPlayer: any) => {
     // If this player is being set as hero, remove hero status from others
@@ -104,6 +106,7 @@ const FlopStep = ({
           getAvailableActions={getAvailableActions}
           updateAction={updateAction}
           handleBetSizeSelect={handleBetSizeSelect}
+          pokerActions={pokerActions}
         />
       </div>
 

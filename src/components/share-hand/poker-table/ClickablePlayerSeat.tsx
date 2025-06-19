@@ -22,6 +22,7 @@ interface ClickablePlayerSeatProps {
   updateAction?: (street: any, index: number, action: string, betAmount?: string) => void;
   handleBetSizeSelect?: (street: any, index: number, amount: string) => void;
   isPositionsStep?: boolean;
+  pokerActions?: any;
 }
 
 const ClickablePlayerSeat = ({ 
@@ -38,7 +39,8 @@ const ClickablePlayerSeat = ({
   getAvailableActions,
   updateAction,
   handleBetSizeSelect,
-  isPositionsStep = false
+  isPositionsStep = false,
+  pokerActions
 }: ClickablePlayerSeatProps) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isActionOpen, setIsActionOpen] = useState(false);
@@ -117,7 +119,7 @@ const ClickablePlayerSeat = ({
           position={position}
           currentStreet={currentStreet || 'preflopActions'}
           formData={formData}
-          pokerActions={formData?.pokerActions}
+          pokerActions={pokerActions}
           getAvailableActions={getAvailableActions}
           updateAction={updateAction}
           handleBetSizeSelect={handleBetSizeSelect}

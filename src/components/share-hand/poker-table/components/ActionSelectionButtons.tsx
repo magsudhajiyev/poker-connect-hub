@@ -3,17 +3,39 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 
+// Helper function to filter out invalid actions
+const filterValidActions = (actions: string[], position: string, street: string): string[] => {
+  // For preflop, non-BB players cannot check
+  if (street === 'preflopActions' && position !== 'bb') {
+    return actions.filter(action => action !== 'check');
+  }
+  return actions;
+};
+
 interface ActionSelectionButtonsProps {
   availableActions: string[];
   selectedAction: string;
   onActionSelect: (action: string) => void;
+  position?: string;
+  street?: string;
 }
 
 const ActionSelectionButtons = ({
   availableActions,
   selectedAction,
-  onActionSelect
+  onActionSelect,
+  position = '',
+  street = ''
 }: ActionSelectionButtonsProps) => {
+  // Filter actions to ensure correctness
+  const validActions = filterValidActions(availableActions, position, street);
+  
+  console.log('DEBUG - ActionSelectionButtons:', {
+    originalActions: availableActions,
+    validActions,
+    position,
+    street
+  });
   const getActionButtonClass = (action: string, isSelected: boolean) => {
     const baseClass = "transition-colors border";
     if (isSelected) {
@@ -44,7 +66,7 @@ const ActionSelectionButtons = ({
     <div>
       <Label className="text-slate-300 text-sm font-medium mb-3 block">Choose Action</Label>
       <div className="grid grid-cols-2 gap-2">
-        {availableActions.map((action) => (
+        {validActions.map((action) => (
           <Button
             key={action}
             size="sm"

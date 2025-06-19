@@ -43,21 +43,59 @@ export const usePlayerActionDialog = ({
   const actionIndex = getCurrentActionIndex();
   const actions = formData?.[currentStreet] || [];
   
-  // Get available actions from poker game engine if available and player is to act
+  // Get available actions - debug which path we're taking
   let availableActions: string[] = [];
+  let debugPath = '';
+  
+  console.log('DEBUG - Player action dialog:', {
+    playerId: player.id,
+    position: player.position,
+    currentStreet,
+    hasPokerActions: !!pokerActions,
+    hasEngine: !!pokerActions?.engine,
+    isPlayerToAct: pokerActions?.isPlayerToAct?.(player.id),
+    hasGetAvailableActions: !!getAvailableActions,
+    actionIndex
+  });
   
   if (pokerActions && pokerActions.engine && pokerActions.isPlayerToAct && pokerActions.isPlayerToAct(player.id)) {
     const validActions = pokerActions.getValidActionsForPlayer(player.id);
     availableActions = validActions;
+    debugPath = 'poker-engine';
   } else if (getAvailableActions) {
-    // Fall back to the original logic only if poker game engine doesn't indicate this player should act
+    // Fall back to the improved action logic
     availableActions = getAvailableActions(currentStreet, actionIndex >= 0 ? actionIndex : 0, actions);
+    debugPath = 'getAvailableActions';
   } else {
-    // Final fallback - basic poker actions
-    availableActions = ['fold', 'check', 'call', 'raise'];
+    // Final fallback - need to determine proper actions based on street and situation
+    const street = currentStreet?.replace('Actions', '') || 'preflop';
+    if (street === 'preflop') {
+      // Preflop - there's always a BB bet, so can't check (except BB in special cases)
+      availableActions = ['fold', 'call', 'raise', 'all-in'];
+    } else {
+      // Post-flop - can check if no bet
+      availableActions = ['fold', 'check', 'bet', 'all-in'];
+    }
+    debugPath = 'final-fallback';
   }
   
+  console.log('DEBUG - Actions determined:', {
+    path: debugPath,
+    actions: availableActions,
+    player: player.position
+  });
+  
   const potSize = formData ? (parseFloat(formData.smallBlind || '1') + parseFloat(formData.bigBlind || '2')) : 3;
+  
+  // FORCE FIX: If this is preflop and player is not BB, remove check option
+  const street = currentStreet?.replace('Actions', '') || 'preflop';
+  if (street === 'preflop' && player.position !== 'bb') {
+    availableActions = availableActions.filter(action => action !== 'check');
+    console.log('DEBUG - Removed check for non-BB preflop:', {
+      position: player.position,
+      finalActions: availableActions
+    });
+  }
   const stackSize = player.stackSize[0];
 
   useEffect(() => {

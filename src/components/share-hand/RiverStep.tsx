@@ -8,6 +8,7 @@ import { Plus, X } from 'lucide-react';
 import CardInput from '@/components/CardInput';
 import PotDisplay from './PotDisplay';
 import { PokerTable } from './poker-table';
+import { useShareHandContext } from './ShareHandProvider';
 import SelectedCardsDisplay from './SelectedCardsDisplay';
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';
 import { getAvailablePositions } from '@/utils/positionUtils';
@@ -47,6 +48,7 @@ const RiverStep = ({
 }: RiverStepProps) => {
   const potSize = calculatePotSize();
   const { players, updatePlayer, removePlayer } = usePlayerManagement(formData, setFormData);
+  const { pokerActions } = useShareHandContext();
 
   // Don't allow player updates in action steps - players should be locked
   const handleUpdatePlayer = (newPlayer: any) => {
@@ -100,6 +102,7 @@ const RiverStep = ({
           updateAction={updateAction}
           handleBetSizeSelect={handleBetSizeSelect}
           isPositionsStep={false}
+          pokerActions={pokerActions}
         />
       </div>
 

@@ -45,22 +45,22 @@ export class PokerService {
   private calculateLegalActions(gameState: GameState, player: Player): PokerAction[] {
     const actions: PokerAction[] = [];
 
+    // If player is all-in or folded, no actions available
+    if (player.isAllIn || player.isFolded) {
+      return actions;
+    }
+
+    const callAmount = Math.max(0, gameState.currentBet - player.currentBet);
+    const playerChips = player.chips;
+
     // Player can always fold (unless already folded or all-in)
-    if (!player.isFolded && !player.isAllIn) {
+    if (playerChips > 0) {
       actions.push({
         type: 'fold',
         isValid: true,
         description: 'Fold your hand',
       });
     }
-
-    // If player is all-in or folded, no other actions available
-    if (player.isAllIn || player.isFolded) {
-      return actions;
-    }
-
-    const callAmount = gameState.currentBet - player.currentBet;
-    const playerChips = player.chips;
 
     // Check if player can check (no bet to call)
     if (callAmount === 0) {
@@ -82,12 +82,11 @@ export class PokerService {
     }
 
     // Calculate raise/bet options
-    const minRaiseAmount = gameState.currentBet === 0 ? gameState.bigBlind : gameState.currentBet + gameState.minRaise;
-    const maxRaiseAmount = player.currentBet + playerChips;
-
+    const availableForBet = playerChips - callAmount;
+    
     if (gameState.currentBet === 0) {
       // No current bet, so this would be a bet
-      if (playerChips >= gameState.bigBlind) {
+      if (availableForBet >= gameState.bigBlind) {
         actions.push({
           type: 'bet',
           amount: gameState.bigBlind,
@@ -97,18 +96,19 @@ export class PokerService {
       }
     } else {
       // There's a current bet, so this would be a raise
-      if (playerChips >= minRaiseAmount - player.currentBet) {
-        const raiseAmount = minRaiseAmount;
+      const minRaiseAmount = gameState.currentBet; // Standard min raise = current bet
+      if (availableForBet >= minRaiseAmount) {
+        const totalRaiseAmount = gameState.currentBet + minRaiseAmount;
         actions.push({
           type: 'raise',
-          amount: raiseAmount,
+          amount: totalRaiseAmount,
           isValid: true,
-          description: `Raise to ${raiseAmount} chips (minimum raise)`,
+          description: `Raise to ${totalRaiseAmount} chips (minimum raise)`,
         });
       }
     }
 
-    // All-in option (if player has chips and it's meaningful)
+    // All-in option (if player has chips)
     if (playerChips > 0) {
       const allInAmount = player.currentBet + playerChips;
       actions.push({
