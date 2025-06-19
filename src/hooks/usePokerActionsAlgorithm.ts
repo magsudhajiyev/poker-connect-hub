@@ -52,9 +52,14 @@ export const usePokerActionsAlgorithm = ({
           const currentState = newAlgorithm.getCurrentPlayerActions();
           console.log('Initial algorithm state:', currentState);
           
-          if (currentState.playerId) {
+          // Check if this is a normal player action state
+          if (currentState && 'playerId' in currentState && currentState.playerId) {
             setCurrentPlayerToAct(currentState.playerId);
             setAvailableActions(currentState.actions || []);
+          } else {
+            // Handle other state types
+            setCurrentPlayerToAct(null);
+            setAvailableActions([]);
           }
           setPotAmount(currentState.pot || newAlgorithm.pot);
         } catch (error) {
@@ -93,9 +98,14 @@ export const usePokerActionsAlgorithm = ({
         const currentState = algorithm.getCurrentPlayerActions();
         console.log('Updated algorithm state after street change:', currentState);
         
-        if (currentState.playerId) {
+        // Check if this is a normal player action state
+        if (currentState && 'playerId' in currentState && currentState.playerId) {
           setCurrentPlayerToAct(currentState.playerId);
           setAvailableActions(currentState.actions || []);
+        } else {
+          // Handle other state types
+          setCurrentPlayerToAct(null);
+          setAvailableActions([]);
         }
         setPotAmount(currentState.pot || algorithm.pot);
       }
@@ -120,8 +130,8 @@ export const usePokerActionsAlgorithm = ({
       // Update pot
       setPotAmount(algorithmRef.current.pot);
       
-      // Update current player to act
-      if (newState.playerId) {
+      // Check if this is a normal player action state
+      if (newState && 'playerId' in newState && newState.playerId) {
         setCurrentPlayerToAct(newState.playerId);
         setAvailableActions(newState.actions || []);
       } else {
@@ -145,7 +155,8 @@ export const usePokerActionsAlgorithm = ({
     const currentState = algorithmRef.current.getCurrentPlayerActions();
     console.log('Getting valid actions for player:', playerId, 'Current state:', currentState);
     
-    if (currentState.playerId === playerId) {
+    // Check if this is a normal player action state and the player matches
+    if (currentState && 'playerId' in currentState && currentState.playerId === playerId) {
       console.log('Player matches current player to act, returning actions:', currentState.actions);
       return currentState.actions || [];
     }
