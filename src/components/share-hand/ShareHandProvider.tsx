@@ -2,11 +2,11 @@
 import React, { createContext, useContext, useEffect } from 'react';
 import { useShareHandLogic } from '@/hooks/useShareHandLogic';
 import { useGameStateUI } from '@/hooks/useGameStateUI';
-import { usePokerActionsAlgorithm } from '@/hooks/usePokerActionsAlgorithm';
+import { usePokerGameEngine } from '@/hooks/usePokerGameEngine';
 
 const ShareHandContext = createContext<ReturnType<typeof useShareHandLogic> & { 
   gameStateUI: ReturnType<typeof useGameStateUI>;
-  pokerActions: ReturnType<typeof usePokerActionsAlgorithm>;
+  pokerActions: ReturnType<typeof usePokerGameEngine>;
 } | null>(null);
 
 export const useShareHandContext = () => {
@@ -32,8 +32,8 @@ export const ShareHandProvider = ({ children }: ShareHandProviderProps) => {
     return streetMap[shareHandLogic.currentStep - 2] || 'preflopActions';
   };
   
-  // Initialize poker actions algorithm
-  const pokerActions = usePokerActionsAlgorithm({
+  // Initialize poker game engine
+  const pokerActions = usePokerGameEngine({
     players: shareHandLogic.formData.players || [],
     smallBlind: shareHandLogic.formData.smallBlind || '1',
     bigBlind: shareHandLogic.formData.bigBlind || '2',

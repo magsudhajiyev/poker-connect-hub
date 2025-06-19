@@ -53,7 +53,7 @@ const PlayerActionDialog = ({
     setSelectedAction(action);
     
     // For actions that don't require bet amount, submit immediately
-    if (action !== 'bet' && action !== 'raise') {
+    if (action !== 'raise') {
       submitAction(action);
     }
   };
@@ -76,21 +76,21 @@ const PlayerActionDialog = ({
   const submitAction = (action: string, amount?: string) => {
     console.log('Submitting action:', { action, amount, actionIndex, currentStreet });
     
-    // First, try to execute action through poker algorithm
+    // First, try to execute action through poker game engine
     if (pokerActions && pokerActions.executeAction) {
       const numericAmount = amount ? parseFloat(amount) : 0;
       const success = pokerActions.executeAction(action, numericAmount);
       
       if (success) {
-        console.log('Action executed successfully through poker algorithm');
+        console.log('Action executed successfully through poker game engine');
         onOpenChange(false);
         return;
       } else {
-        console.warn('Failed to execute action through poker algorithm');
+        console.warn('Failed to execute action through poker game engine');
       }
     }
     
-    // Fall back to form data update if poker algorithm isn't available
+    // Fall back to form data update if poker game engine isn't available
     if (updateAction) {
       const validIndex = actionIndex >= 0 ? actionIndex : 0;
       updateAction(currentStreet, validIndex, action, amount || betAmount);
@@ -102,7 +102,7 @@ const PlayerActionDialog = ({
   };
 
   const handleBetSubmit = () => {
-    if (selectedAction && (selectedAction === 'bet' || selectedAction === 'raise')) {
+    if (selectedAction && selectedAction === 'raise') {
       if (!betAmount || parseFloat(betAmount) <= 0) {
         alert('Please enter a valid bet amount');
         return;

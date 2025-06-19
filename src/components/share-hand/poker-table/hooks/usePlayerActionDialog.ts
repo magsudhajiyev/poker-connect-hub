@@ -43,42 +43,32 @@ export const usePlayerActionDialog = ({
   const actionIndex = getCurrentActionIndex();
   const actions = formData?.[currentStreet] || [];
   
-  // Get available actions from poker algorithm if available and player is to act
+  // Get available actions from poker game engine if available and player is to act
   let availableActions: string[] = [];
   
   console.log('usePlayerActionDialog - determining available actions:', {
     playerId: player.id,
     playerName: player.name,
     hasPokerActions: !!pokerActions,
-    hasAlgorithm: !!pokerActions?.algorithm,
+    hasEngine: !!pokerActions?.engine,
     isPlayerToAct: pokerActions?.isPlayerToAct?.(player.id)
   });
   
-  if (pokerActions && pokerActions.algorithm && pokerActions.isPlayerToAct && pokerActions.isPlayerToAct(player.id)) {
-    console.log('Getting actions from poker algorithm for player:', player.name);
+  if (pokerActions && pokerActions.engine && pokerActions.isPlayerToAct && pokerActions.isPlayerToAct(player.id)) {
+    console.log('Getting actions from poker game engine for player:', player.name);
     const validActions = pokerActions.getValidActionsForPlayer(player.id);
-    console.log('Raw valid actions from algorithm:', validActions);
+    console.log('Valid actions from engine:', validActions);
     
-    // Extract action types from the algorithm response
-    if (Array.isArray(validActions)) {
-      availableActions = validActions.map((action: any) => {
-        if (typeof action === 'string') {
-          return action;
-        }
-        return action.type || action;
-      });
-    }
-    
-    console.log('Processed available actions:', availableActions);
+    availableActions = validActions;
   } else if (getAvailableActions) {
-    // Fall back to the original logic only if poker algorithm doesn't indicate this player should act
+    // Fall back to the original logic only if poker game engine doesn't indicate this player should act
     console.log('Using fallback getAvailableActions');
     availableActions = getAvailableActions(currentStreet, actionIndex >= 0 ? actionIndex : 0, actions);
     console.log('Fallback available actions:', availableActions);
   } else {
     // Final fallback - basic poker actions
     console.log('Using default actions as last resort');
-    availableActions = ['fold', 'check', 'call', 'bet', 'raise'];
+    availableActions = ['fold', 'check', 'call', 'raise'];
   }
   
   console.log('Final available actions for player', player.name, ':', availableActions);
