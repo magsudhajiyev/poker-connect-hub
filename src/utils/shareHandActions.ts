@@ -2,6 +2,7 @@ import { ActionStep, StreetType, ShareHandFormData, Player } from '@/types/share
 import { positionOrder } from './shareHandConstants';
 import { createGameState, updateGameState, GameState } from './gameState';
 import { standardizePosition, getActionOrder } from './positionMapping';
+import { ActionType } from '@/constants';
 
 export const initializeActions = (
   street: StreetType,
@@ -315,15 +316,6 @@ export const getAvailableActions = (street: string, actionIndex: number, allActi
   const position = standardizePosition(currentAction.position || '');
   const round = street.replace('Actions', '');
   
-  console.log('DEBUG - getAvailableActions called:', {
-    street,
-    round,
-    position,
-    playerPosition: currentAction.position,
-    actionIndex,
-    totalActions: allActions.length
-  });
-  
   // Get all previous actions in this street to determine current bet state
   const previousActions = allActions.slice(0, actionIndex);
   
@@ -386,12 +378,6 @@ export const getAvailableActions = (street: string, actionIndex: number, allActi
     actions.push('raise');
   }
   
-  console.log('DEBUG - getAvailableActions result:', {
-    position,
-    round,
-    actions
-  });
-  
   return actions;
 };
 
@@ -432,6 +418,6 @@ export const createNextActionStep = (currentAction: ActionStep, players?: Player
   };
 };
 
-export const shouldAddNextAction = (action: string): boolean => {
-  return action === 'bet' || action === 'raise' || action === 'call';
-};
+// This function is now available from constants/ActionTypes.ts
+// Re-export for backward compatibility
+export { shouldAddNextAction } from '@/constants';

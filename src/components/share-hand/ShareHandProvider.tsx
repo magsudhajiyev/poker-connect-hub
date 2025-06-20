@@ -2,11 +2,11 @@
 import React, { createContext, useContext, useEffect, useRef } from 'react';
 import { useShareHandLogic } from '@/hooks/useShareHandLogic';
 import { useGameStateUI } from '@/hooks/useGameStateUI';
-import { usePokerGameEngine } from '@/hooks/usePokerGameEngine';
+import { useActionFlow } from '@/hooks/useActionFlow';
 
 const ShareHandContext = createContext<ReturnType<typeof useShareHandLogic> & { 
   gameStateUI: ReturnType<typeof useGameStateUI>;
-  pokerActions: ReturnType<typeof usePokerGameEngine>;
+  pokerActions: ReturnType<typeof useActionFlow>;
 } | null>(null);
 
 export const useShareHandContext = () => {
@@ -33,12 +33,24 @@ export const ShareHandProvider = ({ children }: ShareHandProviderProps) => {
     return streetMap[shareHandLogic.currentStep - 2] || 'preflopActions';
   };
   
-  // Initialize poker game engine
-  const pokerActions = usePokerGameEngine({
-    players: shareHandLogic.formData.players || [],
-    smallBlind: shareHandLogic.formData.smallBlind || '1',
-    bigBlind: shareHandLogic.formData.bigBlind || '2',
-    currentStreet: getCurrentStreet()
+  // Initialize simplified action flow
+  const pokerActions = useActionFlow(
+    shareHandLogic.formData.players || [],
+    parseFloat(shareHandLogic.formData.smallBlind || '1'),
+    parseFloat(shareHandLogic.formData.bigBlind || '2'),
+    getCurrentStreet()
+  );
+  
+  console.log('PROVIDER DEBUG:', {
+    hasPlayers: shareHandLogic.formData.players?.length || 0,
+    currentStreet: getCurrentStreet(),
+    actionFlowState: {
+      currentPlayer: pokerActions.currentPlayer?.name,
+      currentPlayerPosition: pokerActions.currentPlayer?.position,
+      pot: pokerActions.pot,
+      isRoundComplete: pokerActions.isRoundComplete,
+      areAllActivePlayersAllIn: typeof pokerActions.areAllActivePlayersAllIn
+    }
   });
 
   // Initialize game when players are set up - use ref to prevent infinite loops

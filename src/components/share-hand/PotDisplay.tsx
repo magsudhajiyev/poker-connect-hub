@@ -16,8 +16,8 @@ const PotDisplay = ({ potSize, getCurrencySymbol, isFinal = false, gameState, po
   // Use poker actions pot if available, otherwise use game state pot, otherwise fall back to calculated pot
   let displayPot = potSize;
   
-  if (pokerActions?.getCurrentPot) {
-    displayPot = pokerActions.getCurrentPot();
+  if (pokerActions?.pot !== undefined) {
+    displayPot = pokerActions.pot;
   } else if (gameState) {
     displayPot = potAmount;
   }

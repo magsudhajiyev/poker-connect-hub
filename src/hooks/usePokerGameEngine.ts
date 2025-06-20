@@ -20,6 +20,7 @@ export const usePokerGameEngine = ({
   const [currentPlayerToAct, setCurrentPlayerToAct] = useState<string | null>(null);
   const [potAmount, setPotAmount] = useState<number>(0);
   const [availableActions, setAvailableActions] = useState<string[]>([]);
+  const [forceUpdate, setForceUpdate] = useState<number>(0);
   const engineRef = useRef<PokerGameEngine | null>(null);
   const initializedRef = useRef<boolean>(false);
 
@@ -33,15 +34,19 @@ export const usePokerGameEngine = ({
         console.log('Initializing poker game engine');
         
         try {
+          console.log('INITIALIZING POKER ENGINE with players:', players.map(p => ({ id: p.id, name: p.name, position: p.position })));
           const newEngine = new PokerGameEngine(players, sb, bb);
           
           // Find SB and BB positions
           const sbPlayer = players.find(p => p.position === 'sb');
           const bbPlayer = players.find(p => p.position === 'bb');
           
+          console.log('Found SB/BB:', { sbPlayer: sbPlayer?.name, bbPlayer: bbPlayer?.name });
+          
           if (sbPlayer && bbPlayer) {
             const sbIndex = players.indexOf(sbPlayer);
             const bbIndex = players.indexOf(bbPlayer);
+            console.log('Posting blinds at indices:', { sbIndex, bbIndex });
             newEngine.postBlinds(sbIndex, bbIndex);
           }
           
@@ -56,7 +61,12 @@ export const usePokerGameEngine = ({
           const currentPlayer = newEngine.getCurrentPlayer();
           const legalActions = newEngine.getLegalActions();
           
-          console.log('Engine initialized successfully');
+          console.log('ENGINE INITIALIZED:', {
+            currentPlayer: currentPlayer ? { id: currentPlayer.id, name: currentPlayer.name, position: currentPlayer.position } : null,
+            legalActions,
+            pot: newEngine.pot,
+            allPlayers: newEngine.players.map(p => ({ id: p.id, name: p.name, position: p.position, bet: p.bet, stack: p.stack }))
+          });
           
           if (currentPlayer) {
             setCurrentPlayerToAct(currentPlayer.id);
@@ -126,24 +136,37 @@ export const usePokerGameEngine = ({
       return false;
     }
 
+    console.log('Executing action:', { actionType, amount, currentPot: engineRef.current.pot });
     const success = engineRef.current.takeAction(actionType, amount || 0);
     
     if (success) {
       const currentPlayer = engineRef.current.getCurrentPlayer();
       const legalActions = engineRef.current.getLegalActions();
       
-      // Update state
-      setPotAmount(engineRef.current.pot);
+      // Update state to trigger re-renders
+      const newPotAmount = engineRef.current.pot;
+      console.log('Action successful, updating pot from', potAmount, 'to', newPotAmount);
+      setPotAmount(newPotAmount);
       
-      if (currentPlayer) {
-        setCurrentPlayerToAct(currentPlayer.id);
-        setAvailableActions(legalActions);
-      } else {
-        setCurrentPlayerToAct(null);
-        setAvailableActions([]);
-      }
+      // Use setTimeout to ensure state updates are processed
+      setTimeout(() => {
+        if (currentPlayer) {
+          console.log('Setting next player to act:', currentPlayer.name, currentPlayer.position, currentPlayer.id);
+          setCurrentPlayerToAct(currentPlayer.id);
+          setAvailableActions(legalActions);
+        } else {
+          console.log('No more players to act');
+          setCurrentPlayerToAct(null);
+          setAvailableActions([]);
+        }
+        
+        // Force component re-render
+        setForceUpdate(prev => prev + 1);
+      }, 100); // Small delay to ensure state updates
       
       return true;
+    } else {
+      console.log('Action failed');
     }
     
     return false;
@@ -165,7 +188,11 @@ export const usePokerGameEngine = ({
   };
 
   const isPlayerToAct = (playerId: string): boolean => {
-    return currentPlayerToAct === playerId;
+    const result = currentPlayerToAct === playerId;
+    if (result) {
+      console.log(`✓ Player ${playerId} is to act (current: ${currentPlayerToAct})`);
+    }
+    return result;
   };
 
   const getCurrentPot = (): number => {
@@ -185,6 +212,7 @@ export const usePokerGameEngine = ({
     getValidActionsForPlayer,
     isPlayerToAct,
     getCurrentPot,
-    getEngineState
+    getEngineState,
+    forceUpdate // Include this to trigger re-renders
   };
 };

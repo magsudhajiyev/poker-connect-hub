@@ -29,13 +29,6 @@ const ActionSelectionButtons = ({
 }: ActionSelectionButtonsProps) => {
   // Filter actions to ensure correctness
   const validActions = filterValidActions(availableActions, position, street);
-  
-  console.log('DEBUG - ActionSelectionButtons:', {
-    originalActions: availableActions,
-    validActions,
-    position,
-    street
-  });
   const getActionButtonClass = (action: string, isSelected: boolean) => {
     const baseClass = "transition-colors border";
     if (isSelected) {
@@ -58,7 +51,8 @@ const ActionSelectionButtons = ({
   };
 
   const handleActionSelect = (action: string) => {
-    console.log('Action selected:', action);
+    console.log('Action selected:', action, Date.now());
+    // Immediate execution to prevent timing issues
     onActionSelect(action);
   };
 

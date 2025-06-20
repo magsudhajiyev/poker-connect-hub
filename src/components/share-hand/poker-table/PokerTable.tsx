@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ClickablePlayerSeat from './ClickablePlayerSeat';
 import CommunityCards from './CommunityCards';
 import { Player } from '@/types/shareHand';
@@ -83,6 +83,19 @@ const PokerTable = ({
   };
 
   const seatPositions = calculatePositions();
+  
+  // Force re-render when poker actions change
+  const [renderKey, setRenderKey] = useState(0);
+  useEffect(() => {
+    if (pokerActions?.forceUpdate !== undefined) {
+      setRenderKey(pokerActions.forceUpdate);
+      console.log('POKER TABLE RE-RENDER:', {
+        forceUpdate: pokerActions.forceUpdate,
+        currentPlayer: pokerActions.currentPlayerToAct,
+        pot: pokerActions.getCurrentPot()
+      });
+    }
+  }, [pokerActions?.forceUpdate, pokerActions?.currentPlayerToAct, pokerActions?.potAmount]);
 
   // Get player for a specific position
   const getPlayerAtPosition = (position: string) => {
@@ -101,8 +114,16 @@ const PokerTable = ({
     
     // Use poker actions algorithm if available - this is the key fix
     if (pokerActions && pokerActions.isPlayerToAct) {
+      // First check if all active players are all-in (no action needed)
+      if (typeof pokerActions.areAllActivePlayersAllIn === 'function' && pokerActions.areAllActivePlayersAllIn()) {
+        console.log(`🏁 No flashing: All active players are all-in`);
+        return false;
+      }
+      
       const shouldAct = pokerActions.isPlayerToAct(player.id);
-      console.log(`Checking if player ${player.name} (${player.id}) should act:`, shouldAct);
+      if (shouldAct) {
+        console.log(`✓ FLASH: ${player.name} (${player.position}) should act`);
+      }
       return shouldAct;
     }
     
@@ -126,8 +147,8 @@ const PokerTable = ({
     return nextAction.playerId === player.id;
   };
 
-  // Use poker actions pot if available
-  const displayPot = pokerActions?.getCurrentPot ? pokerActions.getCurrentPot() : pot;
+  // Use action flow pot if available
+  const displayPot = pokerActions?.pot ? pokerActions.pot : pot;
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">

@@ -5,6 +5,7 @@ import {
   createNextActionStep, 
   shouldAddNextAction 
 } from '@/utils/shareHandActions';
+import { ActionType } from '@/constants';
 
 export const useActionManagement = (
   formData: ShareHandFormData, 
@@ -46,7 +47,7 @@ export const useActionManagement = (
     }
   };
 
-  const updateAction = (street: StreetType, index: number, action: string, betAmount?: string) => {
+  const updateAction = (street: StreetType, index: number, action: ActionType, betAmount?: string) => {
     console.log(`Updating action at index ${index} on ${street}:`, action, betAmount);
     
     setFormData((prev: ShareHandFormData) => {
@@ -70,11 +71,11 @@ export const useActionManagement = (
         ...updatedActions[index],
         action,
         betAmount: validBetAmount,
-        completed: action !== 'bet' && action !== 'raise'
+        completed: action !== ActionType.BET && action !== ActionType.RAISE
       };
       
       // If changing from bet/raise to something else, remove subsequent actions
-      if ((previousAction === 'bet' || previousAction === 'raise') && 
+      if ((previousAction === ActionType.BET || previousAction === ActionType.RAISE) && 
           !shouldAddNextAction(action)) {
         console.log(`Action changed from ${previousAction} to ${action}, removing subsequent actions`);
         const actionsToKeep = updatedActions.slice(0, index + 1);

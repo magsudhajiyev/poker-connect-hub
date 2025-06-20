@@ -61,6 +61,7 @@ const ClickablePlayerSeat = ({
       player: player?.name,
       isPositionsStep,
       currentStreet,
+      isToAct,
       hasGetAvailableActions: !!getAvailableActions,
       hasUpdateAction: !!updateAction
     });
@@ -77,8 +78,12 @@ const ClickablePlayerSeat = ({
       return;
     }
 
-    // If we're in an action step, show action dialog
+    // If we're in an action step, only allow clicking if it's this player's turn
     if (currentStreet) {
+      if (!isToAct) {
+        console.log('Not this player\'s turn to act, ignoring click for:', player.name);
+        return;
+      }
       console.log('Opening action dialog for player:', player.name);
       setIsActionOpen(true);
     } else {
@@ -87,6 +92,18 @@ const ClickablePlayerSeat = ({
   };
 
   const isEmpty = !player;
+  
+  // Determine if this seat should be clickable
+  const isClickable = isPositionsStep || (player && (!currentStreet || isToAct));
+  
+  // Determine cursor style based on clickability
+  const getCursorStyle = () => {
+    if (isPositionsStep) return 'cursor-pointer';
+    if (!player) return 'cursor-not-allowed opacity-50';
+    if (!currentStreet) return 'cursor-pointer';
+    if (isToAct) return 'cursor-pointer';
+    return 'cursor-not-allowed opacity-60';
+  };
 
   return (
     <div
@@ -127,8 +144,11 @@ const ClickablePlayerSeat = ({
       )}
 
       <div 
-        className={`${isPositionsStep || player ? 'cursor-pointer' : 'cursor-not-allowed opacity-50'}`} 
-        onClick={handleClick}
+        className={getCursorStyle()}
+        onClick={isClickable ? handleClick : undefined}
+        style={{
+          pointerEvents: isClickable ? 'auto' : 'none'
+        }}
       >
         {isEmpty ? (
           <EmptySeatDisplay position={position} />

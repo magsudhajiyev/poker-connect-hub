@@ -66,7 +66,7 @@ const ShareHandForm = () => {
       setFormData,
       getPositionName,
       getCurrencySymbol,
-      calculatePotSize: () => pokerActions.getCurrentPot() || calculatePotSize(),
+      calculatePotSize: () => pokerActions.pot || calculatePotSize(),
       getAvailableActions: (street: string, index: number, allActions: any[]) => {
         // For positions step, use the original logic
         if (currentStep === 1) {

@@ -72,7 +72,14 @@ export class PokerGameEngine {
     if (bb.stack === 0) bb.allIn = true;
 
     this.pot += sb.bet + bb.bet;
-    this.currentBet = bb.bet;
+    this.currentBet = bb.bet; // Set current bet to BB amount
+    
+    console.log('Blinds posted:', {
+      sb: { bet: sb.bet, stack: sb.stack },
+      bb: { bet: bb.bet, stack: bb.stack },
+      pot: this.pot,
+      currentBet: this.currentBet
+    });
   }
 
   startBettingRound(startIndex?: number) {
@@ -115,19 +122,7 @@ export class PokerGameEngine {
 
   getLegalActions(): string[] {
     const player = this.getCurrentPlayer();
-    if (!player || player.folded || player.allIn) {
-      console.log('DEBUG - PokerEngine: No legal actions - invalid player state');
-      return [];
-    }
-    
-    console.log('DEBUG - PokerEngine getLegalActions for:', {
-      playerName: player.name,
-      position: player.position,
-      street: this.street,
-      currentBet: this.currentBet,
-      playerBet: player.bet,
-      stack: player.stack
-    });
+    if (!player || player.folded || player.allIn) return [];
 
     const toCall = Math.max(0, this.currentBet - player.bet);
     const actions: string[] = [];
@@ -159,7 +154,7 @@ export class PokerGameEngine {
       actions.push('all-in');
     }
 
-    console.log(`DEBUG - PokerEngine final actions for ${player.name} (${player.position}): ${actions.join(', ')} (toCall: ${toCall}, stack: ${player.stack}, currentBet: ${this.currentBet})`);
+    console.log(`Legal actions for ${player.name}: ${actions.join(', ')} (toCall: ${toCall}, stack: ${player.stack}, currentBet: ${this.currentBet})`);
     return [...new Set(actions)];
   }
 
@@ -252,7 +247,13 @@ export class PokerGameEngine {
     }
 
     this.actions.push(move);
+    console.log('Action completed, advancing to next player...');
     this.advanceToNextPlayer();
+    console.log('After advancing:', {
+      currentPlayerIndex: this.currentPlayerIndex,
+      currentPlayer: this.getCurrentPlayer()?.name,
+      currentPlayerPosition: this.getCurrentPlayer()?.position
+    });
     return true;
   }
 
