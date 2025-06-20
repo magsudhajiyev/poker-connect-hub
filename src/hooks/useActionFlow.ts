@@ -31,7 +31,7 @@ interface ActionState {
 
 export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: number, street: string) => {
   // Get action order for current street using constants
-  const getStreetActionOrder = (street: string): Position[] => {
+  const getStreetActionOrder = (street: string): readonly Position[] => {
     const isPreflop = street === StreetType.PREFLOP;
     return getActionOrder(isPreflop);
   };
