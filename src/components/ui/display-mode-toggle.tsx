@@ -16,7 +16,7 @@ export const DisplayModeToggle = ({
   size = 'sm', 
   variant = 'button',
   showLabels = true,
-  disabled = false 
+  disabled = false, 
 }: DisplayModeToggleProps) => {
   const { displayMode, toggleDisplayMode, isAutoMode } = useDisplayMode();
 

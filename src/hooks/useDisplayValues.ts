@@ -19,7 +19,9 @@ export interface DisplayValue {
 export const useDisplayValues = ({ formData, displayMode }: UseDisplayValuesProps) => {
   // Determine display mode based on game format (for now, until toggle feature is added)
   const effectiveDisplayMode = useMemo((): DisplayMode => {
-    if (displayMode) return displayMode;
+    if (displayMode) {
+return displayMode;
+}
     return formData.gameFormat === 'cash' ? 'chips' : 'bb';
   }, [displayMode, formData.gameFormat]);
 
@@ -44,13 +46,17 @@ export const useDisplayValues = ({ formData, displayMode }: UseDisplayValuesProp
 
   // Convert any value to chips (internal standard)
   const convertToChips = useCallback((amount: number, fromUnit: DisplayMode = effectiveDisplayMode): number => {
-    if (fromUnit === 'chips') return amount;
+    if (fromUnit === 'chips') {
+return amount;
+}
     return blindBetsToChips(amount);
   }, [blindBetsToChips, effectiveDisplayMode]);
 
   // Convert chips to display unit
   const convertFromChips = useCallback((chipAmount: number, toUnit: DisplayMode = effectiveDisplayMode): number => {
-    if (toUnit === 'chips') return chipAmount;
+    if (toUnit === 'chips') {
+return chipAmount;
+}
     return chipsToBlindBets(chipAmount);
   }, [chipsToBlindBets, effectiveDisplayMode]);
 
@@ -77,14 +83,18 @@ export const useDisplayValues = ({ formData, displayMode }: UseDisplayValuesProp
     const config = getDisplayConfig(targetMode);
     const displayAmount = convertFromChips(chipAmount, targetMode);
     
-    // Round to prevent floating point precision issues
-    const roundedAmount = Math.round(displayAmount * Math.pow(10, config.decimals)) / Math.pow(10, config.decimals);
+    // More aggressive rounding to prevent floating point precision issues
+    const multiplier = Math.pow(10, config.decimals);
+    const roundedAmount = Math.round(displayAmount * multiplier) / multiplier;
+    
+    // Additional check to remove unnecessary trailing zeros after decimal
+    const finalAmount = parseFloat(roundedAmount.toFixed(config.decimals));
     
     return {
-      amount: roundedAmount,
+      amount: finalAmount,
       unit: config.unit,
       symbol: config.symbol,
-      formatted: `${config.symbol}${roundedAmount.toFixed(config.decimals)}`,
+      formatted: `${config.symbol}${finalAmount.toFixed(config.decimals)}`,
     };
   }, [convertFromChips, getDisplayConfig, effectiveDisplayMode]);
 
@@ -97,7 +107,9 @@ export const useDisplayValues = ({ formData, displayMode }: UseDisplayValuesProp
   // Parse user input and convert to chips
   const parseInputToChips = useCallback((input: string, fromMode: DisplayMode = effectiveDisplayMode): number => {
     const amount = parseFloat(input);
-    if (isNaN(amount)) return 0;
+    if (isNaN(amount)) {
+return 0;
+}
     return convertToChips(amount, fromMode);
   }, [convertToChips, effectiveDisplayMode]);
 
@@ -134,9 +146,9 @@ export const useDisplayValues = ({ formData, displayMode }: UseDisplayValuesProp
   // Calculate pot-based bet sizes in chips
   const calculatePotBetSizes = useCallback((potChips: number, playerChipStack: number) => {
     const sizes = [
-      { label: '1/3 Pot', percentage: 33.33, chipAmount: potChips * 0.3333 },
-      { label: '1/2 Pot', percentage: 50, chipAmount: potChips * 0.5 },
-      { label: '3/4 Pot', percentage: 75, chipAmount: potChips * 0.75 },
+      { label: '1/3 Pot', percentage: 33.33, chipAmount: Math.round((potChips / 3) * 100) / 100 },
+      { label: '1/2 Pot', percentage: 50, chipAmount: Math.round((potChips / 2) * 100) / 100 },
+      { label: '3/4 Pot', percentage: 75, chipAmount: Math.round((potChips * 0.75) * 100) / 100 },
       { label: 'Pot', percentage: 100, chipAmount: potChips },
       { label: 'All-in', percentage: 100, chipAmount: playerChipStack },
     ];

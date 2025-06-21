@@ -4,7 +4,7 @@ import {
   UnifiedPlayer, 
   UnifiedGameState, 
   Card, 
-  ConversionUtils 
+  ConversionUtils, 
 } from '@/types/unified';
 import { Player as FrontendPlayer } from '@/types/shareHand';
 
@@ -95,7 +95,9 @@ function getPositionIndex(position: string): number {
  * Convert string to Card object
  */
 export function stringToCard(cardString: string): Card | null {
-  if (!cardString || cardString.length < 2) return null;
+  if (!cardString || cardString.length < 2) {
+return null;
+}
   
   const rank = cardString.slice(0, -1) as Card['rank'];
   const suitChar = cardString.slice(-1).toLowerCase();
@@ -109,10 +111,14 @@ export function stringToCard(cardString: string): Card | null {
   
   const suit = suitMap[suitChar];
   
-  if (!suit) return null;
+  if (!suit) {
+return null;
+}
   
   const validRanks: Card['rank'][] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
-  if (!validRanks.includes(rank)) return null;
+  if (!validRanks.includes(rank)) {
+return null;
+}
   
   return { suit, rank };
 }
@@ -191,7 +197,7 @@ export function validatePlayersForUnified(players: any[]): boolean {
     typeof player.id === 'string' &&
     typeof player.name === 'string' &&
     typeof player.position === 'string' &&
-    typeof player.chips === 'number' && player.chips >= 0
+    typeof player.chips === 'number' && player.chips >= 0,
   );
 }
 

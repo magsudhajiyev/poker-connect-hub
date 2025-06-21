@@ -17,7 +17,7 @@ const PlayerSeat = ({ player, position, isActive = false, gameFormat = 'cash', f
   
   // Use display values hook for proper unit conversion
   const displayValues = useDisplayValues({ 
-    formData: formData || { gameFormat, smallBlind: '1', bigBlind: '2' } 
+    formData: formData || { gameFormat, smallBlind: '1', bigBlind: '2' }, 
   });
   
   // Format stack size for display

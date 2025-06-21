@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, Home, Share, Bell, User, Settings, LogOut, Menu } from 'lucide-react';
+import { Search, Home, Bell, User, Settings, LogOut, Menu } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
@@ -20,7 +20,6 @@ export const ProfileTopBar = () => {
   };
   const handleLogout = () => {
     // TODO: Implement logout logic
-    console.log('Logout clicked');
   };
   const handleHomeClick = () => {
     navigate('/feed');

@@ -55,7 +55,7 @@ class PokerConnectErrorLogger implements ErrorLogger {
     level: 'error' | 'warning' | 'info',
     message: string,
     context?: string,
-    additionalData?: Record<string, unknown>
+    additionalData?: Record<string, unknown>,
   ): ErrorLogEntry {
     return {
       id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -180,7 +180,7 @@ class PokerConnectErrorLogger implements ErrorLogger {
         acc.total++;
         return acc;
       },
-      { errors: 0, warnings: 0, info: 0, total: 0 }
+      { errors: 0, warnings: 0, info: 0, total: 0 },
     );
 
     return {

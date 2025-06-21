@@ -19,13 +19,19 @@ export const DisplayModeProvider = ({ children, defaultMode = null }: DisplayMod
   const [displayMode, setDisplayModeState] = useState<DisplayMode | null>(() => {
     // In the future, this could load from localStorage
     // For now, default to null (auto-detect)
-    if (defaultMode !== undefined) return defaultMode;
+    if (defaultMode !== undefined) {
+return defaultMode;
+}
     
     // Try to load from localStorage (future feature)
     try {
       const saved = localStorage.getItem('poker-display-mode');
-      if (saved === 'chips' || saved === 'bb') return saved;
-      if (saved === 'auto' || saved === null) return null;
+      if (saved === 'chips' || saved === 'bb') {
+return saved;
+}
+      if (saved === 'auto' || saved === null) {
+return null;
+}
     } catch (e) {
       // localStorage not available or error
     }

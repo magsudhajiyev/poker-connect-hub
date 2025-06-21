@@ -72,7 +72,7 @@ export class ErrorBoundary extends Component<Props, State> {
         description = 'An unexpected error occurred. Please try again.',
         showRetry = true,
         showGoHome = true,
-        showReportBug = false
+        showReportBug = false,
       } = this.props;
 
       return (

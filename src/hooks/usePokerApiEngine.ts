@@ -5,7 +5,7 @@ import {
   UnifiedPlayer, 
   UnifiedGameState, 
   PokerAction, 
-  LegalActionsResponse 
+  LegalActionsResponse, 
 } from '@/types/unified';
 import { pokerApiService } from '@/services';
 import { frontendPlayerToUnified } from '@/services/converters';
@@ -53,7 +53,9 @@ export const usePokerApiEngine = ({
 
   // Convert legacy players to unified format
   const convertPlayers = useCallback((inputPlayers: LegacyPlayer[] | UnifiedPlayer[]): UnifiedPlayer[] => {
-    if (!inputPlayers.length) return [];
+    if (!inputPlayers.length) {
+return [];
+}
     
     // Check if already unified
     if ('chips' in inputPlayers[0]) {
@@ -66,7 +68,9 @@ export const usePokerApiEngine = ({
 
   // Initialize game state
   const initializeGame = useCallback(async () => {
-    if (!players || players.length < 2) return;
+    if (!players || players.length < 2) {
+return;
+}
     
     const sb = typeof smallBlind === 'string' ? parseFloat(smallBlind) : smallBlind;
     const bb = typeof bigBlind === 'string' ? parseFloat(bigBlind) : bigBlind;
@@ -84,15 +88,15 @@ export const usePokerApiEngine = ({
       const newGameState = pokerApiService.createGameStateFromPlayers(
         unifiedPlayers,
         sb,
-        bb
+        bb,
       );
 
       // Post blinds
       const sbPlayerIndex = unifiedPlayers.findIndex(p => 
-        p.position.toLowerCase().includes('sb') || p.position.toLowerCase() === 'small blind'
+        p.position.toLowerCase().includes('sb') || p.position.toLowerCase() === 'small blind',
       );
       const bbPlayerIndex = unifiedPlayers.findIndex(p => 
-        p.position.toLowerCase().includes('bb') || p.position.toLowerCase() === 'big blind'
+        p.position.toLowerCase().includes('bb') || p.position.toLowerCase() === 'big blind',
       );
 
       if (sbPlayerIndex >= 0 && bbPlayerIndex >= 0) {
@@ -124,7 +128,9 @@ export const usePokerApiEngine = ({
   // Refresh legal actions for current player
   const refreshLegalActions = useCallback(async (currentGameState?: UnifiedGameState) => {
     const state = currentGameState || gameStateRef.current;
-    if (!state) return;
+    if (!state) {
+return;
+}
 
     try {
       const currentPlayerIndex = state.currentPlayerIndex;
@@ -174,7 +180,9 @@ export const usePokerApiEngine = ({
       const updatedGameState = { ...gameStateRef.current };
       const playerIndex = updatedGameState.players.findIndex(p => p.id === currentPlayerToAct);
       
-      if (playerIndex === -1) return false;
+      if (playerIndex === -1) {
+return false;
+}
 
       const player = updatedGameState.players[playerIndex];
 
@@ -186,7 +194,7 @@ export const usePokerApiEngine = ({
         case 'call':
           const callAmount = Math.min(
             updatedGameState.currentBet - (player.currentBet || 0),
-            player.chips
+            player.chips,
           );
           player.currentBet = (player.currentBet || 0) + callAmount;
           player.chips -= callAmount;
@@ -251,7 +259,9 @@ export const usePokerApiEngine = ({
 
   // Get valid actions for a specific player
   const getValidActionsForPlayer = useCallback(async (playerId: string): Promise<PokerAction[]> => {
-    if (!gameStateRef.current) return [];
+    if (!gameStateRef.current) {
+return [];
+}
 
     try {
       const response = await pokerApiService.getLegalActions(gameStateRef.current, playerId);
@@ -283,16 +293,18 @@ export const usePokerApiEngine = ({
   const validateAction = useCallback(async (
     playerId: string, 
     action: string, 
-    amount?: number
+    amount?: number,
   ): Promise<boolean> => {
-    if (!gameStateRef.current) return false;
+    if (!gameStateRef.current) {
+return false;
+}
 
     try {
       const response = await pokerApiService.isActionValid(
         gameStateRef.current,
         playerId,
         action,
-        amount
+        amount,
       );
       return response.success && response.data === true;
     } catch (err) {

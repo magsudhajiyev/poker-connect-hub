@@ -72,7 +72,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     if (hasError && resetOnPropsChange && resetKeys) {
       const prevResetKeys = prevProps.resetKeys || [];
       const hasResetKeyChanged = resetKeys.some(
-        (key, index) => key !== prevResetKeys[index]
+        (key, index) => key !== prevResetKeys[index],
       );
 
       if (hasResetKeyChanged) {
@@ -134,7 +134,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
     // Create a pre-filled GitHub issue or bug report
     const bugReportUrl = `mailto:support@pokerconnecthub.com?subject=Bug Report - ${eventId}&body=${encodeURIComponent(
-      `Error Details:\n${JSON.stringify(errorDetails, null, 2)}\n\nSteps to reproduce:\n1. \n2. \n3. \n\nExpected behavior:\n\nActual behavior:\n`
+      `Error Details:\n${JSON.stringify(errorDetails, null, 2)}\n\nSteps to reproduce:\n1. \n2. \n3. \n\nExpected behavior:\n\nActual behavior:\n`,
     )}`;
 
     window.open(bugReportUrl, '_blank');

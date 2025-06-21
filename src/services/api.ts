@@ -31,7 +31,7 @@ export class ApiService {
     type: ApiErrorType,
     code?: string,
     details?: any,
-    retryable: boolean = false
+    retryable: boolean = false,
   ): ApiError {
     const error = new Error(message) as ApiError;
     error.type = type;
@@ -43,7 +43,7 @@ export class ApiService {
 
   private async fetchWithTimeout(
     url: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<Response> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
@@ -67,7 +67,7 @@ export class ApiService {
           ApiErrorType.TIMEOUT_ERROR,
           'TIMEOUT',
           { timeout: this.timeout },
-          true
+          true,
         );
       }
       throw error;
@@ -76,7 +76,7 @@ export class ApiService {
 
   async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<ApiResponse<T>> {
     const url = `${this.baseUrl}${endpoint}`;
     let lastError: Error | null = null;
@@ -102,7 +102,7 @@ export class ApiService {
                 ApiErrorType.VALIDATION_ERROR,
                 'BAD_REQUEST',
                 errorData,
-                false
+                false,
               );
             case 500:
             case 502:
@@ -113,7 +113,7 @@ export class ApiService {
                 ApiErrorType.SERVER_ERROR,
                 `HTTP_${response.status}`,
                 errorData,
-                true
+                true,
               );
             default:
               throw this.createApiError(
@@ -121,7 +121,7 @@ export class ApiService {
                 ApiErrorType.SERVER_ERROR,
                 `HTTP_${response.status}`,
                 errorData,
-                response.status >= 500
+                response.status >= 500,
               );
           }
         }

@@ -32,7 +32,7 @@ const BettingInterface = ({
   
   // Use display values for proper unit handling
   const displayValues = useDisplayValues({ 
-    formData: formData || { gameFormat, smallBlind: '1', bigBlind: '2' } 
+    formData: formData || { gameFormat, smallBlind: '1', bigBlind: '2' }, 
   });
   
   const getBetSizeLabel = () => {

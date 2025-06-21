@@ -19,7 +19,7 @@ const PotDisplay = ({
   getCurrencySymbol, 
   isFinal = false, 
   gameState, 
-  pokerActions 
+  pokerActions, 
 }: PotDisplayProps) => {
   const { potAmount } = useGameStateUI(gameState);
   

@@ -87,7 +87,7 @@ export const updatePotWithAction = (
   action: string, 
   amount: string, 
   currentBet: number = 0,
-  options: PotCalculationOptions = {}
+  options: PotCalculationOptions = {},
 ): number => {
   const currentPotInChips = calculatePotSize(formData, { returnInChips: true });
   const betAmount = parseFloat(amount) || 0;

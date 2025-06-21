@@ -16,7 +16,7 @@ const BetSizingButtons = ({
   onBetSizeSelect, 
   gameFormat,
   displayMode,
-  bigBlind = 2
+  bigBlind = 2,
 }: BetSizingButtonsProps) => {
   
   // Ensure we have valid numeric values
@@ -53,7 +53,9 @@ const BetSizingButtons = ({
   };
 
   const formatBetLabel = (chipAmount: number, label: string): string => {
-    if (label === 'All in') return label;
+    if (label === 'All in') {
+return label;
+}
     
     if (effectiveDisplayMode === 'chips') {
       return `${label} ($${chipAmount.toFixed(1)})`;

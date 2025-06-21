@@ -13,6 +13,7 @@ interface PlayerSeatDisplayProps {
 
 const PlayerSeatDisplay = ({ player, position, gameFormat, isToAct = false }: PlayerSeatDisplayProps) => {
   const isMobile = useIsMobile();
+  
 
   const getPositionLabel = (pos: string) => {
     const labels: { [key: string]: string } = {

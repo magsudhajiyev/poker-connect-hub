@@ -48,7 +48,7 @@ export const useActionManagement = (
   };
 
   const updateAction = (street: StreetType, index: number, action: ActionType, betAmount?: string) => {
-    console.log(`Updating action at index ${index} on ${street}:`, action, betAmount);
+    console.log(`🎯 useActionManagement.updateAction called at index ${index} on ${street}:`, action, betAmount);
     
     setFormData((prev: ShareHandFormData) => {
       const updatedActions = [...prev[street]];
@@ -121,7 +121,7 @@ export const useActionManagement = (
   };
 
   const handleBetSizeSelect = (street: StreetType, index: number, amount: string) => {
-    console.log(`Bet size selected: ${amount} for index ${index} on ${street}`);
+    console.log(`🎯 useActionManagement.handleBetSizeSelect called: ${amount} for index ${index} on ${street}`);
     
     // Validate amount is a valid number
     const numericAmount = parseFloat(amount);
@@ -148,24 +148,29 @@ export const useActionManagement = (
         completed: true,
       };
       
-      // Update player's current bet when bet amount is finalized
+      // Update player's stack size when bet amount is finalized
       let updatedPlayers = [...(prev.players || [])];
       if (currentAction.action && (currentAction.action === 'bet' || currentAction.action === 'raise' || currentAction.action === 'call')) {
         updatedPlayers = updatedPlayers.map(player => {
           if (player.id === currentAction.playerId) {
+            // Reduce stack size by the bet amount
+            const currentStack = player.stackSize[0] || 100;
+            const newStack = Math.max(0, currentStack - numericAmount);
+            
+            console.log(`Player ${player.name}: stack ${currentStack} - bet ${numericAmount} = ${newStack}`);
+            
             return {
               ...player,
-              currentBet: numericAmount,
+              stackSize: [newStack],
             };
           }
           return player;
         });
-        console.log(`Updated player ${currentAction.playerId} with finalized bet amount: ${numericAmount}`);
       }
       
       // Add next action step if this is a bet or raise and it doesn't already exist
       if (currentAction.action && shouldAddNextAction(currentAction.action)) {
-        const nextActionStep = createNextActionStep(currentAction, updatedPlayers);
+        const nextActionStep = createNextActionStep(currentAction, prev.players);
         
         // Check if next action already exists
         const nextActionExists = updatedActions.find((action, actionIndex) => 
@@ -178,7 +183,7 @@ export const useActionManagement = (
         }
       }
       
-      return { ...prev, [street]: updatedActions };
+      return { ...prev, [street]: updatedActions, players: updatedPlayers };
     });
   };
 

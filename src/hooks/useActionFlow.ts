@@ -5,11 +5,8 @@ import {
   StreetType,
   Position,
   getActionOrder,
-  streetToGameRound,
   DEFAULT_VALUES,
-  BETTING_CONSTRAINTS,
   VALIDATION_MESSAGES,
-  LOG_MESSAGES,
   GAME_STATE
 } from '@/constants';
 
@@ -29,7 +26,18 @@ interface ActionState {
   allInPlayers: Set<string>; // Track all-in players for this street
 }
 
-export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: number, street: string) => {
+export const useActionFlow = (
+  players: Player[], 
+  smallBlind: number, 
+  bigBlind: number, 
+  street: string, 
+  setFormData?: (updater: (prev: any) => any) => void,
+) => {
+  // Helper function to round stack sizes to avoid floating point precision issues
+  const roundStackSize = (amount: number): number => {
+    return Math.round(amount * 100) / 100;
+  };
+
   // Get action order for current street using constants
   const getStreetActionOrder = (street: string): readonly Position[] => {
     const isPreflop = street === StreetType.PREFLOP;
@@ -43,9 +51,9 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
     lastRaiserIndex: null, // Will be set in useEffect when players are ready
     actions: [],
     playerBets: new Map(),
-    street: street, // Track current street
+    street, // Track current street
     foldedPlayers: new Set(), // Track folded players
-    allInPlayers: new Set() // Track all-in players
+    allInPlayers: new Set(), // Track all-in players
   });
 
   // Get ordered players for current street (ALL players, including folded)
@@ -78,12 +86,6 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
       
       // Only reinitialize if it's the first time OR street has changed
       if (isFirstInitialization || isStreetChange) {
-        console.log(LOG_MESSAGES.ACTION_FLOW_RESET, {
-          reason: isFirstInitialization ? 'first-init' : 'street-change',
-          oldStreet: actionState.street,
-          newStreet: street
-        });
-        
         const initialBets = new Map();
         let initialPot = actionState.pot; // Carry over pot from previous street
         let initialCurrentBet = 0; // Reset current bet for new street
@@ -92,8 +94,12 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
         if (street === StreetType.PREFLOP) {
           const sbPlayer = orderedPlayers.find(p => p.position === Position.SMALL_BLIND);
           const bbPlayer = orderedPlayers.find(p => p.position === Position.BIG_BLIND);
-          if (sbPlayer) initialBets.set(sbPlayer.id, smallBlind);
-          if (bbPlayer) initialBets.set(bbPlayer.id, bigBlind);
+          if (sbPlayer) {
+            initialBets.set(sbPlayer.id, smallBlind);
+          }
+          if (bbPlayer) {
+            initialBets.set(bbPlayer.id, bigBlind);
+          }
           initialPot = smallBlind + bigBlind;
           initialCurrentBet = bigBlind;
         }
@@ -112,20 +118,10 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
           lastRaiserIndex: street === StreetType.PREFLOP ? bbIndex : null,
           actions: [],
           playerBets: initialBets,
-          street: street,
-          foldedPlayers: street === StreetType.PREFLOP ? new Set() : prev.foldedPlayers, // Preserve folded players across streets
-          allInPlayers: street === StreetType.PREFLOP ? new Set() : prev.allInPlayers // Preserve all-in players across streets
-        }));
-        
-        console.log(LOG_MESSAGES.ACTION_FLOW_INITIALIZED, {
           street,
-          firstPlayer: orderedPlayers[0]?.name,
-          position: orderedPlayers[0]?.position,
-          totalPlayers: orderedPlayers.length,
-          pot: initialPot,
-          currentBet: initialCurrentBet,
-          lastRaiserIndex: street === StreetType.PREFLOP ? bbIndex : null
-        });
+          foldedPlayers: street === StreetType.PREFLOP ? new Set() : prev.foldedPlayers, // Preserve folded players across streets
+          allInPlayers: street === StreetType.PREFLOP ? new Set() : prev.allInPlayers, // Preserve all-in players across streets
+        }));
       }
     }
   }, [orderedPlayers.length, street]);
@@ -135,31 +131,18 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
     const activePlayers = orderedPlayers.filter(p => !actionState.foldedPlayers.has(p.id));
     const activeNonAllInPlayers = activePlayers.filter(p => !actionState.allInPlayers.has(p.id));
     
-    console.log('🎰 Checking if all active players are all-in:', {
-      totalPlayers: orderedPlayers.length,
-      activePlayers: activePlayers.length,
-      activeNonAllInPlayers: activeNonAllInPlayers.length,
-      activePlayerNames: activePlayers.map(p => p.name),
-      allInPlayerNames: Array.from(actionState.allInPlayers),
-      foldedPlayerNames: Array.from(actionState.foldedPlayers),
-      currentStreet: actionState.street
-    });
-    
     // Case 1: No players can act (all folded or all-in) - hand is over
     if (activeNonAllInPlayers.length === 0) {
-      console.log('🏁 All active players are all-in - no action needed on this street');
       return true;
     }
     
     // Case 2: Only 1 active player remains (others folded) - hand is over  
     if (activePlayers.length === 1) {
-      console.log('🏁 Only one active player remains - no action needed');
       return true;
     }
     
     // Case 3: Multiple active players but all are all-in - no action needed for rest of hand
     if (activePlayers.length > 1 && activeNonAllInPlayers.length === 0) {
-      console.log('🏁 Multiple players active but all are all-in - no action needed for rest of hand');
       return true;
     }
     
@@ -170,17 +153,12 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
       const allOthersAllIn = otherActivePlayers.every(p => actionState.allInPlayers.has(p.id));
       
       if (allOthersAllIn) {
-        console.log('🏁 Big stack has chips but all other players are all-in - no action needed', {
-          bigStackPlayer: activeNonAllInPlayers[0].name,
-          allInPlayers: otherActivePlayers.map(p => p.name)
-        });
         return true;
       }
     }
     
     // Case 5: At least one player can still act AND there are others who can respond
     if (activeNonAllInPlayers.length > 0) {
-      console.log('🎯 Players still need to act:', activeNonAllInPlayers.map(p => p.name));
       return false;
     }
     
@@ -194,30 +172,16 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
     // Count players who can still act (non-folded, non-all-in)
     const playersWhoCanAct = orderedPlayers.filter(p => 
       !actionState.foldedPlayers.has(p.id) && 
-      !actionState.allInPlayers.has(p.id)
+      !actionState.allInPlayers.has(p.id),
     );
-    
-    console.log(LOG_MESSAGES.CHECKING_ROUND_COMPLETION, {
-      currentPlayerIndex: actionState.currentPlayerIndex,
-      lastRaiserIndex: actionState.lastRaiserIndex,
-      totalPlayers: orderedPlayers.length,
-      activePlayers: activePlayers.length,
-      playersWhoCanAct: playersWhoCanAct.length,
-      foldedPlayers: actionState.foldedPlayers.size,
-      allInPlayers: actionState.allInPlayers.size,
-      hasGoneAroundOnce: actionState.currentPlayerIndex >= orderedPlayers.length
-    });
     
     // If only one active player remains, round is complete
     if (activePlayers.length <= GAME_STATE.ROUND_COMPLETE_THRESHOLD) {
-      console.log('Round complete: only one active player remaining');
       return true;
     }
     
     // Special logic for all-in scenarios
     if (actionState.allInPlayers.size > 0) {
-      console.log('🎰 ALL-IN scenario detected - checking if round complete');
-      
       // Find when the first all-in occurred in this round
       const allInActionIndex = actionState.actions.findIndex(action => action.action === ActionType.ALL_IN);
       
@@ -241,19 +205,9 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
         return playerActionsAfterAllIn.length === 0;
       });
       
-      console.log('🎰 Players who need to respond to all-in:', {
-        allInActionIndex,
-        totalActions: actionState.actions.length,
-        playersNeedingResponse: playersWhoNeedToRespondToAllIn.map(p => p.name),
-        allActions: actionState.actions.map(a => `${a.playerId}: ${a.action}`)
-      });
-      
       if (playersWhoNeedToRespondToAllIn.length > 0) {
-        console.log('Round not complete: players still need to respond to all-in', 
-          playersWhoNeedToRespondToAllIn.map(p => p.name));
         return false;
       } else {
-        console.log('Round complete: all players responded to all-in');
         return true;
       }
     }
@@ -262,26 +216,22 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
     
     // If only one player can act and no all-ins, round is complete
     if (playersWhoCanAct.length <= GAME_STATE.ROUND_COMPLETE_THRESHOLD) {
-      console.log('Round complete: only one player can act (no all-ins)');
       return true;
     }
     
     // If we haven't gone around the table once yet, continue
     if (actionState.currentPlayerIndex < orderedPlayers.length) {
-      console.log('Round not complete: haven\'t gone around once');
       return false;
     }
     
     // If no one has raised (no lastRaiserIndex), round is complete after going around once
     if (actionState.lastRaiserIndex === null) {
-      console.log('Round complete: no raises, gone around once');
       return true;
     }
     
     // Round is complete when we get back to the last raiser (but only after going around at least once)
     const adjustedIndex = actionState.currentPlayerIndex % orderedPlayers.length;
     const isBackToRaiser = adjustedIndex === actionState.lastRaiserIndex;
-    console.log('Round complete check:', { isBackToRaiser, adjustedIndex, lastRaiserIndex: actionState.lastRaiserIndex });
     return isBackToRaiser;
   };
 
@@ -289,21 +239,12 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
   const getCurrentPlayer = (): Player | null => {
     // First check if all active players are all-in (no action needed)
     if (areAllActivePlayersAllIn()) {
-      console.log('🏁 All active players are all-in, no action needed');
       return null;
     }
     
     const roundComplete = isBettingRoundComplete();
-    console.log('🔍 getCurrentPlayer called:', {
-      roundComplete,
-      currentPlayerIndex: actionState.currentPlayerIndex,
-      foldedCount: actionState.foldedPlayers.size,
-      allInCount: actionState.allInPlayers.size,
-      totalPlayers: orderedPlayers.length
-    });
     
     if (roundComplete) {
-      console.log('🏁 Round marked as complete, returning null');
       return null; // Round complete
     }
     
@@ -315,23 +256,15 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
       const adjustedIndex = searchIndex % orderedPlayers.length;
       const player = orderedPlayers[adjustedIndex];
       
-      console.log(`🔎 Checking player at index ${adjustedIndex}:`, {
-        playerName: player?.name,
-        isFolded: player ? actionState.foldedPlayers.has(player.id) : 'no player',
-        isAllIn: player ? actionState.allInPlayers.has(player.id) : 'no player'
-      });
-      
       if (player && 
           !actionState.foldedPlayers.has(player.id) && 
           !actionState.allInPlayers.has(player.id)) {
-        console.log(`✅ Found next player: ${player.name} at index ${adjustedIndex}`);
         return player;
       }
       
       searchIndex++;
     }
     
-    console.log('❌ No active players found after search');
     // If no active players found, return null
     return null;
   };
@@ -349,7 +282,9 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
     }
 
     const player = players.find(p => p.id === playerId);
-    if (!player) return [];
+    if (!player) {
+      return [];
+    }
 
     const playerCurrentBet = actionState.playerBets.get(playerId) || 0;
     const amountToCall = Math.max(0, actionState.currentBet - playerCurrentBet);
@@ -360,18 +295,6 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
     // Calculate player's remaining stack
     const playerStackSize = player.stackSize?.[0] || DEFAULT_VALUES.STACK_SIZE;
     const remainingStack = playerStackSize - playerCurrentBet;
-    
-    console.log(`🎯 ACTION CALCULATION for ${player.name} (${player.position}):`, {
-      currentBet: actionState.currentBet,
-      playerCurrentBet,
-      amountToCall,
-      playerStackSize,
-      remainingStack,
-      street: actionState.street,
-      actionsThisRound: actionState.actions.length,
-      hasAllInThisRound,
-      allInPlayersCount: actionState.allInPlayers.size
-    });
     
     const actions: ActionType[] = [ActionType.FOLD];
     
@@ -411,12 +334,6 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
       actions.push(ActionType.ALL_IN);
     }
     
-    console.log(`✅ Available actions for ${player.name} (${player.position}):`, {
-      actions,
-      reasoning: hasAllInThisRound ? 'all-in-restricts-raises' : (actionState.currentBet === 0 ? 'no-active-bet' : (amountToCall > 0 ? 'money-owed' : 'already-matched')),
-      stackConstraints: { remainingStack, amountToCall }
-    });
-    
     return actions;
   };
 
@@ -424,23 +341,11 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
   const executeAction = (playerId: string, action: ActionType, amount?: number): boolean => {
     const currentPlayer = getCurrentPlayer();
     if (!currentPlayer || currentPlayer.id !== playerId) {
-      console.log('Not this player\'s turn:', { expected: currentPlayer?.id, actual: playerId });
       return false;
     }
 
     const playerCurrentBet = actionState.playerBets.get(playerId) || 0;
     const amountToCall = Math.max(0, actionState.currentBet - playerCurrentBet);
-    
-    console.log(LOG_MESSAGES.EXECUTING_ACTION, {
-      player: currentPlayer.name,
-      position: currentPlayer.position,
-      action,
-      amount,
-      currentPot: actionState.pot,
-      currentBet: actionState.currentBet,
-      playerCurrentBet,
-      amountToCall
-    });
 
     let newPot = actionState.pot;
     let newCurrentBet = actionState.currentBet;
@@ -450,19 +355,16 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
     switch (action) {
       case ActionType.FOLD:
         // Player will be added to folded players in the main state update below
-        console.log(`${currentPlayer.name} ${LOG_MESSAGES.PLAYER_FOLDED}`);
         break;
         
       case ActionType.CHECK:
         if (amountToCall > 0) {
-          console.log(VALIDATION_MESSAGES.CANNOT_CHECK_WITH_BET);
           return false;
         }
         break;
         
       case ActionType.CALL:
         if (amountToCall === 0) {
-          console.log(VALIDATION_MESSAGES.CANNOT_CALL_WITHOUT_BET);
           return false;
         }
         
@@ -471,60 +373,79 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
         const remainingStack = playerStackSize - playerCurrentBet;
         
         if (remainingStack < amountToCall) {
-          console.log(`❌ CALL FAILED: Insufficient stack. Need ${amountToCall}, have ${remainingStack}`);
           return false;
         }
         
         newPot += amountToCall;
         newPlayerBets.set(playerId, playerCurrentBet + amountToCall);
+        
+        // Update player stack in formData
+        if (setFormData) {
+          const newStackSize = roundStackSize(Math.max(0, playerStackSize - amountToCall));
+          setFormData(prev => ({
+            ...prev,
+            players: prev.players.map(p => 
+              p.id === playerId 
+                ? { ...p, stackSize: [newStackSize, p.stackSize[1]] }
+                : p,
+            ),
+          }));
+        }
         break;
         
       case ActionType.BET:
         if (actionState.currentBet > 0) {
-          console.log(VALIDATION_MESSAGES.CANNOT_BET_WITH_EXISTING_BET);
           return false;
         }
         if (!amount || amount <= 0) {
-          console.log(VALIDATION_MESSAGES.INVALID_BET_AMOUNT);
           return false;
         }
         newPot += amount;
         newCurrentBet = amount;
         newPlayerBets.set(playerId, amount);
         newLastRaiserIndex = actionState.currentPlayerIndex % orderedPlayers.length;
+        
+        // Update player stack in formData
+        if (setFormData) {
+          const playerStackSize = currentPlayer.stackSize?.[0] || DEFAULT_VALUES.STACK_SIZE;
+          const newStackSize = roundStackSize(Math.max(0, playerStackSize - amount));
+          setFormData(prev => ({
+            ...prev,
+            players: prev.players.map(p => 
+              p.id === playerId 
+                ? { ...p, stackSize: [newStackSize, p.stackSize[1]] }
+                : p,
+            ),
+          }));
+        }
         break;
         
       case ActionType.RAISE:
-        console.log(LOG_MESSAGES.RAISE_VALIDATION, {
-          currentBet: actionState.currentBet,
-          amount,
-          amountType: typeof amount,
-          isValidAmount: amount && amount > 0
-        });
         if (actionState.currentBet === 0) {
-          console.log(`❌ RAISE FAILED: ${VALIDATION_MESSAGES.CANNOT_RAISE_WITHOUT_BET}`);
           return false;
         }
         if (!amount || amount <= 0) {
-          console.log(`❌ RAISE FAILED: ${VALIDATION_MESSAGES.INVALID_RAISE_AMOUNT}`);
           return false;
         }
-        const totalRaiseAmount = amountToCall + amount;
+        const totalRaiseAmount = amount; // Fix: amount is the total bet, not additional raise
         newPot += totalRaiseAmount;
-        newCurrentBet = actionState.currentBet + amount; // Fix: new bet should be current bet + raise amount
+        newCurrentBet = amount; // Fix: new bet should be the total amount
         newPlayerBets.set(playerId, playerCurrentBet + totalRaiseAmount);
         newLastRaiserIndex = actionState.currentPlayerIndex % orderedPlayers.length;
         
-        console.log(LOG_MESSAGES.RAISE_EXECUTED, {
-          player: currentPlayer.name,
-          position: currentPlayer.position,
-          amountToCall,
-          raiseAmount: amount,
-          totalRaiseAmount,
-          newCurrentBet,
-          newLastRaiserIndex,
-          currentPlayerIndex: actionState.currentPlayerIndex
-        });
+        // Update player stack in formData
+        if (setFormData) {
+          const playerStackSize = currentPlayer.stackSize?.[0] || DEFAULT_VALUES.STACK_SIZE;
+          const newStackSize = roundStackSize(Math.max(0, playerStackSize - totalRaiseAmount));
+          setFormData(prev => ({
+            ...prev,
+            players: prev.players.map(p => 
+              p.id === playerId 
+                ? { ...p, stackSize: [newStackSize, p.stackSize[1]] }
+                : p,
+            ),
+          }));
+        }
         break;
         
       case ActionType.ALL_IN:
@@ -533,7 +454,6 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
         const allInAmount = allInPlayerStackSize - playerCurrentBet;
         
         if (allInAmount <= 0) {
-          console.log(`❌ ALL-IN FAILED: Player has no remaining stack`);
           return false;
         }
         
@@ -543,16 +463,21 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
           newLastRaiserIndex = actionState.currentPlayerIndex % orderedPlayers.length;
         }
         newPlayerBets.set(playerId, playerCurrentBet + allInAmount);
-        console.log(`${currentPlayer.name} went all-in for ${allInAmount}`, {
-          playerStackSize: allInPlayerStackSize,
-          playerCurrentBet,
-          allInAmount,
-          newCurrentBet
-        });
+        
+        // Update player stack in formData (set to 0 since they went all-in)
+        if (setFormData) {
+          setFormData(prev => ({
+            ...prev,
+            players: prev.players.map(p => 
+              p.id === playerId 
+                ? { ...p, stackSize: [0, p.stackSize[1]] }
+                : p,
+            ),
+          }));
+        }
         break;
         
       default:
-        console.log(VALIDATION_MESSAGES.INVALID_ACTION, action);
         return false;
     }
 
@@ -560,7 +485,7 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
     const newAction = {
       playerId,
       action,
-      amount: amount || 0
+      amount: amount || 0,
     };
 
     // Advance to next player
@@ -577,7 +502,7 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
         ? new Set([...prev.allInPlayers, playerId])
         : prev.allInPlayers;
         
-      const newState = {
+      return {
         currentPlayerIndex: nextPlayerIndex,
         pot: newPot,
         currentBet: newCurrentBet,
@@ -586,53 +511,9 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
         playerBets: newPlayerBets,
         street: prev.street, // Keep current street
         foldedPlayers: newFoldedPlayers, // Update folded players
-        allInPlayers: newAllInPlayers // Update all-in players
+        allInPlayers: newAllInPlayers, // Update all-in players
       };
-      
-      console.log(`🎲 ${LOG_MESSAGES.STATE_UPDATE} for ${action}:`, {
-        action,
-        player: currentPlayer.name,
-        position: currentPlayer.position,
-        from: prev.currentPlayerIndex,
-        to: nextPlayerIndex,
-        pot: newPot,
-        currentBet: newCurrentBet,
-        lastRaiserIndex: newLastRaiserIndex,
-        foldedPlayersCount: prev.foldedPlayers.size
-      });
-      
-      // Add a small delay for debugging to ensure state is visible
-      setTimeout(() => {
-        console.log(`🎯 POST-UPDATE: Current player should now be index ${nextPlayerIndex}`);
-        const nextPlayer = orderedPlayers[nextPlayerIndex % orderedPlayers.length];
-        if (nextPlayer) {
-          console.log(`🎯 Next player should be: ${nextPlayer.name} (${nextPlayer.position})`);
-        }
-      }, 50);
-      
-      return newState;
     });
-
-    // Log the advancement (calculate next player before state update)
-    const nextAdjustedIndex = nextPlayerIndex % orderedPlayers.length;
-    const nextPlayer = orderedPlayers[nextAdjustedIndex];
-    
-    // Check if round will be complete after this advancement
-    const willBeComplete = nextPlayerIndex >= orderedPlayers.length && 
-                          (newLastRaiserIndex === null || nextAdjustedIndex === newLastRaiserIndex);
-    
-    if (nextPlayer && !willBeComplete) {
-      console.log(LOG_MESSAGES.NEXT_PLAYER, {
-        name: nextPlayer.name,
-        position: nextPlayer.position,
-        id: nextPlayer.id,
-        nextPlayerIndex,
-        adjustedIndex: nextAdjustedIndex,
-        lastRaiserIndex: newLastRaiserIndex
-      });
-    } else {
-      console.log(LOG_MESSAGES.ROUND_COMPLETE);
-    }
 
     return true;
   };
@@ -647,6 +528,6 @@ export const useActionFlow = (players: Player[], smallBlind: number, bigBlind: n
     isRoundComplete: isBettingRoundComplete(),
     areAllActivePlayersAllIn: areAllActivePlayersAllIn(),
     currentBet: actionState.currentBet,
-    playerBets: actionState.playerBets
+    playerBets: actionState.playerBets,
   };
 };

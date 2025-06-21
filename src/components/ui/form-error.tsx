@@ -15,7 +15,9 @@ const FormError: React.FC<FormErrorProps> = ({
   variant = 'destructive',
   showIcon = true,
 }) => {
-  if (!message) return null;
+  if (!message) {
+return null;
+}
 
   const variants = {
     default: 'text-yellow-500 border-yellow-500/20 bg-yellow-500/10',
@@ -27,7 +29,7 @@ const FormError: React.FC<FormErrorProps> = ({
       className={cn(
         'flex items-center gap-2 p-3 text-sm border rounded-md',
         variants[variant],
-        className
+        className,
       )}
     >
       {showIcon && (

@@ -14,7 +14,7 @@ export class ApiErrorHandler {
   static handleError(error: unknown, context?: string): ApiError {
     console.error(`API Error${context ? ` in ${context}` : ''}:`, error);
 
-    let apiError: ApiError = {
+    const apiError: ApiError = {
       message: 'An unexpected error occurred',
     };
 
@@ -118,7 +118,7 @@ export class ApiErrorHandler {
   static createRetryableHandler(
     operation: () => Promise<void>,
     maxRetries: number = 3,
-    context?: string
+    context?: string,
   ) {
     return async (): Promise<boolean> => {
       let lastError: ApiError | null = null;
@@ -183,7 +183,7 @@ export class ApiErrorHandler {
   static async fetchWithErrorHandling(
     url: string,
     options?: RequestInit,
-    timeout: number = 10000
+    timeout: number = 10000,
   ): Promise<Response> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);

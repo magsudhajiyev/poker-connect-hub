@@ -6,7 +6,7 @@ import {
   LegalActionsResponse, 
   ValidationResult, 
   ApiResponse,
-  UnifiedPlayer 
+  UnifiedPlayer, 
 } from '@/types/unified';
 import { convertToBackendGameState, convertFromBackendResponse } from './converters';
 
@@ -31,7 +31,7 @@ export class PokerApiService {
    */
   async getLegalActions(
     gameState: UnifiedGameState,
-    playerId?: string
+    playerId?: string,
   ): Promise<ApiResponse<LegalActionsResponse>> {
     try {
       // Convert unified game state to backend format
@@ -44,7 +44,7 @@ export class PokerApiService {
 
       const response = await apiService.post<any>(
         this.ENDPOINTS.LEGAL_ACTIONS,
-        request
+        request,
       );
 
       if (response.success && response.data) {
@@ -73,7 +73,7 @@ export class PokerApiService {
    * Validate a game state
    */
   async validateGameState(
-    gameState: UnifiedGameState
+    gameState: UnifiedGameState,
   ): Promise<ApiResponse<ValidationResult>> {
     try {
       const backendGameState = convertToBackendGameState(gameState);
@@ -86,7 +86,7 @@ export class PokerApiService {
       // since the backend doesn't have a separate validation endpoint
       const response = await apiService.post<any>(
         this.ENDPOINTS.LEGAL_ACTIONS,
-        request
+        request,
       );
 
       if (response.success) {
@@ -123,14 +123,14 @@ export class PokerApiService {
    * Get next game state (for AI-driven game progression)
    */
   async getNextGameState(
-    gameState: UnifiedGameState
+    gameState: UnifiedGameState,
   ): Promise<ApiResponse<UnifiedGameState>> {
     try {
       const backendGameState = convertToBackendGameState(gameState);
       
       const response = await apiService.post<any>(
         this.ENDPOINTS.NEXT_STATE,
-        { gameState: backendGameState }
+        { gameState: backendGameState },
       );
 
       if (response.success && response.data) {
@@ -162,7 +162,7 @@ export class PokerApiService {
     gameState: UnifiedGameState,
     playerId: string,
     action: string,
-    amount?: number
+    amount?: number,
   ): Promise<ApiResponse<boolean>> {
     const legalActionsResponse = await this.getLegalActions(gameState, playerId);
     
@@ -178,8 +178,12 @@ export class PokerApiService {
 
     const legalActions = legalActionsResponse.data.legalActions;
     const isValid = legalActions.some(legalAction => {
-      if (legalAction.type !== action) return false;
-      if (amount !== undefined && legalAction.amount !== amount) return false;
+      if (legalAction.type !== action) {
+return false;
+}
+      if (amount !== undefined && legalAction.amount !== amount) {
+return false;
+}
       return true;
     });
 
@@ -196,7 +200,7 @@ export class PokerApiService {
     players: UnifiedPlayer[],
     smallBlind: number,
     bigBlind: number,
-    gameId: string = `game_${Date.now()}`
+    gameId: string = `game_${Date.now()}`,
   ): UnifiedGameState {
     // Find dealer position (default to position 0)
     const dealerPosition = 0;
