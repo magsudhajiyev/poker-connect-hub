@@ -11,7 +11,9 @@ const CommunityCards = ({ cards }: CommunityCardsProps) => {
   }
 
   const renderCard = (card: string, index: number) => {
-    if (!card) return null;
+    if (!card) {
+return null;
+}
 
     const suit = card.slice(-1).toLowerCase();
     const rank = card.slice(0, -1);
@@ -20,7 +22,7 @@ const CommunityCards = ({ cards }: CommunityCardsProps) => {
       'h': '♥',
       'd': '♦',
       'c': '♣',
-      's': '♠'
+      's': '♠',
     };
 
     const isRed = suit === 'h' || suit === 'd';

@@ -50,7 +50,7 @@ class SharedHandsStore {
         turnDescription: 'Turn brought a possible straight draw',
         riverActions: [],
         riverDescription: 'River completed possible straight, facing large bet',
-        ante: false
+        ante: false,
       },
       tags: ['Top Pair', 'River Decision', 'Value Bet', 'Bluff Catcher'],
       authorName: 'Sarah Chen',
@@ -65,24 +65,24 @@ class SharedHandsStore {
           author: 'Mike Johnson',
           content: 'I think this is a clear fold. The sizing screams value and tight players don\'t usually bluff river.',
           createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
-          avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg'
+          avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg',
         },
         {
           id: '2',
           author: 'Emma Davis',
           content: 'What was the bet sizing exactly? If it\'s pot or overbet I agree with folding, but if it\'s like 40-60% pot I might call.',
           createdAt: new Date(Date.now() - 45 * 60 * 1000),
-          avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg'
+          avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg',
         },
         {
           id: '3',
           author: 'Alex Rivera',
           content: 'Tough spot! I\'d need more info about villain\'s tendencies. Has he shown any bluffs before?',
           createdAt: new Date(Date.now() - 30 * 60 * 1000),
-          avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg'
-        }
-      ]
-    }
+          avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg',
+        },
+      ],
+    },
   ];
   private listeners: (() => void)[] = [];
 
@@ -98,7 +98,7 @@ class SharedHandsStore {
       createdAt: new Date(),
       likes: 0,
       comments: 0,
-      dummyComments: []
+      dummyComments: [],
     };
     
     this.hands.unshift(newHand); // Add to beginning

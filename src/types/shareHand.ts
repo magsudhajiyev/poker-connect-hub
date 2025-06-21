@@ -8,13 +8,17 @@ export interface ActionStep {
   position?: string;
 }
 
+// Legacy Player interface - use UnifiedPlayer for new code
 export interface Player {
   id: string;
   name: string;
   position: string;
-  stackSize: number[];
+  stackSize: number[]; // Legacy: use chips in UnifiedPlayer
   isHero?: boolean;
 }
+
+// Re-export unified types for consistency
+export type { UnifiedPlayer, Card, UnifiedGameState } from './unified';
 
 export interface ShareHandFormData {
   gameType: string;

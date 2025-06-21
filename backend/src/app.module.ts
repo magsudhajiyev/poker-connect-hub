@@ -8,7 +8,7 @@ import { PokerModule } from './poker/poker.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    PokerModule
+    PokerModule,
   ],
   controllers: [],
   providers: [],

@@ -6,7 +6,7 @@ const StatsSection = () => {
     { number: '10,000+', label: 'Active Players' },
     { number: '150K+', label: 'Hands Shared' },
     { number: '50K+', label: 'Comments & Feedback' },
-    { number: '95%', label: 'User Satisfaction' }
+    { number: '95%', label: 'User Satisfaction' },
   ];
 
   return (

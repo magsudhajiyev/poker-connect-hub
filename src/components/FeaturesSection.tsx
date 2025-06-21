@@ -1,44 +1,44 @@
 
 import { Card } from '@/components/ui/card';
-import { ArrowRight, BarChart3, Share2, Users, TrendingUp, Smartphone } from 'lucide-react';
+import { BarChart3, Share2, Users, TrendingUp, Smartphone } from 'lucide-react';
 
 const features = [
   {
     icon: Share2,
     title: 'Hand Sharing',
     description: 'Share your most interesting hands with the community. Get feedback, analysis, and insights from players of all levels.',
-    color: 'text-emerald-500'
+    color: 'text-emerald-500',
   },
   {
     icon: BarChart3,
     title: 'Stats Tracking',
     description: 'Import your hand histories and track your performance over time. Identify leaks and see your progress with intuitive visualizations.',
-    color: 'text-blue-500'
+    color: 'text-blue-500',
   },
   {
     icon: Users,
     title: 'Community Feedback',
     description: 'Get instant feedback on your plays from the community. Learn from others\' experiences and improve your decision-making.',
-    color: 'text-violet-500'
+    color: 'text-violet-500',
   },
   {
     icon: TrendingUp,
     title: 'Trending Hands',
     description: 'Discover the most discussed and interesting hands from the community. Learn from edge cases and unusual situations.',
-    color: 'text-pink-500'
+    color: 'text-pink-500',
   },
   {
     icon: Users,
     title: 'Follow Players',
     description: 'Connect with like-minded players. Follow experts and friends to see their shared hands and learn from their approach.',
-    color: 'text-emerald-500'
+    color: 'text-emerald-500',
   },
   {
     icon: Smartphone,
     title: 'Mobile Access',
     description: 'Access your stats and the community from anywhere. Share hands and get feedback right from the poker table.',
-    color: 'text-blue-500'
-  }
+    color: 'text-blue-500',
+  },
 ];
 
 const FeaturesSection = () => {

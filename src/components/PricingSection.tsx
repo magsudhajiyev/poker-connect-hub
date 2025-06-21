@@ -17,9 +17,9 @@ const PricingSection = () => {
         'Basic hand analysis',
         'Community access',
         'Limited hand sharing',
-        'Basic statistics'
+        'Basic statistics',
       ],
-      popular: false
+      popular: false,
     },
     {
       name: 'Standard',
@@ -31,9 +31,9 @@ const PricingSection = () => {
         'Unlimited hand sharing',
         'Detailed statistics',
         'Priority support',
-        'Export capabilities'
+        'Export capabilities',
       ],
-      popular: true
+      popular: true,
     },
     {
       name: 'Pro',
@@ -46,10 +46,10 @@ const PricingSection = () => {
         'Custom analytics',
         'Private coaching sessions',
         'Tournament tracking',
-        'White-label options'
+        'White-label options',
       ],
-      popular: false
-    }
+      popular: false,
+    },
   ];
 
   return (

@@ -24,7 +24,7 @@ const BettingInterface = ({
   stackSize,
   gameFormat = 'cash',
   onBetSizeButtonSelect,
-  onBetSubmit
+  onBetSubmit,
 }: BettingInterfaceProps) => {
   const getBetSizeLabel = () => {
     return gameFormat === 'cash' ? 'Bet Size ($)' : 'Bet Size (BB)';

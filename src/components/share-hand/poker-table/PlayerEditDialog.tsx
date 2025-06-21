@@ -26,7 +26,7 @@ const PlayerEditDialog = ({
   gameFormat,
   hasHero,
   onSave,
-  onRemove
+  onRemove,
 }: PlayerEditDialogProps) => {
   const [playerName, setPlayerName] = useState(player?.name || '');
   const [stackSize, setStackSize] = useState(player?.stackSize[0]?.toString() || '100');
@@ -42,20 +42,22 @@ const PlayerEditDialog = ({
       'co': 'CO',
       'btn': 'BTN',
       'sb': 'SB',
-      'bb': 'BB'
+      'bb': 'BB',
     };
     return labels[pos] || pos.toUpperCase();
   };
 
   const handleSave = () => {
-    if (!playerName.trim()) return;
+    if (!playerName.trim()) {
+return;
+}
     
     const newPlayer: Player = {
       id: player?.id || `player_${position}_${Date.now()}`,
       name: playerName,
-      position: position,
+      position,
       stackSize: [parseInt(stackSize) || 100],
-      isHero: isHero
+      isHero,
     };
     
     onSave(newPlayer);

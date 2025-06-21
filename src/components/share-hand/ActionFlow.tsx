@@ -29,7 +29,7 @@ const ActionFlow = ({
   updateAction, 
   getActionButtonClass, 
   handleBetSizeSelect,
-  gameState 
+  gameState, 
 }: ActionFlowProps) => {
   const actions = formData[street];
   const potSize = calculatePotSize();
@@ -68,7 +68,7 @@ const ActionFlow = ({
           gameState,
           actionStep.position,
           action,
-          amount
+          amount,
         );
         
         // Update the game state in the UI hook

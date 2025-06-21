@@ -7,22 +7,22 @@ const testimonials = [
     role: 'Tournament Player',
     avatar: 'SC',
     content: 'PokerConnect has revolutionized how I analyze my game. The community feedback is invaluable for improving my tournament strategy.',
-    gradient: 'from-emerald-500 to-blue-500'
+    gradient: 'from-emerald-500 to-blue-500',
   },
   {
     name: 'Mike Rodriguez',
     role: 'Cash Game Specialist',
     avatar: 'MR',
     content: 'I love being able to share interesting spots and get multiple perspectives. It\'s like having a poker study group available 24/7.',
-    gradient: 'from-blue-500 to-violet-500'
+    gradient: 'from-blue-500 to-violet-500',
   },
   {
     name: 'Alex Thompson',
     role: 'Professional Player',
     avatar: 'AT',
     content: 'The stats tracking feature helped me identify several leaks in my game. My win rate has improved significantly since joining.',
-    gradient: 'from-violet-500 to-pink-500'
-  }
+    gradient: 'from-violet-500 to-pink-500',
+  },
 ];
 
 const TestimonialsSection = () => {

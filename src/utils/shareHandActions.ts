@@ -1,6 +1,6 @@
 import { ActionStep, StreetType, ShareHandFormData, Player } from '@/types/shareHand';
 import { positionOrder } from './shareHandConstants';
-import { createGameState, updateGameState, GameState } from './gameState';
+import { createGameState, updateGameState, GameState, ActionHistoryEntry } from './gameState';
 import { standardizePosition, getActionOrder } from './positionMapping';
 import { ActionType } from '@/constants';
 
@@ -8,9 +8,11 @@ export const initializeActions = (
   street: StreetType,
   heroPosition: string,
   villainPosition: string,
-  players?: Player[]
+  players?: Player[],
 ): ActionStep[] => {
-  if (!heroPosition || !villainPosition) return [];
+  if (!heroPosition || !villainPosition) {
+return [];
+}
   
   // If we have players data, use it to create action order for all players
   if (players && players.length > 0) {
@@ -34,7 +36,7 @@ export const initializeActions = (
           playerName: player.name,
           isHero: player.isHero || false,
           completed: false,
-          position: player.position
+          position: player.position,
         });
       }
     }
@@ -56,14 +58,14 @@ export const initializeActions = (
       playerName: 'Hero',
       isHero: true,
       completed: false,
-      position: heroPosition
+      position: heroPosition,
     });
     actionOrder.push({
       playerId: 'villain',
       playerName: 'Villain',
       isHero: false,
       completed: false,
-      position: villainPosition
+      position: villainPosition,
     });
   } else {
     // Villain is in earlier position, acts first
@@ -72,23 +74,23 @@ export const initializeActions = (
       playerName: 'Villain',
       isHero: false,
       completed: false,
-      position: villainPosition
+      position: villainPosition,
     });
     actionOrder.push({
       playerId: 'hero',
       playerName: 'Hero',
       isHero: true,
       completed: false,
-      position: heroPosition
+      position: heroPosition,
     });
   }
   
   return actionOrder;
 };
 
-function hasRaiseInRound(actionHistory: any[], round: string): boolean {
+function hasRaiseInRound(actionHistory: ActionHistoryEntry[], round: string): boolean {
   return actionHistory.some(action => 
-    action.round === round && action.action === 'raise'
+    action.round === round && action.action === 'raise',
   );
 }
 
@@ -183,13 +185,13 @@ function advanceToNextRound(gameState: GameState): void {
     console.log('Advanced to new round:', {
       round: gameState.round,
       activePositions,
-      newActionOrder: gameState.actionOrder
+      newActionOrder: gameState.actionOrder,
     });
   }
   
   // Set first active player as current
   const firstActive = stillActive.find(p => 
-    gameState.actionOrder.includes(p.position)
+    gameState.actionOrder.includes(p.position),
   );
   if (firstActive) {
     gameState.currentPosition = firstActive.position;
@@ -200,7 +202,7 @@ export const processAction = (
   gameState: GameState, 
   playerPosition: string, 
   action: string, 
-  amount: number = 0
+  amount: number = 0,
 ): GameState => {
   // Clone game state to avoid mutation
   const newState = JSON.parse(JSON.stringify(gameState));
@@ -209,13 +211,13 @@ export const processAction = (
   newState.actionHistory.push({
     round: newState.round,
     player: playerPosition,
-    action: action,
-    amount: amount
+    action,
+    amount,
   });
   
   console.log(`Processing action: ${playerPosition} ${action} ${amount}`, {
     currentRound: newState.round,
-    activePlayers: newState.activePlayers.filter(p => p.isActive).map(p => p.position)
+    activePlayers: newState.activePlayers.filter(p => p.isActive).map(p => p.position),
   });
   
   // Update game state based on action
@@ -223,7 +225,7 @@ export const processAction = (
     case 'fold':
       // Mark player as inactive
       newState.activePlayers = newState.activePlayers.map(p => 
-        p.position === playerPosition ? { ...p, isActive: false } : p
+        p.position === playerPosition ? { ...p, isActive: false } : p,
       );
       console.log(`${playerPosition} folded. Remaining active players:`, 
         newState.activePlayers.filter(p => p.isActive).map(p => p.position));
@@ -232,7 +234,7 @@ export const processAction = (
     case 'check':
       // Mark player as having acted
       newState.activePlayers = newState.activePlayers.map(p => 
-        p.position === playerPosition ? { ...p, hasActedAfterRaise: true } : p
+        p.position === playerPosition ? { ...p, hasActedAfterRaise: true } : p,
       );
       break;
       
@@ -240,7 +242,7 @@ export const processAction = (
       // Add call amount to pot and mark as acted
       newState.pot += amount;
       newState.activePlayers = newState.activePlayers.map(p => 
-        p.position === playerPosition ? { ...p, hasActedAfterRaise: true } : p
+        p.position === playerPosition ? { ...p, hasActedAfterRaise: true } : p,
       );
       break;
       
@@ -256,7 +258,7 @@ export const processAction = (
       // Reset action status for all players, set current player as acted
       newState.activePlayers = newState.activePlayers.map(player => ({
         ...player,
-        hasActedAfterRaise: player.position === playerPosition
+        hasActedAfterRaise: player.position === playerPosition,
       }));
       break;
   }
@@ -288,7 +290,7 @@ export const processAction = (
 
 export const removeFoldedPlayerFromFutureStreets = (
   formData: ShareHandFormData,
-  foldedPlayerId: string
+  foldedPlayerId: string,
 ): ShareHandFormData => {
   console.log(`Removing folded player ${foldedPlayerId} from future streets`);
   
@@ -296,7 +298,7 @@ export const removeFoldedPlayerFromFutureStreets = (
     ...formData,
     flopActions: formData.flopActions.filter(action => action.playerId !== foldedPlayerId),
     turnActions: formData.turnActions.filter(action => action.playerId !== foldedPlayerId),
-    riverActions: formData.riverActions.filter(action => action.playerId !== foldedPlayerId)
+    riverActions: formData.riverActions.filter(action => action.playerId !== foldedPlayerId),
   };
 };
 
@@ -311,7 +313,9 @@ export const createGameStateFromFormData = (formData: ShareHandFormData, street:
 export const getAvailableActions = (street: string, actionIndex: number, allActions: ActionStep[]): string[] => {
   // Get the current action step to determine player position
   const currentAction = allActions[actionIndex];
-  if (!currentAction) return [];
+  if (!currentAction) {
+return [];
+}
   
   const position = standardizePosition(currentAction.position || '');
   const round = street.replace('Actions', '');
@@ -346,7 +350,7 @@ export const getAvailableActions = (street: string, actionIndex: number, allActi
   const actionHistory = previousActions.map(action => ({
     round,
     action: action.action,
-    player: action.playerName
+    player: action.playerName,
   }));
   
   // Determine available actions
@@ -382,7 +386,7 @@ export const getAvailableActions = (street: string, actionIndex: number, allActi
 };
 
 export const getActionButtonClass = (action: string, isSelected: boolean): string => {
-  const baseClass = "transition-colors";
+  const baseClass = 'transition-colors';
   if (isSelected) {
     return `${baseClass} bg-emerald-500 text-slate-900`;
   }
@@ -401,7 +405,7 @@ export const createNextActionStep = (currentAction: ActionStep, players?: Player
       playerName: nextPlayer.name,
       isHero: nextPlayer.isHero || false,
       completed: false,
-      position: nextPlayer.position
+      position: nextPlayer.position,
     };
   }
   
@@ -414,7 +418,7 @@ export const createNextActionStep = (currentAction: ActionStep, players?: Player
     playerName: nextPlayerName,
     isHero: !currentAction.isHero,
     completed: false,
-    position: currentAction.position // This will be wrong for legacy, but we prioritize players array
+    position: currentAction.position, // This will be wrong for legacy, but we prioritize players array
   };
 };
 

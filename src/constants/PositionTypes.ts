@@ -27,7 +27,7 @@ export const PREFLOP_ACTION_ORDER = [
   Position.CUTOFF,
   Position.BUTTON,
   Position.SMALL_BLIND,
-  Position.BIG_BLIND
+  Position.BIG_BLIND,
 ] as const;
 
 /**
@@ -43,7 +43,7 @@ export const POSTFLOP_ACTION_ORDER = [
   Position.LOJACK,
   Position.HIJACK,
   Position.CUTOFF,
-  Position.BUTTON
+  Position.BUTTON,
 ] as const;
 
 /**
@@ -58,7 +58,7 @@ export const ALL_POSITIONS = [
   Position.CUTOFF,
   Position.BUTTON,
   Position.SMALL_BLIND,
-  Position.BIG_BLIND
+  Position.BIG_BLIND,
 ] as const;
 
 /**
@@ -66,7 +66,7 @@ export const ALL_POSITIONS = [
  */
 export const BLIND_POSITIONS = [
   Position.SMALL_BLIND,
-  Position.BIG_BLIND
+  Position.BIG_BLIND,
 ] as const;
 
 /**
@@ -95,5 +95,5 @@ export const POSITION_NAMES: Record<Position, string> = {
   [Position.CUTOFF]: 'CO',
   [Position.BUTTON]: 'BTN',
   [Position.SMALL_BLIND]: 'SB',
-  [Position.BIG_BLIND]: 'BB'
+  [Position.BIG_BLIND]: 'BB',
 };

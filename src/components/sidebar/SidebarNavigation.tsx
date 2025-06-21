@@ -1,6 +1,6 @@
 
 import { 
-  Rss, Flame, Share2, User, Users, HelpCircle
+  Rss, Flame, Share2, User, Users, HelpCircle,
 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSidebar } from './SidebarContext';
@@ -11,9 +11,15 @@ export const SidebarNavigation = () => {
   const navigate = useNavigate();
 
   const isActive = (path: string) => {
-    if (path === '/feed' && location.pathname === '/feed') return true;
-    if (path === '/profile' && location.pathname === '/profile') return true;
-    if (path === '/share-hand' && location.pathname === '/share-hand') return true;
+    if (path === '/feed' && location.pathname === '/feed') {
+return true;
+}
+    if (path === '/profile' && location.pathname === '/profile') {
+return true;
+}
+    if (path === '/share-hand' && location.pathname === '/share-hand') {
+return true;
+}
     return false;
   };
 

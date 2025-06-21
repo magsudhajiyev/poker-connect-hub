@@ -8,7 +8,7 @@ interface BetSizingButtonsProps {
   gameFormat: string;
 }
 
-const BetSizingButtons = ({ potSize, stackSize, onBetSizeSelect, gameFormat }: BetSizingButtonsProps) => {
+const BetSizingButtons = ({ potSize, stackSize, onBetSizeSelect, gameFormat: _gameFormat }: BetSizingButtonsProps) => {
   const calculateBetSize = (percentage: number) => {
     if (percentage === 100) {
       // All in - return stack size
@@ -24,7 +24,7 @@ const BetSizingButtons = ({ potSize, stackSize, onBetSizeSelect, gameFormat }: B
     { label: '30%', percentage: 30 },
     { label: '50%', percentage: 50 },
     { label: '70%', percentage: 70 },
-    { label: 'All in', percentage: 100 }
+    { label: 'All in', percentage: 100 },
   ];
 
   return (

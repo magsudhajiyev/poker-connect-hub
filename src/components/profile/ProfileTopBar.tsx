@@ -10,7 +10,7 @@ export const ProfileTopBar = () => {
   const [searchValue, setSearchValue] = useState('');
   const navigate = useNavigate();
   const {
-    toggleSidebar
+    toggleSidebar,
   } = useSidebar();
   const handleProfileClick = () => {
     navigate('/profile');

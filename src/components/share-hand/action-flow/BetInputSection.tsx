@@ -23,7 +23,7 @@ export const BetInputSection = ({
   potSize,
   currentStackSize,
   handleBetInputChange,
-  handleBetSizeSelect
+  handleBetSizeSelect,
 }: BetInputSectionProps) => {
   const getBetSizeLabel = () => {
     return formData.gameFormat === 'cash' ? 'Bet Size ($)' : 'Bet Size (BB)';

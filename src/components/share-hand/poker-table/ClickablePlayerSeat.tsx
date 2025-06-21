@@ -25,7 +25,7 @@ interface ClickablePlayerSeatProps {
   pokerActions?: any;
 }
 
-const ClickablePlayerSeat = ({ 
+const ClickablePlayerSeat = React.memo(({ 
   position, 
   positionCoords, 
   player, 
@@ -40,7 +40,7 @@ const ClickablePlayerSeat = ({
   updateAction,
   handleBetSizeSelect,
   isPositionsStep = false,
-  pokerActions
+  pokerActions,
 }: ClickablePlayerSeatProps) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isActionOpen, setIsActionOpen] = useState(false);
@@ -56,16 +56,6 @@ const ClickablePlayerSeat = ({
   };
 
   const handleClick = () => {
-    console.log('Player seat clicked:', {
-      position,
-      player: player?.name,
-      isPositionsStep,
-      currentStreet,
-      isToAct,
-      hasGetAvailableActions: !!getAvailableActions,
-      hasUpdateAction: !!updateAction
-    });
-
     // If we're in the positions step, allow adding/editing players
     if (isPositionsStep) {
       setIsEditOpen(true);
@@ -74,20 +64,15 @@ const ClickablePlayerSeat = ({
 
     // If we're not in positions step and there's no player, do nothing (disable adding)
     if (!player) {
-      console.log('No player at position, ignoring click');
       return;
     }
 
     // If we're in an action step, only allow clicking if it's this player's turn
     if (currentStreet) {
       if (!isToAct) {
-        console.log('Not this player\'s turn to act, ignoring click for:', player.name);
         return;
       }
-      console.log('Opening action dialog for player:', player.name);
       setIsActionOpen(true);
-    } else {
-      console.log('No current street defined');
     }
   };
 
@@ -98,10 +83,18 @@ const ClickablePlayerSeat = ({
   
   // Determine cursor style based on clickability
   const getCursorStyle = () => {
-    if (isPositionsStep) return 'cursor-pointer';
-    if (!player) return 'cursor-not-allowed opacity-50';
-    if (!currentStreet) return 'cursor-pointer';
-    if (isToAct) return 'cursor-pointer';
+    if (isPositionsStep) {
+return 'cursor-pointer';
+}
+    if (!player) {
+return 'cursor-not-allowed opacity-50';
+}
+    if (!currentStreet) {
+return 'cursor-pointer';
+}
+    if (isToAct) {
+return 'cursor-pointer';
+}
     return 'cursor-not-allowed opacity-60';
   };
 
@@ -110,7 +103,7 @@ const ClickablePlayerSeat = ({
       className="absolute transform -translate-x-1/2 -translate-y-1/2 z-20"
       style={{
         left: `${positionCoords.x}%`,
-        top: `${positionCoords.y}%`
+        top: `${positionCoords.y}%`,
       }}
     >
       {/* Player Edit Dialog - only show in positions step */}
@@ -147,7 +140,7 @@ const ClickablePlayerSeat = ({
         className={getCursorStyle()}
         onClick={isClickable ? handleClick : undefined}
         style={{
-          pointerEvents: isClickable ? 'auto' : 'none'
+          pointerEvents: isClickable ? 'auto' : 'none',
         }}
       >
         {isEmpty ? (
@@ -163,6 +156,8 @@ const ClickablePlayerSeat = ({
       </div>
     </div>
   );
-};
+});
+
+ClickablePlayerSeat.displayName = 'ClickablePlayerSeat';
 
 export default ClickablePlayerSeat;

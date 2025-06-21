@@ -47,7 +47,7 @@ const ShareHandForm = () => {
     handleBetSizeSelect,
     getAllSelectedCards,
     gameStateUI,
-    pokerActions
+    pokerActions,
   } = contextData;
 
   // Reset validation errors when step changes
@@ -61,7 +61,7 @@ const ShareHandForm = () => {
     const commonProps = {
       formData: {
         ...formData,
-        pokerActions // Pass poker actions through form data
+        pokerActions, // Pass poker actions through form data
       },
       setFormData,
       getPositionName,
@@ -125,7 +125,7 @@ const ShareHandForm = () => {
       },
       getAllSelectedCards,
       gameState: gameStateUI.gameState,
-      pokerActions
+      pokerActions,
     };
 
     switch (currentStep) {

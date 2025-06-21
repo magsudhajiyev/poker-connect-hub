@@ -5,6 +5,7 @@ import { MobileSidebarContent } from '@/components/MobileSidebarContent';
 import { ShareHandProvider } from '@/components/share-hand/ShareHandProvider';
 import ShareHandHeader from '@/components/share-hand/ShareHandHeader';
 import ShareHandForm from '@/components/share-hand/ShareHandForm';
+import { ShareHandErrorBoundary } from '@/components/error-boundary';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -78,10 +79,12 @@ const ShareHandContent = () => {
         <main className="flex-1 pt-16">
           <div className="w-full px-2 sm:px-3 md:px-4 py-3 sm:py-4 md:py-6">
             <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4 md:space-y-6">
-              <ShareHandProvider>
-                <ShareHandHeader />
-                <ShareHandForm />
-              </ShareHandProvider>
+              <ShareHandErrorBoundary>
+                <ShareHandProvider>
+                  <ShareHandHeader />
+                  <ShareHandForm />
+                </ShareHandProvider>
+              </ShareHandErrorBoundary>
             </div>
           </div>
         </main>

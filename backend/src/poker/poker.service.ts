@@ -144,7 +144,7 @@ export class PokerService {
       }
 
       return true;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }

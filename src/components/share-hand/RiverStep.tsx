@@ -44,7 +44,7 @@ const RiverStep = ({
   updateAction, 
   getActionButtonClass, 
   handleBetSizeSelect,
-  getAllSelectedCards
+  getAllSelectedCards,
 }: RiverStepProps) => {
   const potSize = calculatePotSize();
   const { players, updatePlayer, removePlayer } = usePlayerManagement(formData, setFormData);

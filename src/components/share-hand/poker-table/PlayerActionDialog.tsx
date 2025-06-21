@@ -29,7 +29,7 @@ const PlayerActionDialog = ({
   pokerActions,
   getAvailableActions,
   updateAction,
-  handleBetSizeSelect
+  handleBetSizeSelect,
 }: PlayerActionDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -48,14 +48,14 @@ const PlayerActionDialog = ({
     actionIndex,
     availableActions,
     potSize,
-    stackSize
+    stackSize,
   } = usePlayerActionDialog({
     isOpen,
     player,
     currentStreet,
     formData,
     pokerActions,
-    getAvailableActions
+    getAvailableActions,
   });
 
   const handleActionSelect = (action: ActionType) => {
@@ -112,7 +112,7 @@ const PlayerActionDialog = ({
       currentStreet,
       player: player.name,
       position: player.position,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
     
     // PRIORITIZE action flow for proper game logic

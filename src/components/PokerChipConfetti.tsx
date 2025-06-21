@@ -22,7 +22,9 @@ const PokerChipConfetti: React.FC<PokerChipConfettiProps> = ({ isActive, onCompl
   const [chips, setChips] = useState<PokerChipProps[]>([]);
 
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive) {
+return;
+}
 
     // Create poker chips with random properties
     const newChips: PokerChipProps[] = [];
@@ -55,7 +57,7 @@ const PokerChipConfetti: React.FC<PokerChipConfettiProps> = ({ isActive, onCompl
           y: chip.y + chip.vy,
           vy: chip.vy + 0.3, // Reduced gravity from 0.5 to 0.3
           rotation: chip.rotation + chip.rotationSpeed,
-        }))
+        })),
       );
       animationId = requestAnimationFrame(animate);
     };
@@ -75,7 +77,9 @@ const PokerChipConfetti: React.FC<PokerChipConfettiProps> = ({ isActive, onCompl
     };
   }, [isActive, onComplete]);
 
-  if (!isActive || chips.length === 0) return null;
+  if (!isActive || chips.length === 0) {
+return null;
+}
 
   return (
     <div className="fixed inset-0 pointer-events-none z-[9999]">

@@ -9,7 +9,7 @@ interface CallAmountDisplayProps {
 
 export const CallAmountDisplay = ({
   betAmount,
-  getCurrencySymbol
+  getCurrencySymbol,
 }: CallAmountDisplayProps) => {
   return (
     <div className="w-full">

@@ -12,7 +12,7 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
       
       setFormData({
         ...formData,
-        players: []
+        players: [],
       });
       
       setIsInitialized(true);
@@ -30,7 +30,7 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
         const updatedPlayer = { 
           ...player, 
           ...updates,
-          stackSize: updates.stackSize ? [...updates.stackSize] : [...player.stackSize]
+          stackSize: updates.stackSize ? [...updates.stackSize] : [...player.stackSize],
         };
         console.log(`Player ${playerId} updated:`, updatedPlayer);
         return updatedPlayer;
@@ -48,7 +48,7 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
       heroPosition: heroPlayer?.position || '',
       villainPosition: villainPlayer?.position || '',
       heroStackSize: heroPlayer?.stackSize ? [...heroPlayer.stackSize] : [100],
-      villainStackSize: villainPlayer?.stackSize ? [...villainPlayer.stackSize] : [100]
+      villainStackSize: villainPlayer?.stackSize ? [...villainPlayer.stackSize] : [100],
     };
     
     console.log('Player updated, triggering action reinitialization:', newFormData);
@@ -75,7 +75,7 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
       heroPosition: heroPlayer?.position || '',
       villainPosition: villainPlayer?.position || '',
       heroStackSize: heroPlayer?.stackSize ? [...heroPlayer.stackSize] : [100],
-      villainStackSize: villainPlayer?.stackSize ? [...villainPlayer.stackSize] : [100]
+      villainStackSize: villainPlayer?.stackSize ? [...villainPlayer.stackSize] : [100],
     };
     
     console.log('Player removed, triggering action reinitialization:', newFormData);
@@ -86,6 +86,6 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
     players,
     updatePlayer,
     addPlayer,
-    removePlayer
+    removePlayer,
   };
 };

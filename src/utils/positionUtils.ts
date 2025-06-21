@@ -11,7 +11,7 @@ export const getAllPositions = () => [
   { value: 'co', label: 'Cut Off' },
   { value: 'btn', label: 'Button' },
   { value: 'sb', label: 'Small Blind' },
-  { value: 'bb', label: 'Big Blind' }
+  { value: 'bb', label: 'Big Blind' },
 ];
 
 // Get available positions for a player (exclude other players' positions)

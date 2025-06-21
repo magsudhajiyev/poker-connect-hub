@@ -3,21 +3,21 @@ import { ValidationResult, StreetType, ShareHandFormData } from '@/types/shareHa
 
 export const validateCurrentStep = (
   currentStep: number,
-  formData: ShareHandFormData
+  formData: ShareHandFormData,
 ): ValidationResult => {
   // Validate game setup step (step 0)
   if (currentStep === 0) {
     if (!formData.gameFormat || formData.gameFormat.trim() === '') {
       return {
         isValid: false,
-        message: 'Please select a game format before proceeding.'
+        message: 'Please select a game format before proceeding.',
       };
     }
     
     if (!formData.gameType || formData.gameType.trim() === '') {
       return {
         isValid: false,
-        message: 'Please select a game type before proceeding.'
+        message: 'Please select a game type before proceeding.',
       };
     }
     
@@ -29,13 +29,13 @@ export const validateCurrentStep = (
     // Check if players array exists and has valid positions
     if (formData.players && formData.players.length > 0) {
       const playersWithoutPosition = formData.players.filter(player => 
-        !player.position || player.position.trim() === ''
+        !player.position || player.position.trim() === '',
       );
       
       if (playersWithoutPosition.length > 0) {
         return {
           isValid: false,
-          message: '' // No alert message, just UI highlighting
+          message: '', // No alert message, just UI highlighting
         };
       }
     } else {
@@ -44,7 +44,7 @@ export const validateCurrentStep = (
           !formData.villainPosition || formData.villainPosition.trim() === '') {
         return {
           isValid: false,
-          message: '' // No alert message, just UI highlighting
+          message: '', // No alert message, just UI highlighting
         };
       }
     }
@@ -59,13 +59,13 @@ export const validateCurrentStep = (
   // Check if any bet/raise action is missing bet amount
   const incompleteBetAction = actions.find(action => 
     (action.action === 'bet' || action.action === 'raise') && 
-    (!action.betAmount || action.betAmount.trim() === '')
+    (!action.betAmount || action.betAmount.trim() === ''),
   );
   
   if (incompleteBetAction) {
     return {
       isValid: false,
-      message: `Please specify the bet size for ${incompleteBetAction.playerName}'s ${incompleteBetAction.action} before proceeding.`
+      message: `Please specify the bet size for ${incompleteBetAction.playerName}'s ${incompleteBetAction.action} before proceeding.`,
     };
   }
   

@@ -32,7 +32,7 @@ export const createGameState = (
   players: Player[],
   smallBlind: number,
   bigBlind: number,
-  round: 'preflop' | 'flop' | 'turn' | 'river' = 'preflop'
+  round: 'preflop' | 'flop' | 'turn' | 'river' = 'preflop',
 ): GameState => {
   // Convert players to game state format
   const activePlayers: GameStatePlayer[] = players.map(player => ({
@@ -41,7 +41,7 @@ export const createGameState = (
     stack: player.stackSize[0] || 100,
     isHero: player.isHero,
     hasActedAfterRaise: false,
-    isActive: true
+    isActive: true,
   }));
 
   // Create action order based on positions
@@ -60,8 +60,12 @@ export const createGameState = (
       }
     }
     // Add blinds at the end for preflop
-    if (playerPositions.includes('sb')) actionOrder.push('sb');
-    if (playerPositions.includes('bb')) actionOrder.push('bb');
+    if (playerPositions.includes('sb')) {
+actionOrder.push('sb');
+}
+    if (playerPositions.includes('bb')) {
+actionOrder.push('bb');
+}
   } else {
     // Post-flop: start with SB
     const playerPositions = activePlayers.map(p => p.position);
@@ -80,7 +84,7 @@ export const createGameState = (
       round: 'preflop',
       player: sbPlayer.position,
       action: 'post',
-      amount: smallBlind
+      amount: smallBlind,
     });
   }
   
@@ -89,7 +93,7 @@ export const createGameState = (
       round: 'preflop',
       player: bbPlayer.position,
       action: 'post',
-      amount: bigBlind
+      amount: bigBlind,
     });
   }
 
@@ -104,7 +108,7 @@ export const createGameState = (
     lastAggressor: round === 'preflop' ? (bbPlayer?.position || '') : '',
     pot: round === 'preflop' ? smallBlind + bigBlind : 0,
     actionHistory,
-    actionOrder
+    actionOrder,
   };
 };
 
@@ -112,13 +116,13 @@ export const updateGameState = (
   gameState: GameState,
   player: string,
   action: string,
-  amount?: number
+  amount?: number,
 ): GameState => {
   const newActionHistory = [...gameState.actionHistory, {
     round: gameState.round,
     player,
     action,
-    amount
+    amount,
   }];
 
   let newCurrentBet = gameState.currentBet;
@@ -138,7 +142,7 @@ export const updateGameState = (
         // Reset hasActedAfterRaise for all other players
         newActivePlayers = newActivePlayers.map(p => ({
           ...p,
-          hasActedAfterRaise: p.position === player ? true : false
+          hasActedAfterRaise: p.position === player,
         }));
       }
       break;
@@ -146,19 +150,19 @@ export const updateGameState = (
       newPot += gameState.currentBet;
       // Mark player as having acted
       newActivePlayers = newActivePlayers.map(p => 
-        p.position === player ? { ...p, hasActedAfterRaise: true } : p
+        p.position === player ? { ...p, hasActedAfterRaise: true } : p,
       );
       break;
     case 'fold':
       // Remove player from active players
       newActivePlayers = newActivePlayers.map(p => 
-        p.position === player ? { ...p, isActive: false } : p
+        p.position === player ? { ...p, isActive: false } : p,
       );
       break;
     case 'check':
       // Mark player as having acted
       newActivePlayers = newActivePlayers.map(p => 
-        p.position === player ? { ...p, hasActedAfterRaise: true } : p
+        p.position === player ? { ...p, hasActedAfterRaise: true } : p,
       );
       break;
   }
@@ -169,6 +173,6 @@ export const updateGameState = (
     lastAggressor: newLastAggressor,
     pot: newPot,
     actionHistory: newActionHistory,
-    activePlayers: newActivePlayers
+    activePlayers: newActivePlayers,
   };
 };

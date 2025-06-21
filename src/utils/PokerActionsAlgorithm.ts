@@ -17,7 +17,7 @@ export class PokerActionsAlgorithm {
       isActive: true,
       isFolded: false,
       isAllIn: false,
-      hasActed: false
+      hasActed: false,
     }));
     
     this.currentStreet = 'preFlop';
@@ -28,7 +28,7 @@ export class PokerActionsAlgorithm {
       preFlop: [],
       flop: [],
       turn: [],
-      river: []
+      river: [],
     };
     
     // Set initial blinds
@@ -62,7 +62,7 @@ export class PokerActionsAlgorithm {
       6: ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'UTG+2'],
       7: ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'UTG+2', 'HJ'],
       8: ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'UTG+2', 'LJ', 'HJ'],
-      9: ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'UTG+2', 'UTG+3', 'LJ', 'HJ']
+      9: ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'UTG+2', 'UTG+3', 'LJ', 'HJ'],
     };
     
     const positionArray = positions[totalPlayers] || positions[9];
@@ -79,7 +79,9 @@ export class PokerActionsAlgorithm {
     sbPlayer.currentBet = sbAmount;
     sbPlayer.totalInvested = sbAmount;
     sbPlayer.stack -= sbAmount;
-    if (sbPlayer.stack === 0) sbPlayer.isAllIn = true;
+    if (sbPlayer.stack === 0) {
+sbPlayer.isAllIn = true;
+}
     
     // Big blind
     const bbPlayer = this.players[bbIndex];
@@ -87,7 +89,9 @@ export class PokerActionsAlgorithm {
     bbPlayer.currentBet = bbAmount;
     bbPlayer.totalInvested = bbAmount;
     bbPlayer.stack -= bbAmount;
-    if (bbPlayer.stack === 0) bbPlayer.isAllIn = true;
+    if (bbPlayer.stack === 0) {
+bbPlayer.isAllIn = true;
+}
   }
 
   updateActionOrder() {
@@ -134,7 +138,7 @@ export class PokerActionsAlgorithm {
       playerStack: player.stack,
       currentBet: this.currentBet,
       pot: this.pot,
-      actions: actions
+      actions,
     };
   }
 
@@ -155,7 +159,7 @@ export class PokerActionsAlgorithm {
       actions.push({
         type: 'fold',
         amount: 0,
-        description: 'Fold'
+        description: 'Fold',
       });
     }
 
@@ -164,7 +168,7 @@ export class PokerActionsAlgorithm {
       actions.push({
         type: 'check',
         amount: 0,
-        description: 'Check'
+        description: 'Check',
       });
     }
 
@@ -173,7 +177,7 @@ export class PokerActionsAlgorithm {
       actions.push({
         type: 'call',
         amount: effectiveCallAmount,
-        description: `Call ${effectiveCallAmount}`
+        description: `Call ${effectiveCallAmount}`,
       });
     }
 
@@ -191,7 +195,7 @@ export class PokerActionsAlgorithm {
           type: actionType,
           minAmount: totalMinAmount,
           maxAmount: totalMaxAmount,
-          description: `${actionType === 'bet' ? 'Bet' : 'Raise'} (${totalMinAmount}-${totalMaxAmount})`
+          description: `${actionType === 'bet' ? 'Bet' : 'Raise'} (${totalMinAmount}-${totalMaxAmount})`,
         });
       }
     }
@@ -201,7 +205,7 @@ export class PokerActionsAlgorithm {
       actions.push({
         type: 'allIn',
         amount: player.stack,
-        description: `All-in (${player.stack})`
+        description: `All-in (${player.stack})`,
       });
     }
 
@@ -228,7 +232,9 @@ export class PokerActionsAlgorithm {
   // MAIN METHOD: Execute chosen action
   executeAction(actionType: string, amount: number = 0): boolean {
     const playerIndex = this.getCurrentPlayerIndex();
-    if (playerIndex === -1) return false;
+    if (playerIndex === -1) {
+return false;
+}
 
     const player = this.players[playerIndex];
     let success = false;
@@ -270,7 +276,7 @@ export class PokerActionsAlgorithm {
       position: player.position,
       type: 'fold',
       amount: 0,
-      street: this.currentStreet
+      street: this.currentStreet,
     };
 
     this.streetActions[this.currentStreet].push(action);
@@ -286,7 +292,7 @@ export class PokerActionsAlgorithm {
       position: player.position,
       type: 'check',
       amount: 0,
-      street: this.currentStreet
+      street: this.currentStreet,
     };
 
     this.streetActions[this.currentStreet].push(action);
@@ -303,7 +309,9 @@ export class PokerActionsAlgorithm {
     player.stack -= callAmount;
     this.pot += callAmount;
 
-    if (player.stack === 0) player.isAllIn = true;
+    if (player.stack === 0) {
+player.isAllIn = true;
+}
 
     const action = {
       playerId: player.id,
@@ -311,7 +319,7 @@ export class PokerActionsAlgorithm {
       position: player.position,
       type: 'call',
       amount: callAmount,
-      street: this.currentStreet
+      street: this.currentStreet,
     };
 
     this.streetActions[this.currentStreet].push(action);
@@ -323,7 +331,9 @@ export class PokerActionsAlgorithm {
   processRaise(player: any, playerIndex: number, totalAmount: number, actionType: string): boolean {
     const callAmount = Math.max(0, this.currentBet - player.currentBet);
     
-    if (totalAmount > player.stack) return false;
+    if (totalAmount > player.stack) {
+return false;
+}
 
     const newBetLevel = player.currentBet + totalAmount;
     const raiseSize = newBetLevel - this.currentBet;
@@ -334,7 +344,9 @@ export class PokerActionsAlgorithm {
     this.pot += totalAmount;
     this.currentBet = newBetLevel;
 
-    if (player.stack === 0) player.isAllIn = true;
+    if (player.stack === 0) {
+player.isAllIn = true;
+}
 
     // Reset other players' hasActed status
     this.players.forEach((p, i) => {
@@ -349,9 +361,9 @@ export class PokerActionsAlgorithm {
       position: player.position,
       type: actionType,
       amount: totalAmount,
-      raiseSize: raiseSize,
-      newBetLevel: newBetLevel,
-      street: this.currentStreet
+      raiseSize,
+      newBetLevel,
+      street: this.currentStreet,
     };
 
     this.streetActions[this.currentStreet].push(action);
@@ -393,9 +405,9 @@ export class PokerActionsAlgorithm {
       position: player.position,
       type: effectiveActionType,
       amount: allInAmount,
-      raiseSize: raiseSize,
-      newBetLevel: newBetLevel,
-      street: this.currentStreet
+      raiseSize,
+      newBetLevel,
+      street: this.currentStreet,
     };
 
     this.streetActions[this.currentStreet].push(action);
@@ -429,7 +441,7 @@ export class PokerActionsAlgorithm {
         street: 'complete',
         handComplete: true,
         winner: activePlayers[0] || null,
-        finalPot: this.pot
+        finalPot: this.pot,
       };
     }
 
@@ -452,7 +464,7 @@ export class PokerActionsAlgorithm {
       street: this.currentStreet,
       waiting: true,
       pot: this.pot,
-      message: 'Waiting for next player action'
+      message: 'Waiting for next player action',
     };
   }
 
@@ -484,7 +496,7 @@ export class PokerActionsAlgorithm {
         street: this.currentStreet,
         newStreet: true,
         pot: this.pot,
-        message: `Advanced to ${this.currentStreet}`
+        message: `Advanced to ${this.currentStreet}`,
       };
     } else {
       // Hand complete
@@ -492,7 +504,7 @@ export class PokerActionsAlgorithm {
         street: 'complete',
         handComplete: true,
         finalPot: this.pot,
-        activePlayers: this.players.filter((p: any) => p.isActive && !p.isFolded)
+        activePlayers: this.players.filter((p: any) => p.isActive && !p.isFolded),
       };
     }
   }
@@ -508,9 +520,9 @@ export class PokerActionsAlgorithm {
         position: p.position,
         stack: p.stack,
         totalInvested: p.totalInvested,
-        status: p.isFolded ? 'folded' : p.isAllIn ? 'all-in' : 'active'
+        status: p.isFolded ? 'folded' : p.isAllIn ? 'all-in' : 'active',
       })),
-      streetActions: this.streetActions
+      streetActions: this.streetActions,
     };
   }
 

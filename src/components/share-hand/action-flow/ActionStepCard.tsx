@@ -38,7 +38,7 @@ export const ActionStepCard = ({
   getActionButtonClass,
   handleActionClick,
   handleBetInputChange,
-  handleBetSizeSelect
+  handleBetSizeSelect,
 }: ActionStepCardProps) => {
   const { isPlayerActive } = useGameStateUI(gameState);
 

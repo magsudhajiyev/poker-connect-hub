@@ -39,7 +39,7 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
         author: 'You',
         content: newComment.trim(),
         createdAt: new Date(),
-        avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg'
+        avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg',
       };
       setComments([...comments, comment]);
       setNewComment('');

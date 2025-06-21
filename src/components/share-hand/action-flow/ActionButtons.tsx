@@ -19,7 +19,7 @@ export const ActionButtons = ({
   availableActions,
   isCurrentPlayer,
   getActionButtonClass,
-  handleActionClick
+  handleActionClick,
 }: ActionButtonsProps) => {
   const { isActionAvailable } = useGameStateUI();
 
@@ -39,7 +39,7 @@ export const ActionButtons = ({
                 !isAvailable && isCurrentPlayer ? 'opacity-50' : ''
               }`}
               style={{ 
-                display: isCurrentPlayer && !isAvailable ? 'none' : 'block' 
+                display: isCurrentPlayer && !isAvailable ? 'none' : 'block', 
               }}
             >
               {action.charAt(0).toUpperCase() + action.slice(1)}

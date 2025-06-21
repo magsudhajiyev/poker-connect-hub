@@ -12,7 +12,7 @@ export const positionMap: { [key: string]: string } = {
   'co': 'CO',
   'btn': 'BTN',
   'sb': 'SB',
-  'bb': 'BB'
+  'bb': 'BB',
 };
 
 // Reverse map for converting standard positions back to UI positions
@@ -25,7 +25,7 @@ export const reversePositionMap: { [key: string]: string } = {
   'CO': 'co',
   'BTN': 'btn',
   'SB': 'sb',
-  'BB': 'bb'
+  'BB': 'bb',
 };
 
 // Convert UI position to standard position

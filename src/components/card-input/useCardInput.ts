@@ -7,7 +7,7 @@ const suitMap: { [key: string]: string } = {
   's': '♠', 'spades': '♠',
   'h': '♥', 'hearts': '♥',
   'd': '♦', 'diamonds': '♦',
-  'c': '♣', 'clubs': '♣'
+  'c': '♣', 'clubs': '♣',
 };
 
 export const useCardInput = (cards: string[], excludeCards: string[] = []) => {
@@ -19,13 +19,17 @@ export const useCardInput = (cards: string[], excludeCards: string[] = []) => {
   const allCards = ranks.flatMap(rank => suits.map(suit => rank + suit));
 
   const getSuggestions = (input: string) => {
-    if (!input.trim()) return [];
+    if (!input.trim()) {
+return [];
+}
     
     const normalizedInput = input.toLowerCase().replace(/[,\s]+/g, '');
     const allExcludedCards = [...cards, ...excludeCards];
     
     return allCards.filter(card => {
-      if (allExcludedCards.includes(card)) return false;
+      if (allExcludedCards.includes(card)) {
+return false;
+}
       
       const normalizedCard = card.toLowerCase();
       const cardWithTextSuit = card.replace(/[♠♥♦♣]/g, (suit) => {
@@ -74,6 +78,6 @@ export const useCardInput = (cards: string[], excludeCards: string[] = []) => {
     setSelectedSuggestionIndex,
     inputRef,
     getSuggestions,
-    parseCardInput
+    parseCardInput,
   };
 };

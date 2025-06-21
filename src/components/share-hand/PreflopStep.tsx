@@ -34,7 +34,7 @@ const PreflopStep = ({
   updateAction, 
   getActionButtonClass, 
   handleBetSizeSelect,
-  getAllSelectedCards
+  getAllSelectedCards,
 }: PreflopStepProps) => {
   const potSize = calculatePotSize();
   const { players, updatePlayer, removePlayer } = usePlayerManagement(formData, setFormData);

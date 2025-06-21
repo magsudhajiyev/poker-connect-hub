@@ -22,7 +22,7 @@ const PlayerRow = ({
   availablePositions, 
   showValidationErrors,
   onUpdatePlayer,
-  onRemovePlayer
+  onRemovePlayer,
 }: PlayerRowProps) => {
   // Check if a player should be highlighted - ONLY when validation errors are being shown AND position is empty
   const shouldHighlightPlayer = showValidationErrors && (!player.position || player.position.trim() === '');

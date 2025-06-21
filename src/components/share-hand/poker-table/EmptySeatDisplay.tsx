@@ -20,7 +20,7 @@ const EmptySeatDisplay = ({ position }: EmptySeatDisplayProps) => {
       'co': 'CO',
       'btn': 'BTN',
       'sb': 'SB',
-      'bb': 'BB'
+      'bb': 'BB',
     };
     return labels[pos] || pos.toUpperCase();
   };

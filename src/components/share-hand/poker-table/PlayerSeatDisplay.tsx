@@ -24,7 +24,7 @@ const PlayerSeatDisplay = ({ player, position, gameFormat, isToAct = false }: Pl
       'co': 'CO',
       'btn': 'BTN',
       'sb': 'SB',
-      'bb': 'BB'
+      'bb': 'BB',
     };
     return labels[pos] || pos.toUpperCase();
   };

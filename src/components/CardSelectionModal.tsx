@@ -21,7 +21,7 @@ const CardSelectionModal = ({
   title, 
   maxCards, 
   disabledCards,
-  currentSelection = []
+  currentSelection = [],
 }: CardSelectionModalProps) => {
   const [selectedCards, setSelectedCards] = useState<string[]>(currentSelection);
   
@@ -31,7 +31,9 @@ const CardSelectionModal = ({
   const handleCardClick = (rank: string, suit: string) => {
     const card = rank + suit;
     
-    if (disabledCards.includes(card)) return;
+    if (disabledCards.includes(card)) {
+return;
+}
     
     if (selectedCards.includes(card)) {
       // Remove card if already selected

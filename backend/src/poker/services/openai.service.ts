@@ -46,10 +46,10 @@ export class OpenAIService {
       this.logger.debug('Sending request to OpenAI GPT-4');
 
       const response = await this.openai.chat.completions.create({
-        model: "gpt-4",
+        model: 'gpt-4',
         messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
         ],
         temperature: 0.2,
         max_tokens: 2000,
@@ -174,7 +174,7 @@ Return the updated game state as a JSON object.`;
     const requiredFields = [
       'gameId', 'players', 'communityCards', 'pot', 'currentBet',
       'minRaise', 'bigBlind', 'smallBlind', 'currentPlayerIndex',
-      'dealerPosition', 'gamePhase', 'bettingRound'
+      'dealerPosition', 'gamePhase', 'bettingRound',
     ];
 
     for (const field of requiredFields) {

@@ -27,14 +27,14 @@ describe('OpenAIService', () => {
           chips: 1000,
           holeCards: [
             { suit: 'hearts', rank: 'A' },
-            { suit: 'spades', rank: 'K' }
+            { suit: 'spades', rank: 'K' },
           ],
           position: 0,
           isActive: true,
           hasActed: false,
           currentBet: 0,
           isFolded: false,
-          isAllIn: false
+          isAllIn: false,
         },
         {
           id: 'player2',
@@ -42,20 +42,20 @@ describe('OpenAIService', () => {
           chips: 800,
           holeCards: [
             { suit: 'diamonds', rank: 'Q' },
-            { suit: 'clubs', rank: 'J' }
+            { suit: 'clubs', rank: 'J' },
           ],
           position: 1,
           isActive: true,
           hasActed: false,
           currentBet: 50,
           isFolded: false,
-          isAllIn: false
-        }
+          isAllIn: false,
+        },
       ],
       communityCards: [
         { suit: 'hearts', rank: '10' },
         { suit: 'diamonds', rank: '9' },
-        { suit: 'spades', rank: '8' }
+        { suit: 'spades', rank: '8' },
       ],
       pot: 150,
       currentBet: 50,
@@ -65,7 +65,7 @@ describe('OpenAIService', () => {
       currentPlayerIndex: 0,
       dealerPosition: 1,
       gamePhase: 'flop',
-      bettingRound: 2
+      bettingRound: 2,
     };
 
     it('should throw error when OPENAI_API_KEY is not set', async () => {

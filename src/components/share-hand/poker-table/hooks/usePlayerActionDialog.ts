@@ -17,7 +17,7 @@ export const usePlayerActionDialog = ({
   currentStreet,
   formData,
   pokerActions,
-  getAvailableActions
+  getAvailableActions,
 }: UsePlayerActionDialogProps) => {
   const [selectedAction, setSelectedAction] = useState<string>('');
   const [betAmount, setBetAmount] = useState<string>('');
@@ -34,7 +34,7 @@ export const usePlayerActionDialog = ({
     }
     
     const actionIndex = actions.findIndex((action: any) => 
-      action.playerId === player.id && !action.completed
+      action.playerId === player.id && !action.completed,
     );
     
     return actionIndex;
@@ -49,11 +49,11 @@ export const usePlayerActionDialog = ({
   console.log('ACTION DIALOG DEBUG:', {
     playerId: player.id,
     position: player.position,
-    hasActionFlow: !!pokerActions,
+    hasActionFlow: Boolean(pokerActions),
     isPlayerToAct: pokerActions?.isPlayerToAct?.(player.id),
     currentPlayer: pokerActions?.currentPlayer?.name,
     currentPlayerPosition: pokerActions?.currentPlayer?.position,
-    actionIndex
+    actionIndex,
   });
   
   // ALWAYS use action flow if available and this player can act
@@ -103,6 +103,6 @@ export const usePlayerActionDialog = ({
     actionIndex,
     availableActions,
     potSize,
-    stackSize
+    stackSize,
   };
 };

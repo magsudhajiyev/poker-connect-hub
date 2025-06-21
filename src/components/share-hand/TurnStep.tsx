@@ -34,7 +34,7 @@ const TurnStep = ({
   updateAction, 
   getActionButtonClass, 
   handleBetSizeSelect,
-  getAllSelectedCards
+  getAllSelectedCards,
 }: TurnStepProps) => {
   const potSize = calculatePotSize();
   const { players, updatePlayer, removePlayer } = usePlayerManagement(formData, setFormData);

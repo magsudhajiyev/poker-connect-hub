@@ -11,7 +11,7 @@ export const DEFAULT_VALUES = {
   BIG_BLIND: 2,
   STACK_SIZE: 100,
   MIN_PLAYERS: 2,
-  MAX_PLAYERS: 9
+  MAX_PLAYERS: 9,
 } as const;
 
 /**
@@ -20,7 +20,7 @@ export const DEFAULT_VALUES = {
 export const BETTING_CONSTRAINTS = {
   MIN_BET_MULTIPLIER: 1, // Minimum bet is 1x big blind
   MIN_RAISE_MULTIPLIER: 2, // Minimum raise is 2x current bet
-  MAX_SEARCH_ITERATIONS: 20 // Prevent infinite loops in player search
+  MAX_SEARCH_ITERATIONS: 20, // Prevent infinite loops in player search
 } as const;
 
 /**
@@ -29,7 +29,7 @@ export const BETTING_CONSTRAINTS = {
 export const UI_CONSTANTS = {
   MAX_BET_AMOUNT_DISPLAY_LENGTH: 10,
   ANIMATION_DELAY_MS: 100,
-  STATE_UPDATE_TIMEOUT_MS: 50
+  STATE_UPDATE_TIMEOUT_MS: 50,
 } as const;
 
 /**
@@ -38,7 +38,7 @@ export const UI_CONSTANTS = {
 export const GAME_STATE = {
   INCOMPLETE_ACTION_INDEX: -1,
   FIRST_PLAYER_INDEX: 0,
-  ROUND_COMPLETE_THRESHOLD: 1 // Minimum active players for round completion
+  ROUND_COMPLETE_THRESHOLD: 1, // Minimum active players for round completion
 } as const;
 
 /**
@@ -52,7 +52,7 @@ export const VALIDATION_MESSAGES = {
   CANNOT_BET_WITH_EXISTING_BET: 'Cannot bet when there\'s already a bet',
   CANNOT_RAISE_WITHOUT_BET: 'Cannot raise when there\'s no bet',
   NOT_PLAYER_TURN: 'Not this player\'s turn',
-  INVALID_ACTION: 'Invalid action'
+  INVALID_ACTION: 'Invalid action',
 } as const;
 
 /**
@@ -68,5 +68,5 @@ export const LOG_MESSAGES = {
   PLAYER_FOLDED: 'folded and will be removed from all future action',
   EXECUTING_ACTION: 'EXECUTING ACTION',
   RAISE_VALIDATION: 'RAISE VALIDATION',
-  RAISE_EXECUTED: 'RAISE EXECUTED'
+  RAISE_EXECUTED: 'RAISE EXECUTED',
 } as const;

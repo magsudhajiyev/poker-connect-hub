@@ -10,7 +10,7 @@ export {
   ENDING_ACTIONS,
   CONTINUING_ACTIONS,
   requiresBetAmount,
-  shouldAddNextAction
+  shouldAddNextAction,
 } from './ActionTypes';
 
 // Street Types
@@ -20,7 +20,7 @@ export {
   STREET_ORDER,
   GAME_ROUND_ORDER,
   streetToGameRound,
-  gameRoundToStreet
+  gameRoundToStreet,
 } from './StreetTypes';
 
 // Position Types
@@ -32,7 +32,7 @@ export {
   BLIND_POSITIONS,
   getActionOrder,
   isBlindPosition,
-  POSITION_NAMES
+  POSITION_NAMES,
 } from './PositionTypes';
 
 // Constants
@@ -42,5 +42,5 @@ export {
   UI_CONSTANTS,
   GAME_STATE,
   VALIDATION_MESSAGES,
-  LOG_MESSAGES
+  LOG_MESSAGES,
 } from './PokerConstants';

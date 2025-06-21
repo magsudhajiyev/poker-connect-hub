@@ -7,7 +7,9 @@ interface SelectedCardsDisplayProps {
 }
 
 const SelectedCardsDisplay = ({ cards, label }: SelectedCardsDisplayProps) => {
-  if (cards.length === 0) return null;
+  if (cards.length === 0) {
+return null;
+}
   
   const getCardColor = (card: string) => {
     const suit = card.slice(-1);

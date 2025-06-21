@@ -19,46 +19,46 @@ const Onboarding = () => {
     playingGoals: [] as string[],
     bio: '',
     location: '',
-    preferredStakes: ''
+    preferredStakes: '',
   });
   const navigate = useNavigate();
   const steps = [{
     title: 'Welcome to PokerConnect! 🎉',
     subtitle: 'Let\'s set up your profile',
     icon: User,
-    emoji: '🎉'
+    emoji: '🎉',
   }, {
     title: 'Tell us about your poker experience 🃏',
     subtitle: 'This helps us personalize your experience',
     icon: Target,
-    emoji: '🃏'
+    emoji: '🃏',
   }, {
     title: 'What are your poker goals? 🚀',
     subtitle: 'Select all that apply',
     icon: TrendingUp,
-    emoji: '🚀'
+    emoji: '🚀',
   }, {
     title: 'Complete your profile ✨',
     subtitle: 'Add some final details',
     icon: Users,
-    emoji: '✨'
+    emoji: '✨',
   }];
   const experienceLevels = [{
     value: 'beginner',
     label: 'Beginner 🌱',
-    description: 'Just getting started'
+    description: 'Just getting started',
   }, {
     value: 'intermediate',
     label: 'Intermediate 🎲',
-    description: 'Some experience'
+    description: 'Some experience',
   }, {
     value: 'advanced',
     label: 'Advanced ♠️',
-    description: 'Experienced player'
+    description: 'Experienced player',
   }, {
     value: 'professional',
     label: 'Professional 👑',
-    description: 'Play for a living'
+    description: 'Play for a living',
   }];
   const gameTypes = ['Texas Hold\'em 🤠', 'Omaha 🎯', 'Seven Card Stud 🎴', 'Mixed Games 🎪', 'Tournaments 🏆', 'Cash Games 💰'];
   const goalOptions = ['Improve my game 📚', 'Connect with other players 🤝', 'Share interesting hands 💡', 'Learn new strategies 🧠', 'Track my progress 📊', 'Join poker discussions 💬'];
@@ -85,7 +85,7 @@ const Onboarding = () => {
   const handleUsernameChange = (value: string) => {
     setFormData(prev => ({
       ...prev,
-      username: value
+      username: value,
     }));
     setUsernameError('');
     if (value.length >= 3) {
@@ -95,7 +95,7 @@ const Onboarding = () => {
   const toggleGoal = (goal: string) => {
     setFormData(prev => ({
       ...prev,
-      playingGoals: prev.playingGoals.includes(goal) ? prev.playingGoals.filter(g => g !== goal) : [...prev.playingGoals, goal]
+      playingGoals: prev.playingGoals.includes(goal) ? prev.playingGoals.filter(g => g !== goal) : [...prev.playingGoals, goal],
     }));
   };
   const handleNext = () => {
@@ -141,7 +141,7 @@ const Onboarding = () => {
                 <div className="grid gap-2 lg:gap-3 mt-2 lg:mt-3">
                   {experienceLevels.map(level => <Card key={level.value} className={`cursor-pointer transition-all ${formData.experience === level.value ? 'bg-emerald-500/20 border-emerald-500/50' : 'bg-slate-800/40 border-slate-700/30 hover:bg-slate-800/60'}`} onClick={() => setFormData(prev => ({
                   ...prev,
-                  experience: level.value
+                  experience: level.value,
                 }))}>
                       <CardContent className="p-3 lg:p-4">
                         <div className="flex items-center justify-between">
@@ -160,7 +160,7 @@ const Onboarding = () => {
                 <Label className="text-slate-200 text-sm lg:text-base">Favorite game type</Label>
                 <Select value={formData.favoriteGame} onValueChange={value => setFormData(prev => ({
                 ...prev,
-                favoriteGame: value
+                favoriteGame: value,
               }))}>
                   <SelectTrigger className="mt-1 bg-slate-900/50 border-slate-600 text-slate-200 text-sm lg:text-base">
                     <SelectValue placeholder="Select your favorite game" />
@@ -182,7 +182,7 @@ const Onboarding = () => {
             <div>
               <Label className="text-slate-200 text-sm lg:text-base">What do you want to achieve on PokerConnect?</Label>
               <div className="grid grid-cols-1 gap-2 lg:gap-3 mt-2 lg:mt-3">
-                {goalOptions.map(goal => <Badge key={goal} variant={formData.playingGoals.includes(goal) ? "default" : "secondary"} className={`cursor-pointer p-2 lg:p-3 text-center justify-center text-xs lg:text-sm ${formData.playingGoals.includes(goal) ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50' : 'bg-slate-800/40 text-slate-300 border-slate-700/30 hover:bg-slate-800/60'}`} onClick={() => toggleGoal(goal)}>
+                {goalOptions.map(goal => <Badge key={goal} variant={formData.playingGoals.includes(goal) ? 'default' : 'secondary'} className={`cursor-pointer p-2 lg:p-3 text-center justify-center text-xs lg:text-sm ${formData.playingGoals.includes(goal) ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50' : 'bg-slate-800/40 text-slate-300 border-slate-700/30 hover:bg-slate-800/60'}`} onClick={() => toggleGoal(goal)}>
                     {goal}
                   </Badge>)}
               </div>
@@ -198,7 +198,7 @@ const Onboarding = () => {
                 <Label htmlFor="bio" className="text-slate-200 text-sm lg:text-base">Bio (optional)</Label>
                 <Textarea id="bio" placeholder="Tell us a bit about yourself..." value={formData.bio} onChange={e => setFormData(prev => ({
                 ...prev,
-                bio: e.target.value
+                bio: e.target.value,
               }))} className="mt-1 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500 text-sm lg:text-base min-h-[80px] lg:min-h-[100px]" />
               </div>
 
@@ -206,7 +206,7 @@ const Onboarding = () => {
                 <Label htmlFor="location" className="text-slate-200 text-sm lg:text-base">Location (optional)</Label>
                 <Input id="location" placeholder="City, Country" value={formData.location} onChange={e => setFormData(prev => ({
                 ...prev,
-                location: e.target.value
+                location: e.target.value,
               }))} className="mt-1 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500 text-sm lg:text-base" />
               </div>
 
@@ -214,7 +214,7 @@ const Onboarding = () => {
                 <Label htmlFor="stakes" className="text-slate-200 text-sm lg:text-base">Preferred stakes (optional)</Label>
                 <Input id="stakes" placeholder="e.g., $1/$2, $0.25/$0.50" value={formData.preferredStakes} onChange={e => setFormData(prev => ({
                 ...prev,
-                preferredStakes: e.target.value
+                preferredStakes: e.target.value,
               }))} className="mt-1 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500 text-sm lg:text-base" />
               </div>
             </div>

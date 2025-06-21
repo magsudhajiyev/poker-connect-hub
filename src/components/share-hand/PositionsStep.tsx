@@ -15,7 +15,7 @@ const PositionsStep = ({
   formData, 
   setFormData, 
   showValidationErrors = false,
-  getCurrencySymbol = () => '$'
+  getCurrencySymbol = () => '$',
 }: PositionsStepProps) => {
   const { players, updatePlayer, removePlayer } = usePlayerManagement(formData, setFormData);
 
@@ -38,7 +38,7 @@ const PositionsStep = ({
       const updatedPlayers = [...players, newPlayer];
       setFormData({
         ...formData,
-        players: updatedPlayers
+        players: updatedPlayers,
       });
     }
   };

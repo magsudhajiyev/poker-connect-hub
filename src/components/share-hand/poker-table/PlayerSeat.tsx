@@ -23,7 +23,7 @@ const PlayerSeat = ({ player, position, isActive = false, gameFormat = 'cash' }:
       'co': 'CO',
       'btn': 'BTN',
       'sb': 'SB',
-      'bb': 'BB'
+      'bb': 'BB',
     };
     return labels[pos] || pos.toUpperCase();
   };
@@ -35,7 +35,7 @@ const PlayerSeat = ({ player, position, isActive = false, gameFormat = 'cash' }:
       className="absolute transform -translate-x-1/2 -translate-y-1/2 z-20"
       style={{
         left: `${position.x}%`,
-        top: `${position.y}%`
+        top: `${position.y}%`,
       }}
     >
       {/* Player Container */}

@@ -13,7 +13,7 @@ const TableActionButtons = ({
   availableActions, 
   onActionSelect, 
   selectedAction,
-  disabled = false 
+  disabled = false, 
 }: TableActionButtonsProps) => {
   const getActionColor = (action: string) => {
     switch (action) {

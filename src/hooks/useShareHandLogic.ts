@@ -1,6 +1,7 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from '@/hooks/use-toast';
 import { ShareHandFormData } from '@/types/shareHand';
 import { steps, getPositionName } from '@/utils/shareHandConstants';
 import { getAvailableActions, getActionButtonClass } from '@/utils/shareHandActions';
@@ -13,6 +14,8 @@ export const useShareHandLogic = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
   const [tags, setTags] = useState<string[]>(['bluff', 'tournament']);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const [formData, setFormData] = useState<ShareHandFormData>({
     gameType: '',
@@ -39,59 +42,161 @@ export const useShareHandLogic = () => {
     description: '',
     smallBlind: '',
     bigBlind: '',
-    ante: false
+    ante: false,
   });
 
   const { updateAction, handleBetSizeSelect, initializeActionsForPositions } = useActionManagement(formData, setFormData);
 
+  // Clear error when form data changes
+  useEffect(() => {
+    if (error) {
+      setError(null);
+    }
+  }, [formData, error]);
+
   // Initialize actions when positions are set or players change
   useEffect(() => {
-    console.log('FormData players changed, reinitializing actions:', formData.players);
-    initializeActionsForPositions();
-  }, [formData.heroPosition, formData.villainPosition, JSON.stringify(formData.players)]);
-
-  const addTag = (tag: string) => {
-    if (tag && !tags.includes(tag)) {
-      setTags([...tags, tag]);
+    try {
+      initializeActionsForPositions();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to initialize actions';
+      setError(errorMessage);
     }
-  };
+  }, [
+    formData.heroPosition,
+    formData.villainPosition,
+    formData.players?.length,
+    // Use a more efficient dependency check than JSON.stringify
+    formData.players?.map(p => `${p.id}-${p.position}`).join(','),
+    initializeActionsForPositions,
+  ]);
 
-  const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
-  };
-
-  const nextStep = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleSubmit = () => {
-    const validation = validateCurrentStep(currentStep, formData);
-    if (!validation.isValid) {
-      if (validation.message) {
-        alert(validation.message);
+  const addTag = useCallback((tag: string) => {
+    try {
+      if (tag && !tags.includes(tag)) {
+        setTags(prev => [...prev, tag]);
       }
-      return;
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: 'Failed to add tag',
+        variant: 'destructive',
+      });
     }
-    
-    console.log('Submitting hand:', formData, tags);
-    
-    // Add hand to store and navigate to feed
-    const handId = sharedHandsStore.addHand(formData, tags);
-    navigate('/feed');
-  };
+  }, [tags]);
+
+  const removeTag = useCallback((tagToRemove: string) => {
+    try {
+      setTags(prev => prev.filter(tag => tag !== tagToRemove));
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: 'Failed to remove tag',
+        variant: 'destructive',
+      });
+    }
+  }, []);
+
+  const nextStep = useCallback(() => {
+    try {
+      if (currentStep < steps.length - 1) {
+        setCurrentStep(prev => prev + 1);
+        setError(null);
+      }
+    } catch (err) {
+      setError('Failed to proceed to next step');
+    }
+  }, [currentStep]);
+
+  const prevStep = useCallback(() => {
+    try {
+      if (currentStep > 0) {
+        setCurrentStep(prev => prev - 1);
+        setError(null);
+      }
+    } catch (err) {
+      setError('Failed to go back to previous step');
+    }
+  }, [currentStep]);
+
+  const handleSubmit = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const validation = validateCurrentStep(currentStep, formData);
+      if (!validation.isValid) {
+        if (validation.message) {
+          setError(validation.message);
+          toast({
+            title: 'Validation Error',
+            description: validation.message,
+            variant: 'destructive',
+          });
+        }
+        return;
+      }
+      
+      
+      // Add hand to store and navigate to feed
+      sharedHandsStore.addHand(formData, tags);
+      
+      toast({
+        title: 'Success',
+        description: 'Hand shared successfully!',
+      });
+      
+      navigate('/feed');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to submit hand';
+      setError(errorMessage);
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentStep, formData, tags, navigate]);
 
   // Updated getAvailableActions to accept all parameters
-  const getAvailableActionsWithParams = (street: string, index: number, allActions: any[]) => {
-    return getAvailableActions(street, index, allActions);
-  };
+  const getAvailableActionsWithParams = useCallback((street: string, index: number, allActions: any[]) => {
+    try {
+      return getAvailableActions(street, index, allActions);
+    } catch (err) {
+      return [];
+    }
+  }, []);
+
+  // Memoized calculations to prevent unnecessary re-renders
+  const potSize = useMemo(() => {
+    try {
+      return calculatePotSize(formData);
+    } catch (err) {
+      return 0;
+    }
+  }, [formData]);
+
+  const currencySymbol = useMemo(() => {
+    try {
+      return getCurrencySymbol(formData.gameFormat);
+    } catch (err) {
+      return '$';
+    }
+  }, [formData.gameFormat]);
+
+  const allSelectedCards = useMemo(() => {
+    try {
+      return getAllSelectedCards(formData);
+    } catch (err) {
+      return [];
+    }
+  }, [formData]);
+
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
 
   return {
     currentStep,
@@ -100,18 +205,21 @@ export const useShareHandLogic = () => {
     formData,
     setFormData,
     steps,
+    isLoading,
+    error,
+    clearError,
     getPositionName,
     getAvailableActions: getAvailableActionsWithParams,
     getActionButtonClass,
     updateAction,
     handleBetSizeSelect,
-    calculatePotSize: () => calculatePotSize(formData),
-    getCurrencySymbol: () => getCurrencySymbol(formData.gameFormat),
-    getAllSelectedCards: () => getAllSelectedCards(formData),
+    calculatePotSize: () => potSize,
+    getCurrencySymbol: () => currencySymbol,
+    getAllSelectedCards: () => allSelectedCards,
     addTag,
     removeTag,
     nextStep,
     prevStep,
-    handleSubmit
+    handleSubmit,
   };
 };

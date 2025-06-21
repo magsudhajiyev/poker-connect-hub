@@ -8,7 +8,7 @@ import {
   PaginationItem, 
   PaginationLink, 
   PaginationNext, 
-  PaginationPrevious 
+  PaginationPrevious, 
 } from '@/components/ui/pagination';
 import { useState } from 'react';
 
@@ -19,44 +19,44 @@ const Blog = () => {
   const blogPosts = [
     {
       id: 1,
-      title: "Mastering Poker Fundamentals",
-      description: "Learn the essential skills every poker player needs to succeed at the tables.",
-      date: "March 15, 2024",
-      readTime: "5 min read",
-      category: "Strategy"
+      title: 'Mastering Poker Fundamentals',
+      description: 'Learn the essential skills every poker player needs to succeed at the tables.',
+      date: 'March 15, 2024',
+      readTime: '5 min read',
+      category: 'Strategy',
     },
     {
       id: 2,
-      title: "Bankroll Management 101",
-      description: "How to properly manage your poker bankroll to avoid going broke.",
-      date: "March 10, 2024",
-      readTime: "7 min read",
-      category: "Finance"
+      title: 'Bankroll Management 101',
+      description: 'How to properly manage your poker bankroll to avoid going broke.',
+      date: 'March 10, 2024',
+      readTime: '7 min read',
+      category: 'Finance',
     },
     {
       id: 3,
-      title: "Reading Your Opponents",
-      description: "Advanced techniques for reading tells and understanding player behavior.",
-      date: "March 5, 2024",
-      readTime: "6 min read",
-      category: "Psychology"
+      title: 'Reading Your Opponents',
+      description: 'Advanced techniques for reading tells and understanding player behavior.',
+      date: 'March 5, 2024',
+      readTime: '6 min read',
+      category: 'Psychology',
     },
     {
       id: 4,
       title: "Position Play in Texas Hold'em",
-      description: "Understanding how position affects your strategy and decision-making.",
-      date: "March 1, 2024",
-      readTime: "4 min read",
-      category: "Strategy"
+      description: 'Understanding how position affects your strategy and decision-making.',
+      date: 'March 1, 2024',
+      readTime: '4 min read',
+      category: 'Strategy',
     },
     {
       id: 5,
-      title: "Tournament vs Cash Game Strategy",
-      description: "Key differences between tournament and cash game approaches.",
-      date: "February 25, 2024",
-      readTime: "8 min read",
-      category: "Strategy"
-    }
+      title: 'Tournament vs Cash Game Strategy',
+      description: 'Key differences between tournament and cash game approaches.',
+      date: 'February 25, 2024',
+      readTime: '8 min read',
+      category: 'Strategy',
+    },
   ];
 
   const totalPages = Math.ceil(blogPosts.length / postsPerPage);
@@ -137,7 +137,9 @@ const Blog = () => {
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
-                      if (currentPage > 1) handlePageChange(currentPage - 1);
+                      if (currentPage > 1) {
+handlePageChange(currentPage - 1);
+}
                     }}
                     className={`text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 ${
                       currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
@@ -170,7 +172,9 @@ const Blog = () => {
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
-                      if (currentPage < totalPages) handlePageChange(currentPage + 1);
+                      if (currentPage < totalPages) {
+handlePageChange(currentPage + 1);
+}
                     }}
                     className={`text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 ${
                       currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''

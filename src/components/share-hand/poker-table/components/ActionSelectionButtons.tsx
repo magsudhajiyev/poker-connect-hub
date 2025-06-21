@@ -25,12 +25,12 @@ const ActionSelectionButtons = ({
   selectedAction,
   onActionSelect,
   position = '',
-  street = ''
+  street = '',
 }: ActionSelectionButtonsProps) => {
   // Filter actions to ensure correctness
   const validActions = filterValidActions(availableActions, position, street);
   const getActionButtonClass = (action: string, isSelected: boolean) => {
-    const baseClass = "transition-colors border";
+    const baseClass = 'transition-colors border';
     if (isSelected) {
       return `${baseClass} bg-emerald-500 text-slate-900 border-emerald-500`;
     }

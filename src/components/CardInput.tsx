@@ -25,7 +25,7 @@ const CardInput = ({ label, cards, onCardsChange, maxCards, placeholder, exclude
     setSelectedSuggestionIndex,
     inputRef,
     getSuggestions,
-    parseCardInput
+    parseCardInput,
   } = useCardInput(cards, excludeCards);
 
   const suggestions = getSuggestions(inputValue);
@@ -55,19 +55,21 @@ const CardInput = ({ label, cards, onCardsChange, maxCards, placeholder, exclude
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showSuggestions || suggestions.length === 0) return;
+    if (!showSuggestions || suggestions.length === 0) {
+return;
+}
 
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
         setSelectedSuggestionIndex(prev => 
-          prev < suggestions.length - 1 ? prev + 1 : 0
+          prev < suggestions.length - 1 ? prev + 1 : 0,
         );
         break;
       case 'ArrowUp':
         e.preventDefault();
         setSelectedSuggestionIndex(prev => 
-          prev > 0 ? prev - 1 : suggestions.length - 1
+          prev > 0 ? prev - 1 : suggestions.length - 1,
         );
         break;
       case 'Enter':
@@ -133,7 +135,7 @@ const CardInput = ({ label, cards, onCardsChange, maxCards, placeholder, exclude
             onKeyDown={handleKeyDown}
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
-            placeholder={placeholder || `Type cards (e.g., "Ah, 7d")`}
+            placeholder={placeholder || 'Type cards (e.g., "Ah, 7d")'}
             className="bg-slate-900/50 border-slate-700/50 text-slate-200"
           />
           

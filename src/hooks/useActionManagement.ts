@@ -3,13 +3,13 @@ import { ShareHandFormData, StreetType, ActionStep } from '@/types/shareHand';
 import { 
   initializeActions, 
   createNextActionStep, 
-  shouldAddNextAction 
+  shouldAddNextAction, 
 } from '@/utils/shareHandActions';
 import { ActionType } from '@/constants';
 
 export const useActionManagement = (
   formData: ShareHandFormData, 
-  setFormData: (data: ShareHandFormData | ((prev: ShareHandFormData) => ShareHandFormData)) => void
+  setFormData: (data: ShareHandFormData | ((prev: ShareHandFormData) => ShareHandFormData)) => void,
 ) => {
   const addNextActionStep = (street: StreetType, currentIndex: number) => {
     const actions = formData[street];
@@ -24,7 +24,7 @@ export const useActionManagement = (
     
     // Additional safety check
     if (!currentAction || !currentAction.action) {
-      console.warn(`Current action is undefined or missing action property:`, currentAction);
+      console.warn('Current action is undefined or missing action property:', currentAction);
       return;
     }
     
@@ -35,7 +35,7 @@ export const useActionManagement = (
       
       // Check if next action already exists
       const nextActionExists = actions.find((action, index) => 
-        index > currentIndex && action.playerId === nextActionStep.playerId
+        index > currentIndex && action.playerId === nextActionStep.playerId,
       );
       
       if (!nextActionExists) {
@@ -71,7 +71,7 @@ export const useActionManagement = (
         ...updatedActions[index],
         action,
         betAmount: validBetAmount,
-        completed: action !== ActionType.BET && action !== ActionType.RAISE
+        completed: action !== ActionType.BET && action !== ActionType.RAISE,
       };
       
       // If changing from bet/raise to something else, remove subsequent actions
@@ -79,25 +79,41 @@ export const useActionManagement = (
           !shouldAddNextAction(action)) {
         console.log(`Action changed from ${previousAction} to ${action}, removing subsequent actions`);
         const actionsToKeep = updatedActions.slice(0, index + 1);
-        const newFormData = { ...prev, [street]: actionsToKeep };
+        let newFormData = { ...prev, [street]: actionsToKeep };
         
-        // If the new action is bet or raise, add next action step
+        // If the new action is bet or raise, add next action step immediately
         if (shouldAddNextAction(action)) {
-          setTimeout(() => {
-            addNextActionStep(street, index);
-          }, 100);
+          const currentAction = actionsToKeep[index];
+          if (currentAction?.action) {
+            const nextActionStep = createNextActionStep(currentAction, prev.players);
+            // Check if next action already exists
+            const nextActionExists = actionsToKeep.find((action, actionIndex) => 
+              actionIndex > index && action.playerId === nextActionStep.playerId,
+            );
+            if (!nextActionExists) {
+              newFormData = { ...newFormData, [street]: [...actionsToKeep, nextActionStep] };
+            }
+          }
         }
         
         return newFormData;
       }
       
-      const newFormData = { ...prev, [street]: updatedActions };
+      let newFormData = { ...prev, [street]: updatedActions };
       
-      // If this is a bet or raise action, add next action step
+      // If this is a bet or raise action, add next action step immediately
       if (shouldAddNextAction(action)) {
-        setTimeout(() => {
-          addNextActionStep(street, index);
-        }, 100);
+        const currentAction = updatedActions[index];
+        if (currentAction?.action) {
+          const nextActionStep = createNextActionStep(currentAction, prev.players);
+          // Check if next action already exists
+          const nextActionExists = updatedActions.find((action, actionIndex) => 
+            actionIndex > index && action.playerId === nextActionStep.playerId,
+          );
+          if (!nextActionExists) {
+            newFormData = { ...newFormData, [street]: [...updatedActions, nextActionStep] };
+          }
+        }
       }
       
       return newFormData;
@@ -129,7 +145,7 @@ export const useActionManagement = (
       updatedActions[index] = {
         ...currentAction,
         betAmount: amount,
-        completed: true
+        completed: true,
       };
       
       // Add next action step if this is a bet or raise and it doesn't already exist
@@ -138,7 +154,7 @@ export const useActionManagement = (
         
         // Check if next action already exists
         const nextActionExists = updatedActions.find((action, actionIndex) => 
-          actionIndex > index && action.playerId === nextActionStep.playerId
+          actionIndex > index && action.playerId === nextActionStep.playerId,
         );
         
         if (!nextActionExists) {
@@ -157,7 +173,7 @@ export const useActionManagement = (
       console.log('Initializing actions with players:', formData.players);
       
       const streets: StreetType[] = [
-        'preflopActions', 'flopActions', 'turnActions', 'riverActions'
+        'preflopActions', 'flopActions', 'turnActions', 'riverActions',
       ];
       
       const updatedFormData = { ...formData };
@@ -169,7 +185,7 @@ export const useActionManagement = (
           street, 
           formData.heroPosition, 
           formData.villainPosition,
-          formData.players
+          formData.players,
         );
         
         // Only update if the action structure has changed (different number of players or different players)
@@ -193,7 +209,7 @@ export const useActionManagement = (
       console.log('Skipping action initialization - missing data:', {
         heroPosition: formData.heroPosition,
         villainPosition: formData.villainPosition,
-        players: formData.players
+        players: formData.players,
       });
     }
   };
@@ -201,6 +217,6 @@ export const useActionManagement = (
   return {
     updateAction,
     handleBetSizeSelect,
-    initializeActionsForPositions
+    initializeActionsForPositions,
   };
 };

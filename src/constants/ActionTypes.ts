@@ -27,7 +27,7 @@ export const ENDING_ACTIONS = [ActionType.FOLD] as const;
 export const CONTINUING_ACTIONS = [
   ActionType.BET, 
   ActionType.RAISE, 
-  ActionType.CALL
+  ActionType.CALL,
 ] as const;
 
 /**

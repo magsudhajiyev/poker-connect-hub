@@ -23,7 +23,7 @@ const PokerChips = () => {
   const chips = [
     { color: '#10b981', value: '$25', top: '25%', right: '15%', delay: '0s' },
     { color: '#3b82f6', value: '$100', top: '45%', right: '5%', delay: '1.5s' },
-    { color: '#8b5cf6', value: '$500', top: '65%', right: '20%', delay: '0.8s' }
+    { color: '#8b5cf6', value: '$500', top: '65%', right: '20%', delay: '0.8s' },
   ];
 
   return (
@@ -38,7 +38,7 @@ const PokerChips = () => {
             top: chip.top,
             right: chip.right,
             animationDelay: chip.delay,
-            animationDuration: '2s'
+            animationDuration: '2s',
           }}
         />
       ))}

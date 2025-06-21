@@ -20,7 +20,7 @@ const FloatingCards = () => {
     { suit: '♠', top: '20%', left: '5%', delay: '0s' },
     { suit: '♥', top: '60%', left: '8%', delay: '1s' },
     { suit: '♦', top: '30%', left: '88%', delay: '2s' },
-    { suit: '♣', top: '70%', left: '85%', delay: '0.5s' }
+    { suit: '♣', top: '70%', left: '85%', delay: '0.5s' },
   ];
 
   return (
@@ -34,7 +34,7 @@ const FloatingCards = () => {
             top: card.top,
             left: card.left,
             animationDelay: card.delay,
-            animationDuration: '3s'
+            animationDuration: '3s',
           }}
         />
       ))}

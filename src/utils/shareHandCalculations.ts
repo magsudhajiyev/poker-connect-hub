@@ -16,7 +16,7 @@ export const calculatePotSize = (formData: ShareHandFormData): number => {
     ...formData.preflopActions,
     ...formData.flopActions,
     ...formData.turnActions,
-    ...formData.riverActions
+    ...formData.riverActions,
   ];
   
   // Track each player's total contribution to avoid double counting
@@ -75,6 +75,6 @@ export const getAllSelectedCards = (formData: ShareHandFormData): string[] => {
     ...formData.holeCards,
     ...formData.flopCards,
     ...formData.turnCard,
-    ...formData.riverCard
+    ...formData.riverCard,
   ];
 };

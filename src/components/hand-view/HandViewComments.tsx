@@ -19,9 +19,15 @@ export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / (1000 * 60));
     
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
+    if (diffMins < 1) {
+return 'Just now';
+}
+    if (diffMins < 60) {
+return `${diffMins}m ago`;
+}
+    if (diffMins < 1440) {
+return `${Math.floor(diffMins / 60)}h ago`;
+}
     return `${Math.floor(diffMins / 1440)}d ago`;
   };
 
@@ -32,7 +38,7 @@ export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
         author: 'You',
         content: comment.trim(),
         createdAt: new Date(),
-        avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg'
+        avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg',
       };
       setComments([...comments, newComment]);
       setComment('');

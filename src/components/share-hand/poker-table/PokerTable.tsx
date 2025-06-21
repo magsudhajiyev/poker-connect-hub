@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import ClickablePlayerSeat from './ClickablePlayerSeat';
 import CommunityCards from './CommunityCards';
 import { Player } from '@/types/shareHand';
@@ -24,7 +24,7 @@ interface PokerTableProps {
   pokerActions?: any;
 }
 
-const PokerTable = ({ 
+const PokerTable = React.memo(({ 
   players, 
   communityCards = [], 
   currentPlayer,
@@ -40,15 +40,15 @@ const PokerTable = ({
   updateAction,
   handleBetSizeSelect,
   isPositionsStep = false,
-  pokerActions
+  pokerActions,
 }: PokerTableProps & { pokerActions?: any }) => {
   const isMobile = useIsMobile();
   
   // All possible positions around the table in clockwise order starting from top
-  const allPositions = ['utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn', 'sb', 'bb'];
+  const allPositions = useMemo(() => ['utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn', 'sb', 'bb'], []);
   
-  // Calculate evenly spaced positions around an ellipse
-  const calculatePositions = () => {
+  // Memoize position calculations to prevent recalculation on every render
+  const seatPositions = useMemo(() => {
     const positions: { [key: string]: { mobile: { x: number; y: number }, desktop: { x: number; y: number } } } = {};
     
     // Center coordinates
@@ -75,60 +75,54 @@ const PokerTable = ({
       
       positions[position] = {
         mobile: { x, y },
-        desktop: { x, y }
+        desktop: { x, y },
       };
     });
     
     return positions;
-  };
-
-  const seatPositions = calculatePositions();
+  }, [isMobile, allPositions]);
   
-  // Force re-render when poker actions change
+  // Force re-render when poker actions change - optimized to reduce debug overhead
   const [renderKey, setRenderKey] = useState(0);
   useEffect(() => {
     if (pokerActions?.forceUpdate !== undefined) {
       setRenderKey(pokerActions.forceUpdate);
-      console.log('POKER TABLE RE-RENDER:', {
-        forceUpdate: pokerActions.forceUpdate,
-        currentPlayer: pokerActions.currentPlayerToAct,
-        pot: pokerActions.getCurrentPot()
-      });
     }
-  }, [pokerActions?.forceUpdate, pokerActions?.currentPlayerToAct, pokerActions?.potAmount]);
+  }, [pokerActions?.forceUpdate]);
 
-  // Get player for a specific position
-  const getPlayerAtPosition = (position: string) => {
+  // Memoize player lookup function to prevent re-creation on every render
+  const getPlayerAtPosition = useCallback((position: string) => {
     return players.find(p => p.position === position);
-  };
+  }, [players]);
 
-  // Check if any player is already set as hero
-  const hasHero = players.some(p => p.isHero);
+  // Memoize hero check to prevent recalculation
+  const hasHero = useMemo(() => players.some(p => p.isHero), [players]);
 
-  // Check if it's this player's turn to act (for flashing animation)
-  const isPlayerToAct = (position: string) => {
-    if (isPositionsStep) return false;
+  // Memoize player to act logic to prevent unnecessary recalculations
+  const isPlayerToAct = useCallback((position: string) => {
+    if (isPositionsStep) {
+      return false;
+    }
     
     const player = getPlayerAtPosition(position);
-    if (!player) return false;
+    if (!player) {
+      return false;
+    }
     
     // Use poker actions algorithm if available - this is the key fix
     if (pokerActions && pokerActions.isPlayerToAct) {
       // First check if all active players are all-in (no action needed)
       if (typeof pokerActions.areAllActivePlayersAllIn === 'function' && pokerActions.areAllActivePlayersAllIn()) {
-        console.log(`🏁 No flashing: All active players are all-in`);
         return false;
       }
       
-      const shouldAct = pokerActions.isPlayerToAct(player.id);
-      if (shouldAct) {
-        console.log(`✓ FLASH: ${player.name} (${player.position}) should act`);
-      }
-      return shouldAct;
+      return pokerActions.isPlayerToAct(player.id);
     }
     
     // Fall back to original logic
-    if (!currentStreet || !formData) return false;
+    if (!currentStreet || !formData) {
+      return false;
+    }
     
     const actions = formData[currentStreet];
     if (!actions || actions.length === 0) {
@@ -141,14 +135,16 @@ const PokerTable = ({
     
     // Find the first incomplete action
     const nextActionIndex = actions.findIndex((action: any) => !action.completed);
-    if (nextActionIndex === -1) return false;
+    if (nextActionIndex === -1) {
+      return false;
+    }
     
     const nextAction = actions[nextActionIndex];
     return nextAction.playerId === player.id;
-  };
+  }, [isPositionsStep, getPlayerAtPosition, pokerActions, currentStreet, formData]);
 
-  // Use action flow pot if available
-  const displayPot = pokerActions?.pot ? pokerActions.pot : pot;
+  // Memoize pot display to prevent unnecessary recalculations
+  const displayPot = useMemo(() => pokerActions?.pot || pot, [pokerActions?.pot, pot]);
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
@@ -167,17 +163,17 @@ const PokerTable = ({
       <div className="relative w-full" style={{ aspectRatio: isMobile ? '1/1.3' : '2/1' }}>
         {/* Table Surface */}
         <div 
-          className={`absolute inset-0 bg-gradient-to-br from-green-800 to-green-900 border-4 border-amber-600 shadow-2xl rounded-full`}
+          className={'absolute inset-0 bg-gradient-to-br from-green-800 to-green-900 border-4 border-amber-600 shadow-2xl rounded-full'}
           style={{
             background: 'radial-gradient(ellipse at center, #1f7a3c, #15593f, #0d3520)',
-            boxShadow: 'inset 0 0 50px rgba(0,0,0,0.3), 0 10px 30px rgba(0,0,0,0.4)'
+            boxShadow: 'inset 0 0 50px rgba(0,0,0,0.3), 0 10px 30px rgba(0,0,0,0.4)',
           }}
         >
           {/* Table Inner Shadow */}
           <div 
-            className={`absolute inset-4 border-2 border-amber-700/30 rounded-full`}
+            className={'absolute inset-4 border-2 border-amber-700/30 rounded-full'}
             style={{
-              boxShadow: 'inset 0 0 30px rgba(0,0,0,0.2)'
+              boxShadow: 'inset 0 0 30px rgba(0,0,0,0.2)',
             }}
           />
         </div>
@@ -229,7 +225,7 @@ const PokerTable = ({
             style={{
               left: `${seatPositions['btn'][isMobile ? 'mobile' : 'desktop'].x - 8}%`,
               top: `${seatPositions['btn'][isMobile ? 'mobile' : 'desktop'].y + 8}%`,
-              transform: 'translate(-50%, -50%)'
+              transform: 'translate(-50%, -50%)',
             }}
           >
             D
@@ -238,6 +234,8 @@ const PokerTable = ({
       </div>
     </div>
   );
-};
+});
+
+PokerTable.displayName = 'PokerTable';
 
 export default PokerTable;

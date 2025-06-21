@@ -27,7 +27,7 @@ export const STREET_ORDER = [
   StreetType.PREFLOP,
   StreetType.FLOP,
   StreetType.TURN,
-  StreetType.RIVER
+  StreetType.RIVER,
 ] as const;
 
 /**
@@ -38,7 +38,7 @@ export const GAME_ROUND_ORDER = [
   GameRound.FLOP,
   GameRound.TURN,
   GameRound.RIVER,
-  GameRound.SHOWDOWN
+  GameRound.SHOWDOWN,
 ] as const;
 
 /**

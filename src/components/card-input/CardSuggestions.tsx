@@ -7,7 +7,9 @@ interface CardSuggestionsProps {
 }
 
 const CardSuggestions = ({ suggestions, selectedIndex, onSelectSuggestion, show }: CardSuggestionsProps) => {
-  if (!show || suggestions.length === 0) return null;
+  if (!show || suggestions.length === 0) {
+return null;
+}
 
   return (
     <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">

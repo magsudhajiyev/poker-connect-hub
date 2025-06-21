@@ -1,7 +1,12 @@
 
-import { useState, useEffect, useRef } from 'react';
+// This hook maintains the existing local poker engine logic
+// For new features, consider using usePokerApiEngine for backend integration
+
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { toast } from '@/hooks/use-toast';
 import { PokerGameEngine } from '@/utils/PokerGameEngine';
 import { Player } from '@/types/shareHand';
+import { Position } from '@/constants';
 
 interface UsePokerGameEngineProps {
   players: Player[];
@@ -10,45 +15,67 @@ interface UsePokerGameEngineProps {
   currentStreet: string;
 }
 
+// Legacy hook - prefer usePokerApiEngine for new implementations
 export const usePokerGameEngine = ({
   players,
   smallBlind,
   bigBlind,
-  currentStreet
+  currentStreet,
 }: UsePokerGameEngineProps) => {
-  const [engine, setEngine] = useState<PokerGameEngine | null>(null);
+  const [, setEngine] = useState<PokerGameEngine | null>(null);
   const [currentPlayerToAct, setCurrentPlayerToAct] = useState<string | null>(null);
   const [potAmount, setPotAmount] = useState<number>(0);
   const [availableActions, setAvailableActions] = useState<string[]>([]);
   const [forceUpdate, setForceUpdate] = useState<number>(0);
+  const [error, setError] = useState<string | null>(null);
+  const [isInitializing, setIsInitializing] = useState<boolean>(false);
   const engineRef = useRef<PokerGameEngine | null>(null);
   const initializedRef = useRef<boolean>(false);
+  const lastUpdateRef = useRef<number>(0); // Track last update to prevent race conditions
+
+  // Memoize parsed blinds to prevent unnecessary recalculations
+  const parsedBlinds = useMemo(() => ({
+    sb: parseFloat(smallBlind),
+    bb: parseFloat(bigBlind),
+  }), [smallBlind, bigBlind]);
 
   // Initialize engine when players and blinds are available
   useEffect(() => {
     if (players && players.length >= 2 && smallBlind && bigBlind && !initializedRef.current) {
-      const sb = parseFloat(smallBlind);
-      const bb = parseFloat(bigBlind);
+      const { sb, bb } = parsedBlinds;
       
       if (!isNaN(sb) && !isNaN(bb) && sb > 0 && bb > 0) {
-        console.log('Initializing poker game engine');
+        setIsInitializing(true);
+        setError(null);
         
         try {
-          console.log('INITIALIZING POKER ENGINE with players:', players.map(p => ({ id: p.id, name: p.name, position: p.position })));
+          // Validate players have required properties
+          const invalidPlayers = players.filter(p => !p.id || !p.position || !p.name);
+          if (invalidPlayers.length > 0) {
+            throw new Error(`Invalid player data: ${invalidPlayers.length} players missing required fields`);
+          }
+
+          // Initialize poker engine with validated players
           const newEngine = new PokerGameEngine(players, sb, bb);
           
           // Find SB and BB positions
-          const sbPlayer = players.find(p => p.position === 'sb');
-          const bbPlayer = players.find(p => p.position === 'bb');
+          const sbPlayer = players.find(p => p.position === 'sb' || p.position === Position.SMALL_BLIND);
+          const bbPlayer = players.find(p => p.position === 'bb' || p.position === Position.BIG_BLIND);
           
-          console.log('Found SB/BB:', { sbPlayer: sbPlayer?.name, bbPlayer: bbPlayer?.name });
-          
-          if (sbPlayer && bbPlayer) {
-            const sbIndex = players.indexOf(sbPlayer);
-            const bbIndex = players.indexOf(bbPlayer);
-            console.log('Posting blinds at indices:', { sbIndex, bbIndex });
-            newEngine.postBlinds(sbIndex, bbIndex);
+          // Validate SB/BB positions exist
+          if (!sbPlayer || !bbPlayer) {
+            throw new Error('Small blind and big blind positions are required');
           }
+          
+          const sbIndex = players.indexOf(sbPlayer);
+          const bbIndex = players.indexOf(bbPlayer);
+          
+          if (sbIndex === -1 || bbIndex === -1) {
+            throw new Error('Could not find small blind or big blind player indexes');
+          }
+          
+          // Post blinds for SB and BB players
+          newEngine.postBlinds(sbIndex, bbIndex);
           
           // Start preflop betting with proper position ordering
           newEngine.startBettingRound();
@@ -61,15 +88,8 @@ export const usePokerGameEngine = ({
           const currentPlayer = newEngine.getCurrentPlayer();
           const legalActions = newEngine.getLegalActions();
           
-          console.log('ENGINE INITIALIZED:', {
-            currentPlayer: currentPlayer ? { id: currentPlayer.id, name: currentPlayer.name, position: currentPlayer.position } : null,
-            legalActions,
-            pot: newEngine.pot,
-            allPlayers: newEngine.players.map(p => ({ id: p.id, name: p.name, position: p.position, bet: p.bet, stack: p.stack }))
-          });
-          
           if (currentPlayer) {
-            setCurrentPlayerToAct(currentPlayer.id);
+            setCurrentPlayerToAct(String(currentPlayer.id));
             setAvailableActions(legalActions);
           } else {
             setCurrentPlayerToAct(null);
@@ -77,131 +97,184 @@ export const usePokerGameEngine = ({
           }
           
           setPotAmount(newEngine.pot);
+          
+          console.log('Poker engine initialized successfully');
         } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to initialize poker engine';
           console.error('Error initializing poker engine:', error);
+          setError(errorMessage);
+          toast({
+            title: 'Engine Error',
+            description: errorMessage,
+            variant: 'destructive',
+          });
+        } finally {
+          setIsInitializing(false);
         }
+      } else {
+        setError('Invalid blind amounts');
       }
     }
     
     // Reset when players change significantly
     if (!players || players.length < 2) {
       initializedRef.current = false;
+      setError(null);
     }
-  }, [players?.length, smallBlind, bigBlind]);
+  }, [players?.length, parsedBlinds.sb, parsedBlinds.bb]);
 
   // Update street when it changes
   useEffect(() => {
-    if (engine && currentStreet && initializedRef.current) {
+    if (engineRef.current && currentStreet && initializedRef.current) {
       const streetMapping: { [key: string]: string } = {
         'preflopActions': 'preflop',
         'flopActions': 'flop',
         'turnActions': 'turn',
-        'riverActions': 'river'
+        'riverActions': 'river',
       };
       
       const engineStreet = streetMapping[currentStreet] || 'preflop';
       
-      if (engine.street !== engineStreet) {
-        engine.street = engineStreet;
+      if (engineRef.current.street !== engineStreet) {
+        // Create a method to safely update street instead of direct mutation
+        const updateStreetSafely = (newStreet: string) => {
+          if (!engineRef.current) {
+return;
+}
+          
+          // Update street property
+          engineRef.current.street = newStreet;
+          
+          // Reset betting for new street (this is acceptable as it's internal engine state)
+          engineRef.current.players.forEach(p => {
+            if (!p.folded) {
+              p.bet = 0;
+            }
+          });
+          engineRef.current.currentBet = 0;
+          
+          // Start new betting round with proper position ordering
+          engineRef.current.startBettingRound();
+        };
         
-        // Reset betting for new street
-        engine.players.forEach(p => {
-          if (!p.folded) {
-            p.bet = 0;
-          }
-        });
-        engine.currentBet = 0;
+        updateStreetSafely(engineStreet);
         
-        // Start new betting round with proper position ordering
-        engine.startBettingRound();
+        // Update React state
+        setEngine(engineRef.current);
         
-        const currentPlayer = engine.getCurrentPlayer();
-        const legalActions = engine.getLegalActions();
+        const currentPlayer = engineRef.current.getCurrentPlayer();
+        const legalActions = engineRef.current.getLegalActions();
         
         if (currentPlayer) {
-          setCurrentPlayerToAct(currentPlayer.id);
+          setCurrentPlayerToAct(String(currentPlayer.id));
           setAvailableActions(legalActions);
         } else {
           setCurrentPlayerToAct(null);
           setAvailableActions([]);
         }
         
-        setPotAmount(engine.pot);
+        setPotAmount(engineRef.current.pot);
       }
     }
   }, [currentStreet]);
 
-  const executeAction = (actionType: string, amount?: number): boolean => {
-    if (!engineRef.current) {
-      return false;
-    }
+  const executeAction = useCallback((actionType: string, amount?: number): boolean => {
+    try {
+      if (!engineRef.current) {
+        setError('Game engine not initialized');
+        return false;
+      }
 
-    console.log('Executing action:', { actionType, amount, currentPot: engineRef.current.pot });
-    const success = engineRef.current.takeAction(actionType, amount || 0);
-    
-    if (success) {
-      const currentPlayer = engineRef.current.getCurrentPlayer();
-      const legalActions = engineRef.current.getLegalActions();
+      setError(null); // Clear any previous errors
       
-      // Update state to trigger re-renders
-      const newPotAmount = engineRef.current.pot;
-      console.log('Action successful, updating pot from', potAmount, 'to', newPotAmount);
-      setPotAmount(newPotAmount);
+      // Prevent race conditions by using a timestamp
+      const updateId = Date.now();
+      lastUpdateRef.current = updateId;
+
+      // Execute poker action
+      const success = engineRef.current.takeAction(actionType, amount || 0);
       
-      // Use setTimeout to ensure state updates are processed
-      setTimeout(() => {
+      if (success) {
+        // Only proceed if this is still the latest update
+        if (lastUpdateRef.current !== updateId) {
+          return true;
+        }
+
+        const currentPlayer = engineRef.current.getCurrentPlayer();
+        const legalActions = engineRef.current.getLegalActions();
+        
+        // Update state immediately - no artificial delays needed
+        const newPotAmount = engineRef.current.pot;
+        
+        // Batch state updates to prevent multiple renders
+        setPotAmount(newPotAmount);
+        
         if (currentPlayer) {
-          console.log('Setting next player to act:', currentPlayer.name, currentPlayer.position, currentPlayer.id);
-          setCurrentPlayerToAct(currentPlayer.id);
+          setCurrentPlayerToAct(String(currentPlayer.id));
           setAvailableActions(legalActions);
         } else {
-          console.log('No more players to act');
           setCurrentPlayerToAct(null);
           setAvailableActions([]);
         }
         
         // Force component re-render
         setForceUpdate(prev => prev + 1);
-      }, 100); // Small delay to ensure state updates
+        
+        return true;
+      } else {
+        const errorMessage = `Invalid action: ${actionType}${amount ? ` with amount ${amount}` : ''}`;
+        setError(errorMessage);
+        toast({
+          title: 'Invalid Action',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+      }
       
-      return true;
-    } else {
-      console.log('Action failed');
+      return false;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to execute action';
+      console.error('Error executing action:', error);
+      setError(errorMessage);
+      toast({
+        title: 'Action Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      return false;
     }
-    
-    return false;
-  };
+  }, []);
 
-  const getValidActionsForPlayer = (playerId: string): string[] => {
+  const getValidActionsForPlayer = useCallback((playerId: string): string[] => {
     if (!engineRef.current) {
       return [];
     }
     
     const currentPlayer = engineRef.current.getCurrentPlayer();
     
-    if (currentPlayer && currentPlayer.id === playerId) {
+    if (currentPlayer && String(currentPlayer.id) === playerId) {
       const actions = engineRef.current.getLegalActions();
       return actions;
     }
     
     return [];
-  };
+  }, []);
 
-  const isPlayerToAct = (playerId: string): boolean => {
-    const result = currentPlayerToAct === playerId;
-    if (result) {
-      console.log(`✓ Player ${playerId} is to act (current: ${currentPlayerToAct})`);
-    }
-    return result;
-  };
+  const isPlayerToAct = useCallback((playerId: string): boolean => {
+    return currentPlayerToAct === playerId;
+  }, [currentPlayerToAct]);
 
-  const getCurrentPot = (): number => {
+  const getCurrentPot = useCallback((): number => {
     return engineRef.current?.pot || potAmount;
-  };
+  }, [potAmount]);
 
-  const getEngineState = () => {
+  const getEngineState = useCallback(() => {
     return engineRef.current?.getState() || null;
-  };
+  }, []);
+
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
 
   return {
     engine: engineRef.current,
@@ -213,6 +286,9 @@ export const usePokerGameEngine = ({
     isPlayerToAct,
     getCurrentPot,
     getEngineState,
-    forceUpdate // Include this to trigger re-renders
+    forceUpdate, // Include this to trigger re-renders
+    error,
+    isInitializing,
+    clearError,
   };
 };

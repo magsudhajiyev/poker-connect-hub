@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { GameState } from '@/utils/gameState';
 import { getAvailableActions } from '@/utils/shareHandActions';
 import { standardizePosition, getActionOrder } from '@/utils/positionMapping';
@@ -21,16 +21,20 @@ export interface GameStateUIUpdates {
 export const useGameStateUI = (initialGameState?: GameState | null): GameStateUIUpdates => {
   const [gameState, setGameState] = useState<GameState | null>(initialGameState || null);
   
-  const currentPlayerPosition = gameState?.currentPosition || '';
-  const potAmount = gameState?.pot || 0;
-  const currentRound = gameState?.round || 'preflop';
+  // Memoize basic state values to prevent unnecessary recalculations
+  const currentPlayerPosition = useMemo(() => gameState?.currentPosition || '', [gameState?.currentPosition]);
+  const potAmount = useMemo(() => gameState?.pot || 0, [gameState?.pot]);
+  const currentRound = useMemo(() => gameState?.round || 'preflop', [gameState?.round]);
   
-  // Get available actions for current player
-  const availableActions = gameState ? 
-    getAvailableActions(currentRound + 'Actions', 0, []) : [];
+  // Memoize available actions calculation
+  const availableActions = useMemo(() => {
+    return gameState ? getAvailableActions(`${currentRound}Actions`, 0, []) : [];
+  }, [gameState, currentRound]);
 
-  const isPlayerActive = (position: string): boolean => {
-    if (!gameState || !position) return false;
+  const isPlayerActive = useCallback((position: string): boolean => {
+    if (!gameState || !position) {
+      return false;
+    }
     
     // Check if this is the current player to act
     const isCurrentPlayer = standardizePosition(position) === standardizePosition(currentPlayerPosition);
@@ -40,28 +44,21 @@ export const useGameStateUI = (initialGameState?: GameState | null): GameStateUI
     const isStillInHand = player?.isActive !== false;
     
     return isCurrentPlayer && isStillInHand;
-  };
+  }, [gameState, currentPlayerPosition]);
 
-  const isRoundActive = (round: string): boolean => {
+  const isRoundActive = useCallback((round: string): boolean => {
     return round === currentRound;
-  };
+  }, [currentRound]);
 
-  const isActionAvailable = (action: string): boolean => {
+  const isActionAvailable = useCallback((action: string): boolean => {
     return availableActions.includes(action);
-  };
+  }, [availableActions]);
 
-  const updateGameState = (newState: GameState) => {
-    console.log('Updating game state:', {
-      round: newState.round,
-      currentPlayer: newState.currentPosition,
-      activePlayers: newState.activePlayers.filter(p => p.isActive).map(p => p.position),
-      pot: newState.pot,
-      currentBet: newState.currentBet
-    });
+  const updateGameState = useCallback((newState: GameState) => {
     setGameState(newState);
-  };
+  }, []);
 
-  const initializeGame = (players: Player[], smallBlind: number, bigBlind: number): GameState => {
+  const initializeGame = useCallback((players: Player[], smallBlind: number, bigBlind: number): GameState => {
     // Create action order based on positions
     const positionOrder = ['sb', 'bb', 'utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn'];
     const playerPositions = players.map(p => p.position);
@@ -74,8 +71,12 @@ export const useGameStateUI = (initialGameState?: GameState | null): GameStateUI
       }
     }
     // Add blinds at the end for preflop
-    if (playerPositions.includes('sb')) actionOrder.push('sb');
-    if (playerPositions.includes('bb')) actionOrder.push('bb');
+    if (playerPositions.includes('sb')) {
+actionOrder.push('sb');
+}
+    if (playerPositions.includes('bb')) {
+actionOrder.push('bb');
+}
 
     // Convert UI players to game state format
     const activePlayers = players.map(player => ({
@@ -84,7 +85,7 @@ export const useGameStateUI = (initialGameState?: GameState | null): GameStateUI
       stack: player.stackSize[0] || 100,
       isHero: player.isHero,
       hasActedAfterRaise: false,
-      isActive: true
+      isActive: true,
     }));
 
     // Find small blind and big blind players
@@ -99,7 +100,7 @@ export const useGameStateUI = (initialGameState?: GameState | null): GameStateUI
         round: 'preflop' as const,
         player: sbPlayer.position,
         action: 'post',
-        amount: smallBlind
+        amount: smallBlind,
       });
     }
     
@@ -108,7 +109,7 @@ export const useGameStateUI = (initialGameState?: GameState | null): GameStateUI
         round: 'preflop' as const,
         player: bbPlayer.position,
         action: 'post',
-        amount: bigBlind
+        amount: bigBlind,
       });
     }
 
@@ -123,32 +124,12 @@ export const useGameStateUI = (initialGameState?: GameState | null): GameStateUI
       lastAggressor: bbPlayer?.position || '',
       pot: smallBlind + bigBlind,
       actionHistory,
-      actionOrder
+      actionOrder,
     };
 
-    console.log('Game initialized with improved multi-player logic:', {
-      players: newGameState.activePlayers.map(p => ({ name: p.name, position: p.position })),
-      actionOrder: newGameState.actionOrder,
-      firstToAct: newGameState.currentPosition,
-      pot: newGameState.pot
-    });
-    
     setGameState(newGameState);
     return newGameState;
-  };
-
-  // Log state changes for debugging
-  useEffect(() => {
-    if (gameState) {
-      console.log('Game State UI Update:', {
-        currentPlayer: currentPlayerPosition,
-        availableActions,
-        pot: potAmount,
-        round: currentRound,
-        activePlayers: gameState.activePlayers.filter(p => p.isActive).map(p => p.position)
-      });
-    }
-  }, [gameState, currentPlayerPosition, availableActions, potAmount, currentRound]);
+  }, []);
 
   return {
     currentPlayerPosition,
@@ -160,6 +141,6 @@ export const useGameStateUI = (initialGameState?: GameState | null): GameStateUI
     isRoundActive,
     isActionAvailable,
     initializeGame,
-    updateGameState
+    updateGameState,
   };
 };

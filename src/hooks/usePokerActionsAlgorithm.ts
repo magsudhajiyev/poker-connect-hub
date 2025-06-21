@@ -14,7 +14,7 @@ export const usePokerActionsAlgorithm = ({
   players,
   smallBlind,
   bigBlind,
-  currentStreet
+  currentStreet,
 }: UsePokerActionsAlgorithmProps) => {
   const [algorithm, setAlgorithm] = useState<PokerActionsAlgorithm | null>(null);
   const [currentPlayerToAct, setCurrentPlayerToAct] = useState<string | null>(null);
@@ -28,7 +28,7 @@ export const usePokerActionsAlgorithm = ({
       players: players?.length,
       smallBlind,
       bigBlind,
-      currentStreet
+      currentStreet,
     });
 
     if (players && players.length >= 2 && smallBlind && bigBlind) {
@@ -40,7 +40,7 @@ export const usePokerActionsAlgorithm = ({
           playersCount: players.length, 
           sb, 
           bb,
-          playerDetails: players.map(p => ({ id: p.id, name: p.name, position: p.position }))
+          playerDetails: players.map(p => ({ id: p.id, name: p.name, position: p.position })),
         });
         
         try {
@@ -70,10 +70,10 @@ export const usePokerActionsAlgorithm = ({
       }
     } else {
       console.log('Algorithm initialization skipped:', {
-        hasPlayers: !!players,
+        hasPlayers: Boolean(players),
         playersLength: players?.length,
-        hasSmallBlind: !!smallBlind,
-        hasBigBlind: !!bigBlind
+        hasSmallBlind: Boolean(smallBlind),
+        hasBigBlind: Boolean(bigBlind),
       });
     }
   }, [players, smallBlind, bigBlind]);
@@ -85,7 +85,7 @@ export const usePokerActionsAlgorithm = ({
         'preflopActions': 'preFlop',
         'flopActions': 'flop',
         'turnActions': 'turn',
-        'riverActions': 'river'
+        'riverActions': 'river',
       };
       
       const algorithmStreet = streetMapping[currentStreet] || 'preFlop';
@@ -188,6 +188,6 @@ export const usePokerActionsAlgorithm = ({
     getValidActionsForPlayer,
     isPlayerToAct,
     getCurrentPot,
-    getAlgorithmState
+    getAlgorithmState,
   };
 };

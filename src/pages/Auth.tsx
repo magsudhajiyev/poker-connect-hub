@@ -112,7 +112,7 @@ const Auth = () => {
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <Input
                     id="password"
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -136,7 +136,7 @@ const Auth = () => {
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <Input
                       id="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
+                      type={showConfirmPassword ? 'text' : 'password'}
                       placeholder="Confirm your password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
@@ -159,7 +159,7 @@ const Auth = () => {
                   <Checkbox
                     id="acceptTerms"
                     checked={acceptTerms}
-                    onCheckedChange={(checked) => setAcceptTerms(!!checked)}
+                    onCheckedChange={(checked) => setAcceptTerms(Boolean(checked))}
                     className="mt-0.5"
                   />
                   <Label htmlFor="acceptTerms" className="text-sm text-slate-300 leading-relaxed">
@@ -233,7 +233,7 @@ const Auth = () => {
               >
                 {isLogin 
                   ? "Don't have an account? Sign up" 
-                  : "Already have an account? Sign in"
+                  : 'Already have an account? Sign in'
                 }
               </button>
             </div>

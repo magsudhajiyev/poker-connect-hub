@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Menu, UserPlus, X } from 'lucide-react';
+import { Menu, UserPlus, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import PokerChipConfetti from './PokerChipConfetti';
 
@@ -27,7 +27,7 @@ const Header = () => {
     if (element) {
       element.scrollIntoView({ 
         behavior: 'smooth',
-        block: 'start'
+        block: 'start',
       });
     }
   };

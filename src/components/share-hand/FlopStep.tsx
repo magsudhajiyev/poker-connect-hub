@@ -34,7 +34,7 @@ const FlopStep = ({
   updateAction, 
   getActionButtonClass, 
   handleBetSizeSelect,
-  getAllSelectedCards
+  getAllSelectedCards,
 }: FlopStepProps) => {
   const potSize = calculatePotSize();
   const { players, updatePlayer, removePlayer } = usePlayerManagement(formData, setFormData);
@@ -59,7 +59,7 @@ const FlopStep = ({
       const updatedPlayers = [...players, newPlayer];
       setFormData({
         ...formData,
-        players: updatedPlayers
+        players: updatedPlayers,
       });
     }
   };

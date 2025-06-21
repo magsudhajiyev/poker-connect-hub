@@ -25,29 +25,29 @@ const HandReplay = ({ formData, getPositionName, getCurrencySymbol, gameState }:
       title: 'Preflop', 
       actions: formData.preflopActions,
       cards: [],
-      description: formData.preflopDescription
+      description: formData.preflopDescription,
     },
     { 
       id: 'flop', 
       title: 'Flop', 
       actions: formData.flopActions,
       cards: formData.flopCards,
-      description: formData.flopDescription
+      description: formData.flopDescription,
     },
     { 
       id: 'turn', 
       title: 'Turn', 
       actions: formData.turnActions,
       cards: formData.turnCard,
-      description: formData.turnDescription
+      description: formData.turnDescription,
     },
     { 
       id: 'river', 
       title: 'River', 
       actions: formData.riverActions,
       cards: formData.riverCard,
-      description: formData.riverDescription
-    }
+      description: formData.riverDescription,
+    },
   ];
 
   const goToPreviousStreet = () => {

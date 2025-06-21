@@ -10,7 +10,7 @@ export const positionNames: { [key: string]: string } = {
   'co': 'Cut Off',
   'btn': 'Button',
   'sb': 'Small Blind',
-  'bb': 'Big Blind'
+  'bb': 'Big Blind',
 };
 
 export const steps = [
@@ -19,7 +19,7 @@ export const steps = [
   { id: 'preflop', title: 'Preflop', description: 'Preflop action and betting' },
   { id: 'flop', title: 'Flop', description: 'Flop cards and action' },
   { id: 'turn', title: 'Turn', description: 'Turn card and action' },
-  { id: 'river', title: 'River', description: 'River card and final action' }
+  { id: 'river', title: 'River', description: 'River card and final action' },
 ];
 
 export const getPositionName = (position: string): string => {
