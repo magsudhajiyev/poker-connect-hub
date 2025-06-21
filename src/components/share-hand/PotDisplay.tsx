@@ -51,22 +51,9 @@ const PotDisplay = ({
   }
   
   return (
-    <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4">
-      <div className="text-center">
-        <span className="text-slate-300">{isFinal ? 'Final' : 'Current'} Pot: </span>
-        <span className="text-emerald-400 font-bold text-lg pot-display">
-          {displayPot}
-        </span>
-        {formData && displayValues && (
-          <div className="text-xs text-slate-400 mt-1">
-            {displayValues.effectiveDisplayMode === 'chips' 
-              ? `${displayValues.chipsToBlindBets(potSizeInChips || 0).toFixed(1)}BB`
-              : `$${(potSizeInChips || 0).toFixed(2)}`
-            }
-          </div>
-        )}
-      </div>
-    </div>
+    <span className="pot-display">
+      {displayPot}
+    </span>
   );
 };
 

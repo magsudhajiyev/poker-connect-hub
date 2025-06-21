@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import ClickablePlayerSeat from './ClickablePlayerSeat';
 import CommunityCards from './CommunityCards';
+import PotDisplay from '../PotDisplay';
 import { Player } from '@/types/shareHand';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -148,16 +149,6 @@ const PokerTable = React.memo(({
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
-      {/* Pot Display */}
-      {displayPot > 0 && (
-        <div className="text-center mb-4">
-          <div className="inline-block bg-emerald-900/30 border border-emerald-500/30 rounded-lg px-4 py-2">
-            <span className="text-emerald-400 font-bold text-lg">
-              Pot: {getCurrencySymbol()}{displayPot}
-            </span>
-          </div>
-        </div>
-      )}
 
       {/* Poker Table */}
       <div className="relative w-full" style={{ aspectRatio: isMobile ? '1/1.3' : '2/1' }}>
@@ -180,7 +171,24 @@ const PokerTable = React.memo(({
 
         {/* Community Cards Area */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <CommunityCards cards={communityCards} />
+          <div className="flex flex-col items-center space-y-2">
+            {/* Pot Display - positioned above community cards when present */}
+            {displayPot > 0 && (
+              <div className="bg-emerald-900/30 border border-emerald-500/30 rounded-lg px-3 py-2 shadow-lg">
+                <span className="text-emerald-400 font-bold text-sm sm:text-base">
+                  <PotDisplay 
+                    potSize={displayPot} 
+                    formData={formData} 
+                    getCurrencySymbol={getCurrencySymbol}
+                    pokerActions={pokerActions}
+                  />
+                </span>
+              </div>
+            )}
+            
+            {/* Community Cards */}
+            <CommunityCards cards={communityCards} />
+          </div>
         </div>
 
         {/* All Position Seats (clickable) */}

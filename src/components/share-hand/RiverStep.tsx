@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Plus, X } from 'lucide-react';
 import CardInput from '@/components/CardInput';
-import PotDisplay from './PotDisplay';
 import { PokerTable } from './poker-table';
 import { useShareHandContext } from './ShareHandProvider';
 import SelectedCardsDisplay from './SelectedCardsDisplay';
@@ -46,26 +45,21 @@ const RiverStep = ({
   handleBetSizeSelect,
   getAllSelectedCards,
 }: RiverStepProps) => {
-  const potSize = calculatePotSize();
   const { players, updatePlayer, removePlayer } = usePlayerManagement(formData, setFormData);
   const { pokerActions } = useShareHandContext();
+  const potSize = pokerActions?.pot || calculatePotSize(formData);
 
   // Don't allow player updates in action steps - players should be locked
   const handleUpdatePlayer = (newPlayer: any) => {
     // Do nothing - players are locked after positions step
-    console.log('Player updates disabled in action steps');
   };
 
   const handleRemovePlayer = (playerId: string) => {
     // Do nothing - players are locked after positions step
-    console.log('Player removal disabled in action steps');
   };
 
   return (
     <div className="space-y-4">
-      {showPot && (
-        <PotDisplay potSize={potSize} getCurrencySymbol={getCurrencySymbol} isFinal />
-      )}
 
       <h3 className="text-base font-medium text-slate-200 mb-2">River & Summary</h3>
       

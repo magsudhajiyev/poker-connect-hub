@@ -2,7 +2,6 @@
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import CardInput from '@/components/CardInput';
-import PotDisplay from './PotDisplay';
 import { PokerTable } from './poker-table';
 import { useShareHandContext } from './ShareHandProvider';
 import SelectedCardsDisplay from './SelectedCardsDisplay';
@@ -26,17 +25,16 @@ interface FlopStepProps {
 const FlopStep = ({ 
   formData, 
   setFormData, 
-  showPot, 
-  getPositionName, 
+  showPot: _showPot, 
+  getPositionName: _getPositionName, 
   getCurrencySymbol, 
-  calculatePotSize, 
+  calculatePotSize: _calculatePotSize, 
   getAvailableActions, 
   updateAction, 
-  getActionButtonClass, 
+  getActionButtonClass: _getActionButtonClass, 
   handleBetSizeSelect,
   getAllSelectedCards,
 }: FlopStepProps) => {
-  const potSize = calculatePotSize();
   const { players, updatePlayer, removePlayer } = usePlayerManagement(formData, setFormData);
   const { pokerActions } = useShareHandContext();
 
@@ -70,9 +68,6 @@ const FlopStep = ({
 
   return (
     <div className="space-y-4 w-full overflow-x-hidden">
-      {showPot && (
-        <PotDisplay potSize={potSize} getCurrencySymbol={getCurrencySymbol} />
-      )}
 
       <h3 className="text-base font-medium text-slate-200 mb-2">Flop</h3>
       

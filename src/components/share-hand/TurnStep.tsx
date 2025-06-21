@@ -2,7 +2,6 @@
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import CardInput from '@/components/CardInput';
-import PotDisplay from './PotDisplay';
 import { PokerTable } from './poker-table';
 import { useShareHandContext } from './ShareHandProvider';
 import SelectedCardsDisplay from './SelectedCardsDisplay';
@@ -36,9 +35,9 @@ const TurnStep = ({
   handleBetSizeSelect,
   getAllSelectedCards,
 }: TurnStepProps) => {
-  const potSize = calculatePotSize();
   const { players, updatePlayer, removePlayer } = usePlayerManagement(formData, setFormData);
   const { pokerActions } = useShareHandContext();
+  const potSize = pokerActions?.pot || calculatePotSize(formData);
 
   // Don't allow player updates in action steps - players should be locked
   const handleUpdatePlayer = (newPlayer: any) => {
@@ -53,9 +52,6 @@ const TurnStep = ({
 
   return (
     <div className="space-y-4">
-      {showPot && (
-        <PotDisplay potSize={potSize} getCurrencySymbol={getCurrencySymbol} />
-      )}
 
       <h3 className="text-base font-medium text-slate-200 mb-2">Turn</h3>
       
