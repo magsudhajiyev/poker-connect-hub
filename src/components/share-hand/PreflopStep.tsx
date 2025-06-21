@@ -39,6 +39,7 @@ const PreflopStep = ({
   const potSize = calculatePotSize();
   const { players, updatePlayer, removePlayer } = usePlayerManagement(formData, setFormData);
   const { pokerActions } = useShareHandContext();
+  
 
   // Don't allow player updates in action steps - players should be locked
   const handleUpdatePlayer = (newPlayer: any) => {

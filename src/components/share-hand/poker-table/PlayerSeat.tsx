@@ -2,16 +2,29 @@
 import React from 'react';
 import { Player } from '@/types/shareHand';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useDisplayValues } from '@/hooks/useDisplayValues';
 
 interface PlayerSeatProps {
   player: Player;
   position: { x: number; y: number };
   isActive?: boolean;
   gameFormat?: string;
+  formData?: any; // For accessing blinds and other form data
 }
 
-const PlayerSeat = ({ player, position, isActive = false, gameFormat = 'cash' }: PlayerSeatProps) => {
+const PlayerSeat = ({ player, position, isActive = false, gameFormat = 'cash', formData }: PlayerSeatProps) => {
   const isMobile = useIsMobile();
+  
+  // Use display values hook for proper unit conversion
+  const displayValues = useDisplayValues({ 
+    formData: formData || { gameFormat, smallBlind: '1', bigBlind: '2' } 
+  });
+  
+  // Format stack size for display
+  const stackDisplay = displayValues.formatStackSize(player.stackSize);
+  
+  // Determine if stack is critically low (less than 10 BB)
+  const isShortStack = displayValues.chipsToBlindBets(stackDisplay.amount) < 10;
   
   const getPositionLabel = (pos: string) => {
     const labels: { [key: string]: string } = {
@@ -59,9 +72,11 @@ const PlayerSeat = ({ player, position, isActive = false, gameFormat = 'cash' }:
 
           {/* Stack Size */}
           <div className={`${isMobile ? 'text-[7px]' : 'text-[9px] sm:text-[10px]'} font-bold ${
-            isActive ? 'text-emerald-200' : player.isHero ? 'text-blue-200' : 'text-slate-100'
+            isActive ? 'text-emerald-200' : 
+            player.isHero ? 'text-blue-200' : 
+            isShortStack ? 'text-red-300' : 'text-slate-100'
           }`}>
-            {gameFormat === 'cash' ? '$' : ''}{player.stackSize[0]}{gameFormat === 'mtt' ? 'BB' : ''}
+            {stackDisplay.formatted}
           </div>
         </div>
 

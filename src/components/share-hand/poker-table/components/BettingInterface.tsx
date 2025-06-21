@@ -4,14 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import BetSizingButtons from '@/components/BetSizingButtons';
+import { useDisplayValues } from '@/hooks/useDisplayValues';
 
 interface BettingInterfaceProps {
   selectedAction: string;
   betAmount: string;
   setBetAmount: (amount: string) => void;
-  potSize: number;
-  stackSize: number;
+  potSize: number; // Should be in chips
+  stackSize: number; // Should be in chips
   gameFormat?: string;
+  formData?: any; // For display values
   onBetSizeButtonSelect: (amount: string) => void;
   onBetSubmit: () => void;
 }
@@ -23,11 +25,26 @@ const BettingInterface = ({
   potSize,
   stackSize,
   gameFormat = 'cash',
+  formData,
   onBetSizeButtonSelect,
   onBetSubmit,
 }: BettingInterfaceProps) => {
+  
+  // Use display values for proper unit handling
+  const displayValues = useDisplayValues({ 
+    formData: formData || { gameFormat, smallBlind: '1', bigBlind: '2' } 
+  });
+  
   const getBetSizeLabel = () => {
-    return gameFormat === 'cash' ? 'Bet Size ($)' : 'Bet Size (BB)';
+    const config = displayValues.getDisplayConfig();
+    return `Bet Size (${config.symbol})`;
+  };
+
+  const handleBetSizeButtonSelect = (amountInChips: string) => {
+    // Convert chips back to display unit for the input
+    const chipAmount = parseFloat(amountInChips);
+    const displayAmount = displayValues.convertFromChips(chipAmount);
+    onBetSizeButtonSelect(displayAmount.toString());
   };
 
   if (selectedAction !== 'bet' && selectedAction !== 'raise') {
@@ -41,10 +58,12 @@ const BettingInterface = ({
         <Label className="text-slate-300 text-xs">Quick Bet Sizes</Label>
         <div className="mt-1">
           <BetSizingButtons
-            potSize={potSize}
-            stackSize={stackSize}
-            onBetSizeSelect={onBetSizeButtonSelect}
+            potSizeInChips={potSize}
+            stackSizeInChips={stackSize}
+            onBetSizeSelect={handleBetSizeButtonSelect}
             gameFormat={gameFormat}
+            displayMode={displayValues.effectiveDisplayMode}
+            bigBlind={displayValues.bigBlind}
           />
         </div>
       </div>

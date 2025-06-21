@@ -148,9 +148,24 @@ export const useActionManagement = (
         completed: true,
       };
       
+      // Update player's current bet when bet amount is finalized
+      let updatedPlayers = [...(prev.players || [])];
+      if (currentAction.action && (currentAction.action === 'bet' || currentAction.action === 'raise' || currentAction.action === 'call')) {
+        updatedPlayers = updatedPlayers.map(player => {
+          if (player.id === currentAction.playerId) {
+            return {
+              ...player,
+              currentBet: numericAmount,
+            };
+          }
+          return player;
+        });
+        console.log(`Updated player ${currentAction.playerId} with finalized bet amount: ${numericAmount}`);
+      }
+      
       // Add next action step if this is a bet or raise and it doesn't already exist
       if (currentAction.action && shouldAddNextAction(currentAction.action)) {
-        const nextActionStep = createNextActionStep(currentAction, prev.players);
+        const nextActionStep = createNextActionStep(currentAction, updatedPlayers);
         
         // Check if next action already exists
         const nextActionExists = updatedActions.find((action, actionIndex) => 
