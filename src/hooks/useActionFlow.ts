@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Player } from '@/types/shareHand';
 import {
   ActionType,
@@ -32,11 +32,19 @@ export const useActionFlow = (
   bigBlind: number, 
   street: string, 
   setFormData?: (updater: (prev: any) => any) => void,
+  currentStep?: number,
 ) => {
   // Helper function to round stack sizes to avoid floating point precision issues
   const roundStackSize = (amount: number): number => {
     return Math.round(amount * 100) / 100;
   };
+
+  // Track which players have had blinds deducted to prevent double deduction
+  const deductedPlayersRef = useRef<Set<string>>(new Set());
+  // Track if we've started actual gameplay (transitioned from positions to preflop)
+  const gameStartedRef = useRef<boolean>(false);
+  // Track the previous step to detect navigation transitions
+  const previousStepRef = useRef<number | undefined>(undefined);
 
   // Get action order for current street using constants
   const getStreetActionOrder = (street: string): readonly Position[] => {
@@ -84,8 +92,20 @@ export const useActionFlow = (
       const isStreetChange = actionState.street !== street;
       const isFirstInitialization = actionState.actions.length === 0;
       
-      // Only reinitialize if it's the first time OR street has changed
-      if (isFirstInitialization || isStreetChange) {
+      // Detect navigation to preflop (user clicked "Next" from positions step)
+      const isNavigatingToPreflop = street === StreetType.PREFLOP && 
+                                   !gameStartedRef.current && 
+                                   orderedPlayers.length > 0 &&
+                                   currentStep === 2 && // Currently on preflop step (index 2)
+                                   previousStepRef.current === 1 && // Was on positions step (index 1)
+                                   isFirstInitialization;
+      
+      console.log('🔄 useEffect triggered for street:', street, 'with', orderedPlayers.length, 'players');
+      console.log('   isStreetChange:', isStreetChange, 'isFirstInit:', isFirstInitialization, 'isNavigatingToPreflop:', isNavigatingToPreflop);
+      console.log('   currentStep:', currentStep, 'previousStep:', previousStepRef.current);
+      
+      // Only reinitialize if it's the first time OR street has changed OR navigating to preflop
+      if (isFirstInitialization || isStreetChange || isNavigatingToPreflop) {
         const initialBets = new Map();
         let initialPot = actionState.pot; // Carry over pot from previous street
         let initialCurrentBet = 0; // Reset current bet for new street
@@ -103,9 +123,23 @@ export const useActionFlow = (
           initialPot = smallBlind + bigBlind;
           initialCurrentBet = bigBlind;
 
-          // CRITICAL: Deduct blind amounts from player stack sizes
-          if (setFormData) {
+          // Mark game as started when navigating to preflop gameplay
+          if (isNavigatingToPreflop) {
+            gameStartedRef.current = true;
+            console.log('🎮 Game started! User navigated from positions to preflop');
+          }
+
+          // CRITICAL: Deduct blind amounts only when navigating to preflop (not during positions setup)
+          if (setFormData && isNavigatingToPreflop) {
+            console.log('🛡️ Starting game - performing blind deduction...');
+            console.log('   All players:', orderedPlayers.map(p => `${p.position}:${p.id}`));
+            console.log('   SB Player found:', sbPlayer ? `${sbPlayer.position}:${sbPlayer.id}` : 'NOT FOUND');
+            console.log('   BB Player found:', bbPlayer ? `${bbPlayer.position}:${bbPlayer.id}` : 'NOT FOUND');
+            
             if (sbPlayer) {
+              console.log('   SB player stack before deduction:', sbPlayer.stackSize?.[0]);
+              deductedPlayersRef.current.add(sbPlayer.id);
+              
               setFormData(prev => ({
                 ...prev,
                 players: prev.players.map(p => 
@@ -114,10 +148,15 @@ export const useActionFlow = (
                     : p
                 )
               }));
-              console.log('🔄 SB Blind Deduction:', sbPlayer.position, 'deducted:', smallBlind);
+              console.log('✅ SB Blind Deduction EXECUTED:', sbPlayer.position, 'deducted:', smallBlind);
+            } else {
+              console.log('❌ SB Player NOT FOUND - cannot deduct blind');
             }
             
             if (bbPlayer) {
+              console.log('   BB player stack before deduction:', bbPlayer.stackSize?.[0]);
+              deductedPlayersRef.current.add(bbPlayer.id);
+              
               setFormData(prev => ({
                 ...prev,
                 players: prev.players.map(p => 
@@ -126,8 +165,14 @@ export const useActionFlow = (
                     : p
                 )
               }));
-              console.log('🔄 BB Blind Deduction:', bbPlayer.position, 'deducted:', bigBlind);
+              console.log('✅ BB Blind Deduction EXECUTED:', bbPlayer.position, 'deducted:', bigBlind);
+            } else {
+              console.log('❌ BB Player NOT FOUND - cannot deduct blind');
             }
+            
+            console.log('🏁 Game start blind deduction complete');
+          } else if (setFormData && !isNavigatingToPreflop) {
+            console.log('🚫 Blind deduction SKIPPED - not navigating to preflop (positions step or re-render)');
           }
         }
         // For post-flop streets, reset player bets to 0 but keep pot
@@ -151,7 +196,12 @@ export const useActionFlow = (
         }));
       }
     }
-  }, [orderedPlayers.length, street]);
+    
+    // Track step changes for next render
+    if (currentStep !== undefined) {
+      previousStepRef.current = currentStep;
+    }
+  }, [street, orderedPlayers.length, currentStep]); // Trigger on street changes, player list changes, and step changes
 
   // Check if all remaining active players are all-in (no action needed)
   const areAllActivePlayersAllIn = (): boolean => {

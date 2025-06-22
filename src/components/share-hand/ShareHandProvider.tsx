@@ -58,6 +58,7 @@ export const ShareHandProvider = ({ children }: ShareHandProviderProps) => {
     blinds.bigBlind,
     currentStreet,
     shareHandLogic.setFormData,
+    shareHandLogic.currentStep,
   );
   
   // Initialize API-based poker engine
