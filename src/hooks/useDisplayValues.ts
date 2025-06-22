@@ -1,7 +1,7 @@
 import { useMemo, useCallback } from 'react';
 import { ShareHandFormData } from '@/types/shareHand';
 
-export type DisplayMode = 'chips' | 'bb';
+export type DisplayMode = 'chips'; // Simplified - always use chips
 export type GameFormat = 'cash' | 'mtt' | 'sng';
 
 interface UseDisplayValuesProps {
@@ -17,13 +17,10 @@ export interface DisplayValue {
 }
 
 export const useDisplayValues = ({ formData, displayMode }: UseDisplayValuesProps) => {
-  // Determine display mode based on game format (for now, until toggle feature is added)
+  // Always use chips mode for simplified currency system
   const effectiveDisplayMode = useMemo((): DisplayMode => {
-    if (displayMode) {
-return displayMode;
-}
-    return formData.gameFormat === 'cash' ? 'chips' : 'bb';
-  }, [displayMode, formData.gameFormat]);
+    return 'chips'; // Always chips regardless of game format
+  }, []);
 
   // Parse blind values safely
   const { smallBlind, bigBlind } = useMemo(() => {
@@ -35,83 +32,90 @@ return displayMode;
     };
   }, [formData.smallBlind, formData.bigBlind]);
 
-  // Core conversion functions
-  const chipsToBlindBets = useCallback((chipAmount: number): number => {
-    return chipAmount / bigBlind;
-  }, [bigBlind]);
+  // Simplified conversion functions - everything is in chips
+  const convertToChips = useCallback((amount: number): number => {
+    return amount; // No conversion needed - always chips
+  }, []);
 
-  const blindBetsToChips = useCallback((bbAmount: number): number => {
-    return bbAmount * bigBlind;
-  }, [bigBlind]);
+  const convertFromChips = useCallback((chipAmount: number): number => {
+    return chipAmount; // No conversion needed - always chips
+  }, []);
 
-  // Convert any value to chips (internal standard)
-  const convertToChips = useCallback((amount: number, fromUnit: DisplayMode = effectiveDisplayMode): number => {
-    if (fromUnit === 'chips') {
-return amount;
-}
-    return blindBetsToChips(amount);
-  }, [blindBetsToChips, effectiveDisplayMode]);
-
-  // Convert chips to display unit
-  const convertFromChips = useCallback((chipAmount: number, toUnit: DisplayMode = effectiveDisplayMode): number => {
-    if (toUnit === 'chips') {
-return chipAmount;
-}
-    return chipsToBlindBets(chipAmount);
-  }, [chipsToBlindBets, effectiveDisplayMode]);
-
-  // Get display configuration for current mode
-  const getDisplayConfig = useCallback((mode: DisplayMode = effectiveDisplayMode) => {
+  // Display configuration based on game format
+  const getDisplayConfig = useCallback(() => {
+    const isCash = formData.gameFormat === 'cash';
     return {
-      chips: {
-        unit: 'chips',
-        symbol: '$',
-        decimals: 2,
-        name: 'Chips',
-      },
-      bb: {
-        unit: 'bb',
-        symbol: 'BB',
-        decimals: 1,
-        name: 'Big Blinds',
-      },
-    }[mode];
-  }, [effectiveDisplayMode]);
+      unit: 'chips',
+      symbol: isCash ? '$' : '', // Cash shows $, MTT shows no symbol
+      decimals: isCash ? 2 : 0,   // Cash shows decimals, MTT shows whole numbers
+      name: isCash ? 'Chips' : 'Chips',
+    };
+  }, [formData.gameFormat]);
 
-  // Format a chip amount for display
-  const formatChipAmount = useCallback((chipAmount: number, targetMode: DisplayMode = effectiveDisplayMode): DisplayValue => {
-    const config = getDisplayConfig(targetMode);
-    const displayAmount = convertFromChips(chipAmount, targetMode);
+  // Format large numbers for display (10K, 1.2M, etc.)
+  const formatLargeNumber = useCallback((amount: number): string => {
+    if (amount >= 1000000) {
+      const millions = amount / 1000000;
+      return `${millions.toFixed(millions >= 10 ? 0 : 1)}M`;
+    } else if (amount >= 1000) {
+      const thousands = amount / 1000;
+      return `${thousands.toFixed(thousands >= 10 ? 0 : 1)}K`;
+    }
+    return amount.toString();
+  }, []);
+
+  // Format a chip amount for display with large number support
+  const formatChipAmount = useCallback((chipAmount: number, useLargeFormat: boolean = false): DisplayValue => {
+    const config = getDisplayConfig();
     
-    // More aggressive rounding to prevent floating point precision issues
-    const multiplier = Math.pow(10, config.decimals);
-    const roundedAmount = Math.round(displayAmount * multiplier) / multiplier;
+    // Round to prevent floating point precision issues
+    const roundedAmount = Math.round(chipAmount * 100) / 100;
     
-    // Additional check to remove unnecessary trailing zeros after decimal
-    const finalAmount = parseFloat(roundedAmount.toFixed(config.decimals));
+    // Use large number format for stack displays if requested
+    const displayText = useLargeFormat && roundedAmount >= 1000 
+      ? formatLargeNumber(roundedAmount)
+      : roundedAmount.toFixed(roundedAmount < 1000 ? config.decimals : 0);
     
     return {
-      amount: finalAmount,
+      amount: roundedAmount,
       unit: config.unit,
       symbol: config.symbol,
-      formatted: `${config.symbol}${finalAmount.toFixed(config.decimals)}`,
+      formatted: `${config.symbol}${displayText}`,
     };
-  }, [convertFromChips, getDisplayConfig, effectiveDisplayMode]);
+  }, [getDisplayConfig, formatLargeNumber]);
 
-  // Format stack size for display (handles both single number and array formats)
-  const formatStackSize = useCallback((stackSize: number | number[], targetMode: DisplayMode = effectiveDisplayMode): DisplayValue => {
+  // Format pot amount for display (separate from stack formatting)
+  const formatPotAmount = useCallback((chipAmount: number): DisplayValue => {
+    const config = getDisplayConfig();
+    
+    // Round to prevent floating point precision issues
+    const roundedAmount = Math.round(chipAmount * 100) / 100;
+    
+    // Pot displays use regular numbers, not large format
+    const displayText = roundedAmount.toFixed(config.decimals);
+    
+    return {
+      amount: roundedAmount,
+      unit: config.unit,
+      symbol: config.symbol,
+      formatted: `${config.symbol}${displayText}`,
+    };
+  }, [getDisplayConfig]);
+
+  // Format stack size for display with large number support
+  const formatStackSize = useCallback((stackSize: number | number[]): DisplayValue => {
     const chipAmount = Array.isArray(stackSize) ? stackSize[0] : stackSize;
-    return formatChipAmount(chipAmount, targetMode);
-  }, [formatChipAmount, effectiveDisplayMode]);
+    return formatChipAmount(chipAmount, true); // Use large format for stacks
+  }, [formatChipAmount]);
 
-  // Parse user input and convert to chips
-  const parseInputToChips = useCallback((input: string, fromMode: DisplayMode = effectiveDisplayMode): number => {
+  // Parse user input - always in chips now
+  const parseInputToChips = useCallback((input: string): number => {
     const amount = parseFloat(input);
     if (isNaN(amount)) {
-return 0;
-}
-    return convertToChips(amount, fromMode);
-  }, [convertToChips, effectiveDisplayMode]);
+      return 0;
+    }
+    return amount; // No conversion needed - always chips
+  }, []);
 
   // Validate bet amount in chips
   const validateBetAmount = useCallback((chipAmount: number, playerChipStack: number): {
@@ -167,15 +171,15 @@ return 0;
     smallBlind,
     bigBlind,
     
-    // Core conversions
-    chipsToBlindBets,
-    blindBetsToChips,
+    // Core conversions (simplified)
     convertToChips,
     convertFromChips,
     
     // Display formatting
     formatChipAmount,
+    formatPotAmount,
     formatStackSize,
+    formatLargeNumber,
     getDisplayConfig,
     
     // Input parsing and validation

@@ -41,10 +41,8 @@ const BettingInterface = ({
   };
 
   const handleBetSizeButtonSelect = (amountInChips: string) => {
-    // Convert chips back to display unit for the input
-    const chipAmount = parseFloat(amountInChips);
-    const displayAmount = displayValues.convertFromChips(chipAmount);
-    onBetSizeButtonSelect(displayAmount.toString());
+    // No conversion needed - everything is in chips now
+    onBetSizeButtonSelect(amountInChips);
   };
 
   if (selectedAction !== 'bet' && selectedAction !== 'raise') {

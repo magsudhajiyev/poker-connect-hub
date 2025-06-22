@@ -39,10 +39,10 @@ const PotDisplay = ({
     potSizeInChips = potAmount;
   }
   
-  // Format pot for display
+  // Format pot for display using specific pot formatting
   let displayPot: string;
   if (displayValues && potSizeInChips !== undefined) {
-    const potDisplay = displayValues.formatChipAmount(potSizeInChips);
+    const potDisplay = displayValues.formatPotAmount(potSizeInChips);
     displayPot = potDisplay.formatted;
   } else {
     // Fallback to legacy format

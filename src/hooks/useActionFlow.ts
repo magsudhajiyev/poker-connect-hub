@@ -102,6 +102,33 @@ export const useActionFlow = (
           }
           initialPot = smallBlind + bigBlind;
           initialCurrentBet = bigBlind;
+
+          // CRITICAL: Deduct blind amounts from player stack sizes
+          if (setFormData) {
+            if (sbPlayer) {
+              setFormData(prev => ({
+                ...prev,
+                players: prev.players.map(p => 
+                  p.id === sbPlayer.id 
+                    ? { ...p, stackSize: [Math.max(0, p.stackSize[0] - smallBlind), p.stackSize[1]] }
+                    : p
+                )
+              }));
+              console.log('🔄 SB Blind Deduction:', sbPlayer.position, 'deducted:', smallBlind);
+            }
+            
+            if (bbPlayer) {
+              setFormData(prev => ({
+                ...prev,
+                players: prev.players.map(p => 
+                  p.id === bbPlayer.id 
+                    ? { ...p, stackSize: [Math.max(0, p.stackSize[0] - bigBlind), p.stackSize[1]] }
+                    : p
+                )
+              }));
+              console.log('🔄 BB Blind Deduction:', bbPlayer.position, 'deducted:', bigBlind);
+            }
+          }
         }
         // For post-flop streets, reset player bets to 0 but keep pot
         else {
@@ -364,24 +391,29 @@ export const useActionFlow = (
         break;
         
       case ActionType.CALL:
-        if (amountToCall === 0) {
+        // If amount is provided, use it as the total amount to add to pot
+        // Otherwise, calculate the minimum amount needed to call
+        const callAmount = amount || amountToCall;
+        
+        if (callAmount === 0) {
           return false;
         }
         
         // Check if player has enough stack to call
         const playerStackSize = currentPlayer.stackSize?.[0] || DEFAULT_VALUES.STACK_SIZE;
-        const remainingStack = playerStackSize - playerCurrentBet;
         
-        if (remainingStack < amountToCall) {
+        if (playerStackSize < callAmount) {
           return false;
         }
         
-        newPot += amountToCall;
-        newPlayerBets.set(playerId, playerCurrentBet + amountToCall);
+        // Add the call amount to pot and update player's total bet
+        newPot += callAmount;
+        newPlayerBets.set(playerId, playerCurrentBet + callAmount);
         
-        // Update player stack in formData
+        // Update player stack in formData - deduct the call amount
         if (setFormData) {
-          const newStackSize = roundStackSize(Math.max(0, playerStackSize - amountToCall));
+          const newStackSize = roundStackSize(Math.max(0, playerStackSize - callAmount));
+          console.log('📞 CALL Stack Update:', currentPlayer.position, 'stack:', playerStackSize, 'callAmount:', callAmount, 'wasExplicit:', !!amount, '→', newStackSize);
           setFormData(prev => ({
             ...prev,
             players: prev.players.map(p => 
@@ -427,16 +459,20 @@ export const useActionFlow = (
         if (!amount || amount <= 0) {
           return false;
         }
-        const totalRaiseAmount = amount; // Fix: amount is the total bet, not additional raise
-        newPot += totalRaiseAmount;
-        newCurrentBet = amount; // Fix: new bet should be the total amount
-        newPlayerBets.set(playerId, playerCurrentBet + totalRaiseAmount);
+        // amount is the total bet amount (e.g., raise to 60 = total bet becomes 60)
+        const totalBetAmount = amount;
+        const additionalAmount = totalBetAmount - playerCurrentBet; // How much more they're adding
+        
+        newPot += additionalAmount; // Only add the additional amount to pot
+        newCurrentBet = totalBetAmount; // New current bet is the total amount
+        newPlayerBets.set(playerId, totalBetAmount); // Player's total bet is the amount
         newLastRaiserIndex = actionState.currentPlayerIndex % orderedPlayers.length;
         
-        // Update player stack in formData
+        // Update player stack in formData - deduct only the additional amount
         if (setFormData) {
           const playerStackSize = currentPlayer.stackSize?.[0] || DEFAULT_VALUES.STACK_SIZE;
-          const newStackSize = roundStackSize(Math.max(0, playerStackSize - totalRaiseAmount));
+          const newStackSize = roundStackSize(Math.max(0, playerStackSize - additionalAmount));
+          console.log('🚀 RAISE Stack Update:', currentPlayer.position, 'stack:', playerStackSize, 'totalBet:', totalBetAmount, 'additional:', additionalAmount, '→', newStackSize);
           setFormData(prev => ({
             ...prev,
             players: prev.players.map(p => 
