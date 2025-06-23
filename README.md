@@ -1,73 +1,112 @@
-# Welcome to your Lovable project
+# Poker Connect Hub
 
-## Project info
+A poker hand analysis and sharing platform built with React, TypeScript, and NestJS.
 
-**URL**: https://lovable.dev/projects/0ee82a38-1405-44ca-bbdf-49b480ef3fe5
+## Features
 
-## How can I edit this code?
+- **Hand Recreation**: Recreate poker hands step-by-step
+- **Hand Analysis**: Analyze poker decisions and strategies
+- **Social Sharing**: Share hands with the poker community
+- **Google Authentication**: Secure login with Google OAuth
+- **Responsive Design**: Works on desktop and mobile devices
 
-There are several ways of editing your application.
+## Technologies Used
 
-**Use Lovable**
+### Frontend
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- shadcn/ui components
+- React Router
+- Axios
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/0ee82a38-1405-44ca-bbdf-49b480ef3fe5) and start prompting.
+### Backend
+- NestJS
+- MongoDB
+- Passport.js (Google OAuth)
+- JWT Authentication
 
-Changes made via Lovable will be committed automatically to this repo.
+## Getting Started
 
-**Use your preferred IDE**
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- MongoDB instance (local or Atlas)
+- Google OAuth credentials
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+1. Clone the repository:
+```bash
+git clone <your-repo-url>
+cd poker-connect-hub
 ```
 
-**Edit a file directly in GitHub**
+2. Install dependencies:
+```bash
+# Install frontend dependencies
+npm install
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+# Install backend dependencies
+cd backend
+npm install
+cd ..
+```
 
-**Use GitHub Codespaces**
+3. Set up environment variables:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Create `.env` in the root directory:
+```env
+VITE_GOOGLE_CLIENT_ID=your-google-client-id
+VITE_API_URL=http://localhost:3000
+VITE_APP_URL=http://localhost:5173
+```
 
-## What technologies are used for this project?
+Create `backend/.env`:
+```env
+NODE_ENV=development
+PORT=3000
+FRONTEND_URL=http://localhost:5173
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+JWT_SECRET=your-jwt-secret
+DATABASE_URL=mongodb://localhost:27017/poker_connect_hub
+# ... other variables
+```
 
-This project is built with:
+4. Run the development servers:
+```bash
+# Run both frontend and backend
+npm run dev:all
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# Or run separately:
+# Frontend only
+npm run dev
 
-## How can I deploy this project?
+# Backend only
+npm run backend:dev
+```
 
-Simply open [Lovable](https://lovable.dev/projects/0ee82a38-1405-44ca-bbdf-49b480ef3fe5) and click on Share -> Publish.
+## Deployment
 
-## Can I connect a custom domain to my Lovable project?
+### Frontend (Netlify)
+1. Push your code to GitHub
+2. Connect your GitHub repo to Netlify
+3. Set environment variables in Netlify dashboard
+4. Deploy
 
-Yes, you can!
+### Backend
+Deploy to any Node.js hosting service (Heroku, Railway, Render, etc.)
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Contributing
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License.
