@@ -3,7 +3,16 @@ import axios from 'axios';
 
 // Configure axios defaults
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = import.meta.env.VITE_API_URL;
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || '';
+
+// Debug logging for production
+if (import.meta.env.PROD) {
+  console.log('Environment:', {
+    VITE_API_URL: import.meta.env.VITE_API_URL,
+    VITE_APP_URL: import.meta.env.VITE_APP_URL,
+    MODE: import.meta.env.MODE
+  });
+}
 
 export interface User {
   id: string;
@@ -49,7 +58,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = () => {
     // Redirect to Google OAuth
-    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
+    const apiUrl = import.meta.env.VITE_API_URL || window.location.origin;
+    console.log('Login redirect URL:', `${apiUrl}/auth/google`);
+    window.location.href = `${apiUrl}/auth/google`;
   };
 
   const logout = async () => {
