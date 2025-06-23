@@ -5,6 +5,8 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Index from './pages/Index';
 import Auth from './pages/Auth';
 import Blog from './pages/Blog';
@@ -68,29 +70,31 @@ const App = () => {
       showReportBug={import.meta.env.PROD}
     >
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/terms-conditions" element={<TermsConditions />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/feed" element={<Feed />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/share-hand" element={<ShareHand />} />
+              <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+              <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/share-hand" element={<ProtectedRoute><ShareHand /></ProtectedRoute>} />
               <Route path="/hand-view" element={<HandView />} />
-              <Route path="/settings" element={<Settings />} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="/404" element={<Error404 />} />
               <Route path="/500" element={<Error500 />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

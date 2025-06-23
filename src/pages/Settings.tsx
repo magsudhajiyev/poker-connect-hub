@@ -9,8 +9,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
 import { MobileSidebarContent } from '@/components/MobileSidebarContent';
-import { ArrowLeft, Menu, Bell, Shield, User, Palette } from 'lucide-react';
+import { ArrowLeft, Menu, Bell, Shield, User, Palette, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Sheet,
   SheetContent,
@@ -43,6 +44,7 @@ const MobileSidebar = () => {
 const SettingsContent = () => {
   const { isCollapsed } = useSidebar();
   const navigate = useNavigate();
+  const { logout, isLoggingOut } = useAuth();
   
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(false);
@@ -50,6 +52,14 @@ const SettingsContent = () => {
   const [twoFactorAuth, setTwoFactorAuth] = useState(false);
   const [dataSharing, setDataSharing] = useState(false);
   const [profileVisibility, setProfileVisibility] = useState(true);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 w-full overflow-x-hidden">
@@ -139,6 +149,26 @@ const SettingsContent = () => {
                       Save Changes
                     </Button>
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-slate-800/40 border-slate-700/30 w-full">
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="text-slate-200 text-lg sm:text-xl">Account Actions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    variant="destructive"
+                    className="w-full sm:w-auto flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    {isLoggingOut ? 'Logging out...' : 'Log out'}
+                  </Button>
+                  <p className="text-slate-400 text-xs sm:text-sm mt-2">
+                    You will be redirected to the home page after logging out.
+                  </p>
                 </CardContent>
               </Card>
             </TabsContent>

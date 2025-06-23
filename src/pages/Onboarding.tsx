@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, ArrowRight, CheckCircle, User, Target, TrendingUp, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [usernameError, setUsernameError] = useState('');
@@ -98,12 +99,19 @@ const Onboarding = () => {
       playingGoals: prev.playingGoals.includes(goal) ? prev.playingGoals.filter(g => g !== goal) : [...prev.playingGoals, goal],
     }));
   };
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Complete onboarding
-      navigate('/feed');
+      try {
+        // Complete onboarding
+        await axios.post('/auth/complete-onboarding');
+        navigate('/feed');
+      } catch (error) {
+        console.error('Failed to complete onboarding:', error);
+        // Navigate anyway to avoid being stuck
+        navigate('/feed');
+      }
     }
   };
   const handleBack = () => {

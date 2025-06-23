@@ -6,20 +6,26 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
 import { useSidebar } from '@/components/GlobalSidebar';
+import { useAuth } from '@/contexts/AuthContext';
 export const ProfileTopBar = () => {
   const [searchValue, setSearchValue] = useState('');
   const navigate = useNavigate();
   const {
     toggleSidebar,
   } = useSidebar();
+  const { logout, user, isLoggingOut } = useAuth();
   const handleProfileClick = () => {
     navigate('/profile');
   };
   const handleSettingsClick = () => {
     navigate('/settings');
   };
-  const handleLogout = () => {
-    // TODO: Implement logout logic
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
   const handleHomeClick = () => {
     navigate('/feed');
@@ -64,8 +70,8 @@ export const ProfileTopBar = () => {
               <DropdownMenuTrigger asChild>
                 <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-violet-500/50 flex-shrink-0">
                   <Avatar className="w-8 h-8 border border-slate-700/50 hover:border-slate-600/50 transition-colors">
-                    <AvatarImage src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" />
-                    <AvatarFallback>MJ</AvatarFallback>
+                    <AvatarImage src={user?.picture} />
+                    <AvatarFallback>{user?.name?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
                   </Avatar>
                 </button>
               </DropdownMenuTrigger>
@@ -79,9 +85,13 @@ export const ProfileTopBar = () => {
                   Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-slate-700/50" />
-                <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 cursor-pointer hover:bg-slate-700/50 text-red-400">
+                <DropdownMenuItem 
+                  onClick={handleLogout} 
+                  disabled={isLoggingOut}
+                  className="flex items-center gap-2 cursor-pointer hover:bg-slate-700/50 text-red-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   <LogOut className="w-4 h-4" />
-                  Log out
+                  {isLoggingOut ? 'Logging out...' : 'Log out'}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
