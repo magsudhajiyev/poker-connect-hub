@@ -2,28 +2,28 @@
 import { 
   Rss, Flame, Share2, User, Users, HelpCircle, X,
 } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 
 export const MobileSidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const pathname = usePathname();
+  const router = useRouter();
 
   const isActive = (path: string) => {
-    if (path === '/feed' && location.pathname === '/feed') {
+    if (path === '/feed' && pathname === '/feed') {
 return true;
 }
-    if (path === '/profile' && location.pathname === '/profile') {
+    if (path === '/profile' && pathname === '/profile') {
 return true;
 }
-    if (path === '/share-hand' && location.pathname === '/share-hand') {
+    if (path === '/share-hand' && pathname === '/share-hand') {
 return true;
 }
     return false;
   };
 
   const handleNavigation = (path: string) => {
-    navigate(path);
+    router.push(path);
     onNavigate?.();
   };
 
