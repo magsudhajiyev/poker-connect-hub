@@ -456,7 +456,6 @@ player.isAllIn = true;
     }
 
     // If we get here, there's an issue with action order - rebuild it
-    console.log('Rebuilding action order - no valid current player found');
     this.updateActionOrder();
     
     // Return waiting state instead of calling getCurrentPlayerActions again

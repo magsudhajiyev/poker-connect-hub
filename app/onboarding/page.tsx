@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, ArrowRight, CheckCircle, User, Target, TrendingUp, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import { useAuth } from '@/contexts/AuthContextNext';
+import { useAuth } from '@/contexts/AuthContext';
 import { redirect } from 'next/navigation';
 
 const Onboarding = () => {

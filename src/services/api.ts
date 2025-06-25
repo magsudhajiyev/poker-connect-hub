@@ -23,7 +23,6 @@ export class ApiService {
     
     // Log the base URL to help debug
     if (typeof window !== 'undefined') {
-      console.log('API Service initialized with baseUrl:', this.baseUrl);
     }
   }
 
@@ -88,11 +87,6 @@ export class ApiService {
 
     for (let attempt = 1; attempt <= this.retries; attempt++) {
       try {
-        console.log(`API Request (attempt ${attempt}/${this.retries}):`, {
-          method: options.method || 'GET',
-          url,
-          body: options.body ? JSON.parse(options.body as string) : undefined,
-        });
 
         const response = await this.fetchWithTimeout(url, options);
 
@@ -132,7 +126,6 @@ export class ApiService {
         }
 
         const data = await response.json();
-        console.log('API Response:', data);
 
         return {
           success: true,
@@ -141,7 +134,6 @@ export class ApiService {
 
       } catch (error) {
         lastError = error as Error;
-        console.error(`Api request failed (attempt ${attempt}/${this.retries}):`, error);
 
         // Check if error is retryable
         const apiError = error as ApiError;

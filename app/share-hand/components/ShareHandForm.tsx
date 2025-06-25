@@ -21,7 +21,6 @@ const ShareHandForm = () => {
     contextData = useShareHandContext();
   } catch (error) {
     // If we're not within the provider, show a message or return null
-    console.warn('ShareHandForm used outside of ShareHandProvider context');
     return (
       <div className="w-full overflow-x-hidden">
         <Card className="bg-slate-800/40 border-slate-700/30 w-full">

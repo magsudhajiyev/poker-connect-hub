@@ -1,6 +1,6 @@
 'use client';
 
-import { GlobalSidebar } from '@/components/GlobalSidebarNext';
+import { GlobalSidebar } from '@/components/GlobalSidebar';
 import { SidebarProvider } from '@/components/sidebar/SidebarContext';
 import { FeedMainContent } from './components/FeedMainContent';
 

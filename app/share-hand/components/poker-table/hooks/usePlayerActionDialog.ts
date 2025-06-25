@@ -46,21 +46,11 @@ export const usePlayerActionDialog = ({
   // Get available actions from poker game engine if available and player is to act
   let availableActions: string[] = [];
   
-  console.log('ACTION DIALOG DEBUG:', {
-    playerId: player.id,
-    position: player.position,
-    hasActionFlow: Boolean(pokerActions),
-    isPlayerToAct: pokerActions?.isPlayerToAct?.(player.id),
-    currentPlayer: pokerActions?.currentPlayer?.name,
-    currentPlayerPosition: pokerActions?.currentPlayer?.position,
-    actionIndex,
-  });
   
   // ALWAYS use action flow if available and this player can act
   if (pokerActions && pokerActions.isPlayerToAct && pokerActions.isPlayerToAct(player.id)) {
     const validActions = pokerActions.getAvailableActions(player.id);
     availableActions = validActions;
-    console.log('Using action flow actions (player to act):', validActions);
   } else {
     // Fallback: determine actions based on game state
     const street = currentStreet?.replace('Actions', '') || 'preflop';
@@ -76,7 +66,6 @@ export const usePlayerActionDialog = ({
       // Post-flop: can check if no bet
       availableActions = ['fold', 'check', 'bet', 'all-in'];
     }
-    console.log('Using fallback actions for', player.position, ':', availableActions);
   }
   
   const potSize = pokerActions?.pot || (formData ? (parseFloat(formData.smallBlind || '1') + parseFloat(formData.bigBlind || '2')) : 3);

@@ -44,12 +44,10 @@ const TurnStep = ({
   // Don't allow player updates in action steps - players should be locked
   const handleUpdatePlayer = (newPlayer: any) => {
     // Do nothing - players are locked after positions step
-    console.log('Player updates disabled in action steps');
   };
 
   const handleRemovePlayer = (playerId: string) => {
     // Do nothing - players are locked after positions step
-    console.log('Player removal disabled in action steps');
   };
 
   return (

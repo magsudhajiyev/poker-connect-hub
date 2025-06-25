@@ -30,7 +30,6 @@ const PlayerRow = ({
   const shouldHighlightPlayer = showValidationErrors && (!player.position || player.position.trim() === '');
 
   const handlePositionChange = (value: string) => {
-    console.log(`Position change for player ${player.id} (${player.name}): ${value}`);
     onUpdatePlayer(player.id, { position: value });
   };
 

@@ -1,13 +1,14 @@
+'use client';
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play, UserPlus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import PokerChipConfetti from './PokerChipConfetti';
 
 const HeroSection = () => {
   const [showConfetti, setShowConfetti] = useState(false);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleGetStartedClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -16,7 +17,7 @@ const HeroSection = () => {
 
   const handleConfettiComplete = () => {
     setShowConfetti(false);
-    navigate('/auth');
+    router.push('/auth/signin');
   };
 
   return (

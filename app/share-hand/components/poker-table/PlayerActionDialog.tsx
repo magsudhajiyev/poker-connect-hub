@@ -61,11 +61,9 @@ const PlayerActionDialog = ({
   });
 
   const handleActionSelect = (action: ActionType) => {
-    console.log('🎯 handleActionSelect called:', action, Date.now());
     
     // Prevent action if already submitting
     if (isSubmitting) {
-      console.log('⚠️ Already submitting, ignoring action select');
       return;
     }
     
@@ -74,7 +72,6 @@ const PlayerActionDialog = ({
     // For actions that don't require bet amount, submit immediately
     // bet and raise require amount input, so don't submit immediately
     if (!requiresBetAmount(action)) {
-      console.log('🚀 Submitting action immediately:', action);
       submitAction(action);
     }
   };
@@ -101,21 +98,11 @@ const PlayerActionDialog = ({
   const submitAction = (action: ActionType, amount?: string) => {
     // Prevent double-click submissions
     if (isSubmitting) {
-      console.log('⚠️ Action already submitting, ignoring duplicate request');
       return;
     }
     
     setIsSubmitting(true);
     
-    console.log('SUBMIT ACTION:', {
-      action, 
-      amount, 
-      actionIndex, 
-      currentStreet,
-      player: player.name,
-      position: player.position,
-      timestamp: Date.now(),
-    });
     
     // PRIORITIZE action flow for proper game logic
     if (pokerActions && pokerActions.executeAction) {
@@ -123,17 +110,14 @@ const PlayerActionDialog = ({
       const success = pokerActions.executeAction(player.id, action, numericAmount);
       
       if (success) {
-        console.log('✓ Action flow updated successfully');
         
         // Add minimal delay to ensure state update is processed before closing dialog
         setTimeout(() => {
           onOpenChange(false);
           setIsSubmitting(false);
-          console.log('🔄 Dialog closed after state update');
         }, 50); // Reduced from 100ms to 50ms for better responsiveness
         
       } else {
-        console.log('❌ Action flow failed');
         setIsSubmitting(false);
         return; // Don't proceed if action flow fails
       }
@@ -148,16 +132,13 @@ const PlayerActionDialog = ({
       try {
         const validIndex = actionIndex >= 0 ? actionIndex : 0;
         updateAction(currentStreet, validIndex, action, amount || betAmount);
-        console.log('✓ Form data also updated');
       } catch (error) {
-        console.log('⚠ Form data update failed, but action flow succeeded:', error);
       }
     }
   };
 
   const handleBetSubmit = () => {
     if (isSubmitting) {
-      console.log('⚠️ Bet submit already in progress, ignoring');
       return;
     }
     

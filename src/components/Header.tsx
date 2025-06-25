@@ -1,14 +1,16 @@
+'use client';
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu, UserPlus, X } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import PokerChipConfetti from './PokerChipConfetti';
 
-const Header = () => {
+const HeaderNext = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleGetStartedClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -18,7 +20,7 @@ const Header = () => {
 
   const handleConfettiComplete = () => {
     setShowConfetti(false);
-    navigate('/auth');
+    router.push('/auth');
   };
 
   const handleNavClick = (sectionId: string) => {
@@ -39,7 +41,7 @@ const Header = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2 sm:space-x-3">
+            <Link href="/" className="flex items-center space-x-2 sm:space-x-3">
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-emerald-500 to-violet-500 rounded-xl flex items-center justify-center">
                 <span className="text-slate-900 text-lg sm:text-xl font-bold">♦</span>
               </div>
@@ -58,7 +60,7 @@ const Header = () => {
             
             {/* Auth Buttons - Desktop */}
             <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
-              <Link to="/auth">
+              <Link href="/auth">
                 <Button variant="ghost" className="text-slate-200 hover:text-slate-100 text-sm lg:text-[15px] px-3 lg:px-4">
                   Sign In
                 </Button>
@@ -83,7 +85,7 @@ const Header = () => {
               {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
           </div>
-          
+
           {/* Mobile Menu */}
           {isMenuOpen && (
             <div className="md:hidden py-4 border-t border-slate-700/50">
@@ -93,7 +95,7 @@ const Header = () => {
                 <button onClick={() => handleNavClick('testimonials')} className="text-slate-400 hover:text-slate-200 transition-colors py-2 text-left">Testimonials</button>
                 <button onClick={() => handleNavClick('pricing')} className="text-slate-400 hover:text-slate-200 transition-colors py-2 text-left">Pricing</button>
                 <div className="flex flex-col space-y-3 pt-4">
-                  <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                  <Link href="/auth" onClick={() => setIsMenuOpen(false)}>
                     <Button variant="ghost" className="text-slate-200 w-full justify-start">Sign In</Button>
                   </Link>
                   <Button 
@@ -113,4 +115,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default HeaderNext;

@@ -9,7 +9,6 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
   useEffect(() => {
     // Only run once on mount or when players is undefined/null
     if (!isInitializedRef.current && !formData.players) {
-      console.log('Initializing empty players array');
       
       setFormData((prevData) => ({
         ...prevData,
@@ -24,7 +23,6 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
 
   // Update a player
   const updatePlayer = (playerId: string, updates: Partial<Player>) => {
-    console.log(`Updating player ${playerId} with:`, updates);
     
     const updatedPlayers = players.map(player => {
       if (player.id === playerId) {
@@ -33,7 +31,6 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
           ...updates,
           stackSize: updates.stackSize ? [...updates.stackSize] : [...player.stackSize],
         };
-        console.log(`Player ${playerId} updated:`, updatedPlayer);
         return updatedPlayer;
       }
       return player;
@@ -53,7 +50,6 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
         villainStackSize: villainPlayer?.stackSize ? [...villainPlayer.stackSize] : [100],
       };
       
-      console.log('Player updated, triggering action reinitialization:', newFormData);
       return newFormData;
     });
   };
@@ -61,7 +57,6 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
   // Add a new player - not needed anymore since we add players directly via table clicks
   const addPlayer = () => {
     // This method is kept for backwards compatibility but won't be used
-    console.log('addPlayer called - not needed with new table interface');
   };
 
   // Remove a player
@@ -82,7 +77,6 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
         villainStackSize: villainPlayer?.stackSize ? [...villainPlayer.stackSize] : [100],
       };
       
-      console.log('Player removed, triggering action reinitialization:', newFormData);
       return newFormData;
     });
   };

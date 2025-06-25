@@ -17,7 +17,6 @@ export const useActionManagement = (
     
     // Add bounds checking to prevent undefined access
     if (currentIndex < 0 || currentIndex >= actions.length) {
-      console.warn(`Invalid action index ${currentIndex} for street ${street}. Actions length: ${actions.length}`);
       return;
     }
     
@@ -25,11 +24,9 @@ export const useActionManagement = (
     
     // Additional safety check
     if (!currentAction || !currentAction.action) {
-      console.warn('Current action is undefined or missing action property:', currentAction);
       return;
     }
     
-    console.log(`Adding next action step after ${currentAction.action} by ${currentAction.playerName}`);
     
     if (shouldAddNextAction(currentAction.action)) {
       const nextActionStep = createNextActionStep(currentAction, formData.players);
@@ -41,7 +38,6 @@ export const useActionManagement = (
       
       if (!nextActionExists) {
         const updatedActions = [...actions, nextActionStep];
-        console.log(`Adding next action step for ${nextActionStep.playerName}`, updatedActions);
         
         setFormData((prev: ShareHandFormData) => ({ ...prev, [street]: updatedActions }));
       }
@@ -49,14 +45,12 @@ export const useActionManagement = (
   };
 
   const updateAction = (street: StreetType, index: number, action: ActionType, betAmount?: string) => {
-    console.log(`🎯 useActionManagement.updateAction called at index ${index} on ${street}:`, action, betAmount);
     
     setFormData((prev: ShareHandFormData) => {
       const updatedActions = [...prev[street]];
       
       // Add bounds checking
       if (index < 0 || index >= updatedActions.length) {
-        console.warn(`Invalid action index ${index} for street ${street}. Actions length: ${updatedActions.length}`);
         // If index is invalid, try to find the first incomplete action for this player
         // or create a new action step if none exists
         return prev;
@@ -78,7 +72,6 @@ export const useActionManagement = (
       // If changing from bet/raise to something else, remove subsequent actions
       if ((previousAction === ActionType.BET || previousAction === ActionType.RAISE) && 
           !shouldAddNextAction(action)) {
-        console.log(`Action changed from ${previousAction} to ${action}, removing subsequent actions`);
         const actionsToKeep = updatedActions.slice(0, index + 1);
         let newFormData = { ...prev, [street]: actionsToKeep };
         
@@ -122,12 +115,10 @@ export const useActionManagement = (
   };
 
   const handleBetSizeSelect = (street: StreetType, index: number, amount: string) => {
-    console.log(`🎯 useActionManagement.handleBetSizeSelect called: ${amount} for index ${index} on ${street}`);
     
     // Validate amount is a valid number
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount) || numericAmount <= 0) {
-      console.warn('Invalid bet amount selected:', amount);
       return;
     }
     
@@ -136,7 +127,6 @@ export const useActionManagement = (
       
       // Add bounds checking
       if (index < 0 || index >= updatedActions.length) {
-        console.warn(`Invalid action index ${index} for street ${street}. Actions length: ${updatedActions.length}`);
         return prev;
       }
       
@@ -158,7 +148,6 @@ export const useActionManagement = (
             const currentStack = player.stackSize[0] || 100;
             const newStack = Math.max(0, currentStack - numericAmount);
             
-            console.log(`Player ${player.name}: stack ${currentStack} - bet ${numericAmount} = ${newStack}`);
             
             return {
               ...player,
@@ -180,8 +169,7 @@ export const useActionManagement = (
         
         if (!nextActionExists) {
           updatedActions.push(nextActionStep);
-          console.log(`Adding next action step for ${nextActionStep.playerName}`, updatedActions);
-        }
+          }
       }
       
       return { ...prev, [street]: updatedActions, players: updatedPlayers };
@@ -194,13 +182,11 @@ export const useActionManagement = (
     
     // For multi-player mode, we don't need hero/villain positions
     if (isMultiPlayerMode && formData.players && formData.players.length >= 2) {
-      console.log('Multi-player mode detected, skipping hero/villain initialization');
       return;
     }
     
     // Only initialize if we have both positions and players (for 2-player mode)
     if (formData.heroPosition && formData.villainPosition && formData.players && formData.players.length > 0) {
-      console.log('Initializing actions with players:', formData.players);
       
       const streets: StreetType[] = [
         'preflopActions', 'flopActions', 'turnActions', 'riverActions',
@@ -225,22 +211,15 @@ export const useActionManagement = (
         
         if (currentPlayerIds.length !== newPlayerIds.length || 
             !currentPlayerIds.every((id, index) => id === newPlayerIds[index])) {
-          console.log(`Reinitializing ${street} actions with new player structure`);
           updatedFormData[street] = newActions;
           hasChanges = true;
         }
       });
       
       if (hasChanges) {
-        console.log('Updated actions for all streets with new players:', updatedFormData);
         setFormData(updatedFormData);
       }
     } else if (!isMultiPlayerMode) {
-      console.log('Skipping action initialization - missing data:', {
-        heroPosition: formData.heroPosition,
-        villainPosition: formData.villainPosition,
-        players: formData.players,
-      });
     }
   }, [formData, setFormData]);
 

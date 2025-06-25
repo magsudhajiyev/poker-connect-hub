@@ -5,7 +5,7 @@ import { ProfileHeader } from './components/ProfileHeader';
 import { ProfileNav } from './components/ProfileNav';
 import { ProfileContent } from './components/ProfileContent';
 import { ProfileTopBar } from './components/ProfileTopBar';
-import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebarNext';
+import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
 import { MobileSidebarContent } from './components/MobileSidebarContent';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';

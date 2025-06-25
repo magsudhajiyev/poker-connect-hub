@@ -43,8 +43,6 @@ const PlayerSeat = ({ player, position, isActive = false, gameFormat = 'cash', f
     return labels[pos] || pos.toUpperCase();
   };
 
-  console.log(`PlayerSeat rendering for ${player.name} at position:`, position);
-
   return (
     <div
       className="absolute transform -translate-x-1/2 -translate-y-1/2 z-20"

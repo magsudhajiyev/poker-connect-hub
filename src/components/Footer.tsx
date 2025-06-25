@@ -1,8 +1,7 @@
-
 import { Heart, Github, Twitter, Linkedin } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
-const Footer = () => {
+const FooterNext = () => {
   return (
     <footer className="bg-slate-950/80 border-t border-slate-800/30 backdrop-blur-xl">
       <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -20,65 +19,64 @@ const Footer = () => {
           {/* Navigation Links */}
           <div className="flex items-center space-x-6">
             <Link 
-              to="/blog" 
+              href="/blog" 
               className="text-slate-400 hover:text-emerald-400 transition-colors duration-300 text-sm"
             >
               Blog
             </Link>
             <Link 
-              to="/privacy-policy" 
+              href="/privacy-policy" 
               className="text-slate-400 hover:text-emerald-400 transition-colors duration-300 text-sm"
             >
-              Privacy Policy
+              Privacy
             </Link>
             <Link 
-              to="/terms-conditions" 
+              href="/terms-conditions" 
               className="text-slate-400 hover:text-emerald-400 transition-colors duration-300 text-sm"
             >
-              Terms & Conditions
+              Terms
             </Link>
           </div>
           
-          {/* Social links */}
-          <div className="flex items-center space-x-6">
+          {/* Social Links */}
+          <div className="flex items-center space-x-4">
             <a 
-              href="#" 
+              href="https://github.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
               className="text-slate-400 hover:text-emerald-400 transition-colors duration-300"
-              aria-label="Twitter"
-            >
-              <Twitter className="w-5 h-5" />
-            </a>
-            <a 
-              href="#" 
-              className="text-slate-400 hover:text-emerald-400 transition-colors duration-300"
-              aria-label="GitHub"
             >
               <Github className="w-5 h-5" />
             </a>
             <a 
-              href="#" 
+              href="https://twitter.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
               className="text-slate-400 hover:text-emerald-400 transition-colors duration-300"
-              aria-label="LinkedIn"
+            >
+              <Twitter className="w-5 h-5" />
+            </a>
+            <a 
+              href="https://linkedin.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-slate-400 hover:text-emerald-400 transition-colors duration-300"
             >
               <Linkedin className="w-5 h-5" />
             </a>
           </div>
         </div>
         
-        {/* Bottom section */}
-        <div className="mt-8 pt-6 border-t border-slate-800/30 flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
+        <div className="mt-8 pt-8 border-t border-slate-800/30 text-center">
           <p className="text-slate-500 text-sm">
-            © 2024 PokerConnect. All rights reserved.
+            © {new Date().getFullYear()} PokerConnect. Made with{' '}
+            <Heart className="inline-block w-4 h-4 text-red-500 fill-red-500" />{' '}
+            for poker players
           </p>
-          <div className="flex items-center text-slate-500 text-sm">
-            <span>Made with</span>
-            <Heart className="w-4 h-4 mx-1 text-red-500" />
-            <span>for poker players</span>
-          </div>
         </div>
       </div>
     </footer>
   );
 };
 
-export default Footer;
+export default FooterNext;

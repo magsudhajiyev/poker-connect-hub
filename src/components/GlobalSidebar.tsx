@@ -1,9 +1,12 @@
+'use client';
 
-import { useSidebar, SidebarProvider } from './sidebar/SidebarContext';
-import { SidebarNavigation } from './sidebar/SidebarNavigation';
-import { SidebarStatsOverview } from './sidebar/SidebarStatsOverview';
+import { useState, ReactNode } from 'react';
+import { useSidebar, SidebarProvider } from '@/components/sidebar/SidebarContext';
+import { SidebarNavigation } from '@/components/sidebar/SidebarNavigation';
+import { SidebarStatsOverview } from '@/components/sidebar/SidebarStatsOverview';
 
-export { SidebarProvider, useSidebar };
+// Re-export for convenience
+export { useSidebar, SidebarProvider };
 
 export const GlobalSidebar = () => {
   const { isCollapsed } = useSidebar();

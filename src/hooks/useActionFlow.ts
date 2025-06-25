@@ -100,9 +100,6 @@ export const useActionFlow = (
                                    previousStepRef.current === 1 && // Was on positions step (index 1)
                                    isFirstInitialization;
       
-      console.log('🔄 useEffect triggered for street:', street, 'with', orderedPlayers.length, 'players');
-      console.log('   isStreetChange:', isStreetChange, 'isFirstInit:', isFirstInitialization, 'isNavigatingToPreflop:', isNavigatingToPreflop);
-      console.log('   currentStep:', currentStep, 'previousStep:', previousStepRef.current);
       
       // Only reinitialize if it's the first time OR street has changed OR navigating to preflop
       if (isFirstInitialization || isStreetChange || isNavigatingToPreflop) {
@@ -126,18 +123,12 @@ export const useActionFlow = (
           // Mark game as started when navigating to preflop gameplay
           if (isNavigatingToPreflop) {
             gameStartedRef.current = true;
-            console.log('🎮 Game started! User navigated from positions to preflop');
           }
 
           // CRITICAL: Deduct blind amounts only when navigating to preflop (not during positions setup)
           if (setFormData && isNavigatingToPreflop) {
-            console.log('🛡️ Starting game - performing blind deduction...');
-            console.log('   All players:', orderedPlayers.map(p => `${p.position}:${p.id}`));
-            console.log('   SB Player found:', sbPlayer ? `${sbPlayer.position}:${sbPlayer.id}` : 'NOT FOUND');
-            console.log('   BB Player found:', bbPlayer ? `${bbPlayer.position}:${bbPlayer.id}` : 'NOT FOUND');
             
             if (sbPlayer) {
-              console.log('   SB player stack before deduction:', sbPlayer.stackSize?.[0]);
               deductedPlayersRef.current.add(sbPlayer.id);
               
               setFormData(prev => ({
@@ -148,13 +139,10 @@ export const useActionFlow = (
                     : p
                 )
               }));
-              console.log('✅ SB Blind Deduction EXECUTED:', sbPlayer.position, 'deducted:', smallBlind);
             } else {
-              console.log('❌ SB Player NOT FOUND - cannot deduct blind');
             }
             
             if (bbPlayer) {
-              console.log('   BB player stack before deduction:', bbPlayer.stackSize?.[0]);
               deductedPlayersRef.current.add(bbPlayer.id);
               
               setFormData(prev => ({
@@ -165,14 +153,10 @@ export const useActionFlow = (
                     : p
                 )
               }));
-              console.log('✅ BB Blind Deduction EXECUTED:', bbPlayer.position, 'deducted:', bigBlind);
             } else {
-              console.log('❌ BB Player NOT FOUND - cannot deduct blind');
             }
             
-            console.log('🏁 Game start blind deduction complete');
           } else if (setFormData && !isNavigatingToPreflop) {
-            console.log('🚫 Blind deduction SKIPPED - not navigating to preflop (positions step or re-render)');
           }
         }
         // For post-flop streets, reset player bets to 0 but keep pot
@@ -463,7 +447,6 @@ export const useActionFlow = (
         // Update player stack in formData - deduct the call amount
         if (setFormData) {
           const newStackSize = roundStackSize(Math.max(0, playerStackSize - callAmount));
-          console.log('📞 CALL Stack Update:', currentPlayer.position, 'stack:', playerStackSize, 'callAmount:', callAmount, 'wasExplicit:', !!amount, '→', newStackSize);
           setFormData(prev => ({
             ...prev,
             players: prev.players.map(p => 
@@ -522,7 +505,6 @@ export const useActionFlow = (
         if (setFormData) {
           const playerStackSize = currentPlayer.stackSize?.[0] || DEFAULT_VALUES.STACK_SIZE;
           const newStackSize = roundStackSize(Math.max(0, playerStackSize - additionalAmount));
-          console.log('🚀 RAISE Stack Update:', currentPlayer.position, 'stack:', playerStackSize, 'totalBet:', totalBetAmount, 'additional:', additionalAmount, '→', newStackSize);
           setFormData(prev => ({
             ...prev,
             players: prev.players.map(p => 

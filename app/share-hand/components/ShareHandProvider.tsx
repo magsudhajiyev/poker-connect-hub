@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useRef, useMemo, useCallback } from 'react';
-import { useShareHandLogic } from '@/hooks/useShareHandLogicNext';
+import { useShareHandLogic } from '@/hooks/useShareHandLogic';
 import { useGameStateUI } from '@/hooks/useGameStateUI';
 import { useActionFlow } from '@/hooks/useActionFlow';
 import { usePokerApiEngine } from '@/hooks/usePokerApiEngine';

@@ -8,11 +8,11 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebarNext';
+import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
 import { MobileSidebarContent } from './components/MobileSidebarContent';
 import { ArrowLeft, Menu, Bell, Shield, User, Palette, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContextNext';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Sheet,
   SheetContent,

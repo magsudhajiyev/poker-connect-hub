@@ -1,0 +1,275 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { PokerGameEngine } from '../PokerGameEngine';
+import { PokerPlayer } from '@/types/poker';
+
+describe('PokerGameEngine', () => {
+  let engine: PokerGameEngine;
+  let testPlayers: PokerPlayer[];
+
+  beforeEach(() => {
+    testPlayers = [
+      {
+        id: 'player-1',
+        name: 'Player 1',
+        stack: 1000,
+        position: 'BTN',
+        betAmount: 0,
+        hasCards: true,
+        hasFolded: false,
+        isAllIn: false,
+        lastAction: undefined,
+      },
+      {
+        id: 'player-2',
+        name: 'Player 2',
+        stack: 1000,
+        position: 'SB',
+        betAmount: 0,
+        hasCards: true,
+        hasFolded: false,
+        isAllIn: false,
+        lastAction: undefined,
+      },
+      {
+        id: 'player-3',
+        name: 'Player 3',
+        stack: 1000,
+        position: 'BB',
+        betAmount: 0,
+        hasCards: true,
+        hasFolded: false,
+        isAllIn: false,
+        lastAction: undefined,
+      },
+    ];
+  });
+
+  describe('Game Initialization', () => {
+    it('should initialize with correct players and blinds', () => {
+      engine = new PokerGameEngine(testPlayers, 50, 100);
+      
+      expect(engine.players).toHaveLength(3);
+      expect(engine.smallBlind).toBe(50);
+      expect(engine.bigBlind).toBe(100);
+      expect(engine.pot).toBe(0);
+      expect(engine.street).toBe('preflop');
+    });
+
+    it('should throw error with less than 2 players', () => {
+      expect(() => {
+        new PokerGameEngine([testPlayers[0]], 50, 100);
+      }).toThrow('At least 2 players are required to start a poker game');
+    });
+
+    it('should throw error with more than 10 players', () => {
+      const manyPlayers = Array(11).fill(null).map((_, i) => ({
+        ...testPlayers[0],
+        id: `player-${i}`,
+      }));
+      
+      expect(() => {
+        new PokerGameEngine(manyPlayers, 50, 100);
+      }).toThrow('Maximum of 10 players allowed in a poker game');
+    });
+
+    it('should throw error with invalid blinds', () => {
+      expect(() => {
+        new PokerGameEngine(testPlayers, 0, 100);
+      }).toThrow('Small blind must be a positive number');
+      
+      expect(() => {
+        new PokerGameEngine(testPlayers, 50, 0);
+      }).toThrow('Big blind must be a positive number');
+    });
+  });
+
+  describe('Betting Actions', () => {
+    beforeEach(() => {
+      engine = new PokerGameEngine(testPlayers, 50, 100);
+    });
+
+    it('should handle call action correctly', () => {
+      // Set up current bet
+      engine.currentBet = 100;
+      engine.pot = 150; // SB + BB
+      engine.players[1].betAmount = 50; // SB
+      engine.players[2].betAmount = 100; // BB
+      engine.currentPlayerIndex = 0; // BTN to act
+
+      engine.processAction(engine.players[0], { type: 'call' });
+      
+      expect(engine.players[0].stack).toBe(900);
+      expect(engine.players[0].betAmount).toBe(100);
+      expect(engine.pot).toBe(250);
+    });
+
+    it('should handle fold action correctly', () => {
+      engine.currentPlayerIndex = 0;
+      engine.processAction(engine.players[0], { type: 'fold' });
+      
+      expect(engine.players[0].hasFolded).toBe(true);
+      expect(engine.players[0].stack).toBe(1000); // Stack unchanged
+    });
+
+    it('should handle raise action correctly', () => {
+      engine.currentBet = 100;
+      engine.pot = 150;
+      engine.players[1].betAmount = 50;
+      engine.players[2].betAmount = 100;
+      engine.currentPlayerIndex = 0;
+
+      engine.processAction(engine.players[0], { type: 'raise', amount: 250 });
+      
+      expect(engine.players[0].stack).toBe(750);
+      expect(engine.players[0].betAmount).toBe(250);
+      expect(engine.currentBet).toBe(250);
+    });
+
+    it('should enforce minimum raise rules', () => {
+      engine.currentBet = 100;
+      engine.pot = 150;
+      engine.currentPlayerIndex = 0;
+
+      // Minimum raise should be to 200 (current bet + big blind)
+      expect(() => {
+        engine.processAction(engine.players[0], { type: 'raise', amount: 150 });
+      }).toThrow();
+    });
+
+    it('should handle all-in correctly', () => {
+      engine.players[0].stack = 150; // Less than current bet
+      engine.currentBet = 200;
+      engine.currentPlayerIndex = 0;
+
+      engine.processAction(engine.players[0], { type: 'allin' });
+      
+      expect(engine.players[0].stack).toBe(0);
+      expect(engine.players[0].betAmount).toBe(150);
+      expect(engine.players[0].isAllIn).toBe(true);
+    });
+  });
+
+  describe('Minimum Raise Calculation Bug', () => {
+    beforeEach(() => {
+      engine = new PokerGameEngine(testPlayers, 50, 100);
+    });
+
+    it('should track last raise size correctly', () => {
+      // Initial state: BB = 100
+      engine.currentBet = 100;
+      engine.pot = 150;
+      engine.currentPlayerIndex = 0;
+
+      // Player raises to 300 (raise of 200)
+      engine.processAction(engine.players[0], { type: 'raise', amount: 300 });
+      
+      // Next player minimum raise should be 500 (300 + 200)
+      engine.currentPlayerIndex = 1;
+      
+      // This should fail as 400 < 500
+      expect(() => {
+        engine.processAction(engine.players[1], { type: 'raise', amount: 400 });
+      }).toThrow();
+
+      // This should succeed
+      engine.processAction(engine.players[1], { type: 'raise', amount: 500 });
+      expect(engine.currentBet).toBe(500);
+    });
+  });
+
+  describe('Side Pot Calculations', () => {
+    it('should calculate side pots correctly with all-in player', () => {
+      const customPlayers = [
+        { ...testPlayers[0], stack: 1000 },
+        { ...testPlayers[1], stack: 200 },
+        { ...testPlayers[2], stack: 1000 },
+      ];
+      
+      engine = new PokerGameEngine(customPlayers, 50, 100);
+      
+      // Player 2 goes all-in for 200
+      engine.currentPlayerIndex = 1;
+      engine.processAction(engine.players[1], { type: 'allin' });
+      
+      // Player 3 calls 200
+      engine.currentPlayerIndex = 2;
+      engine.processAction(engine.players[2], { type: 'call' });
+      
+      // Player 1 raises to 500
+      engine.currentPlayerIndex = 0;
+      engine.processAction(engine.players[0], { type: 'raise', amount: 500 });
+      
+      // Player 3 calls 500
+      engine.currentPlayerIndex = 2;
+      engine.processAction(engine.players[2], { type: 'call' });
+      
+      // Check if side pots are calculated
+      // Main pot should be 600 (200 * 3)
+      // Side pot should be 600 ((500-200) * 2)
+      expect(engine.pot).toBe(1200); // Total pot
+      
+      // TODO: Engine needs side pot tracking implementation
+      // expect(engine.sidePots).toBeDefined();
+      // expect(engine.sidePots[0]).toEqual({ amount: 600, eligiblePlayers: ['player-1', 'player-2', 'player-3'] });
+      // expect(engine.sidePots[1]).toEqual({ amount: 600, eligiblePlayers: ['player-1', 'player-3'] });
+    });
+  });
+
+  describe('Stage Progression', () => {
+    beforeEach(() => {
+      engine = new PokerGameEngine(testPlayers, 50, 100);
+      engine.pot = 300; // After preflop betting
+      engine.currentBet = 100;
+    });
+
+    it('should advance to flop correctly', () => {
+      engine.advanceToFlop(['As', 'Ks', 'Qs']);
+      
+      expect(engine.street).toBe('flop');
+      expect(engine.communityCards).toEqual(['As', 'Ks', 'Qs']);
+      expect(engine.currentBet).toBe(0);
+      
+      // All players should have bet amounts reset
+      engine.players.forEach(player => {
+        expect(player.betAmount).toBe(0);
+      });
+    });
+
+    it('should advance through all streets', () => {
+      engine.advanceToFlop(['As', 'Ks', 'Qs']);
+      expect(engine.street).toBe('flop');
+      
+      engine.advanceToTurn('Js');
+      expect(engine.street).toBe('turn');
+      expect(engine.communityCards).toEqual(['As', 'Ks', 'Qs', 'Js']);
+      
+      engine.advanceToRiver('Ts');
+      expect(engine.street).toBe('river');
+      expect(engine.communityCards).toEqual(['As', 'Ks', 'Qs', 'Js', 'Ts']);
+    });
+  });
+
+  describe('Error Handling', () => {
+    beforeEach(() => {
+      engine = new PokerGameEngine(testPlayers, 50, 100);
+    });
+
+    it('should throw error for invalid player action', () => {
+      const invalidPlayer = { ...testPlayers[0], id: 'invalid-id' };
+      
+      expect(() => {
+        engine.processAction(invalidPlayer, { type: 'call' });
+      }).toThrow();
+    });
+
+    it('should throw error for insufficient stack', () => {
+      engine.players[0].stack = 50;
+      engine.currentBet = 100;
+      engine.currentPlayerIndex = 0;
+      
+      expect(() => {
+        engine.processAction(engine.players[0], { type: 'raise', amount: 200 });
+      }).toThrow();
+    });
+  });
+});
