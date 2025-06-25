@@ -16,10 +16,15 @@ export class ApiService {
   private retryDelay: number;
 
   constructor(config: ApiConfig = {}) {
-    this.baseUrl = config.baseUrl || import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    this.baseUrl = config.baseUrl || (typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_API_URL : undefined) || 'http://localhost:3000';
     this.timeout = config.timeout || 10000; // 10 seconds
     this.retries = config.retries || 3;
     this.retryDelay = config.retryDelay || 1000; // 1 second
+    
+    // Log the base URL to help debug
+    if (typeof window !== 'undefined') {
+      console.log('API Service initialized with baseUrl:', this.baseUrl);
+    }
   }
 
   private async delay(ms: number): Promise<void> {
@@ -191,4 +196,15 @@ export class ApiService {
 }
 
 // Create a singleton instance
-export const apiService = new ApiService();
+// Create a singleton but allow it to be recreated if needed
+let apiServiceInstance: ApiService | null = null;
+
+export const getApiService = (): ApiService => {
+  if (!apiServiceInstance) {
+    apiServiceInstance = new ApiService();
+  }
+  return apiServiceInstance;
+};
+
+// For backward compatibility
+export const apiService = getApiService();

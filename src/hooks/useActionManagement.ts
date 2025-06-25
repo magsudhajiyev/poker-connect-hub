@@ -1,4 +1,5 @@
 
+import { useCallback } from 'react';
 import { ShareHandFormData, StreetType, ActionStep } from '@/types/shareHand';
 import { 
   initializeActions, 
@@ -187,8 +188,17 @@ export const useActionManagement = (
     });
   };
 
-  const initializeActionsForPositions = () => {
-    // Only initialize if we have both positions and players
+  const initializeActionsForPositions = useCallback(() => {
+    // Skip initialization if we're in multi-player mode (no hero/villain positions)
+    const isMultiPlayerMode = formData.players && formData.players.length > 2;
+    
+    // For multi-player mode, we don't need hero/villain positions
+    if (isMultiPlayerMode && formData.players && formData.players.length >= 2) {
+      console.log('Multi-player mode detected, skipping hero/villain initialization');
+      return;
+    }
+    
+    // Only initialize if we have both positions and players (for 2-player mode)
     if (formData.heroPosition && formData.villainPosition && formData.players && formData.players.length > 0) {
       console.log('Initializing actions with players:', formData.players);
       
@@ -225,14 +235,14 @@ export const useActionManagement = (
         console.log('Updated actions for all streets with new players:', updatedFormData);
         setFormData(updatedFormData);
       }
-    } else {
+    } else if (!isMultiPlayerMode) {
       console.log('Skipping action initialization - missing data:', {
         heroPosition: formData.heroPosition,
         villainPosition: formData.villainPosition,
         players: formData.players,
       });
     }
-  };
+  }, [formData, setFormData]);
 
   return {
     updateAction,

@@ -54,7 +54,7 @@ const App = () => {
     });
 
     // In production, send to error reporting service
-    if (import.meta.env.PROD) {
+    if (process.env.NODE_ENV === 'production') {
       // Example: Sentry, LogRocket, etc.
       console.warn('App error in production - should be reported to error service');
     }
@@ -67,7 +67,7 @@ const App = () => {
       description="We're sorry, but something went wrong with the application. Please try refreshing the page."
       showRetry={true}
       showGoHome={true}
-      showReportBug={import.meta.env.PROD}
+      showReportBug={process.env.NODE_ENV === 'production'}
     >
       <QueryClientProvider client={queryClient}>
         <AuthProvider>

@@ -79,7 +79,7 @@ class PokerConnectErrorLogger implements ErrorLogger {
     }
 
     // Console log in development
-    if (import.meta.env.MODE === 'development') {
+    if (process.env.NODE_ENV === 'development') {
       const logMethod = entry.level === 'error' ? console.error : 
                       entry.level === 'warning' ? console.warn : console.log;
       
@@ -90,7 +90,7 @@ class PokerConnectErrorLogger implements ErrorLogger {
     }
 
     // In production, you might want to send logs to an external service
-    if (import.meta.env.MODE === 'production' && entry.level === 'error') {
+    if (process.env.NODE_ENV === 'production' && entry.level === 'error') {
       this.sendToErrorService(entry);
     }
   }

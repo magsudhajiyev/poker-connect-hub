@@ -110,7 +110,7 @@ const ShareHandErrorBoundary: React.FC<ShareHandErrorBoundaryProps> = ({
       onError={handleShareHandError}
       resetOnPropsChange={true}
       resetKeys={[]} // Will reset when any props change
-      showErrorDetails={import.meta.env.DEV}
+      showErrorDetails={process.env.NODE_ENV === 'development'}
     >
       {children}
     </ErrorBoundary>

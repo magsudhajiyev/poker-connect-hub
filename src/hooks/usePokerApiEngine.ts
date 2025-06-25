@@ -113,7 +113,10 @@ return;
       setPotAmount(newGameState.pot);
 
       // Get initial legal actions
-      await refreshLegalActions(newGameState);
+      // Only refresh legal actions if we're in an action step (not positions step)
+      if (currentStreet && currentStreet !== 'positions') {
+        await refreshLegalActions(newGameState);
+      }
       
       initializedRef.current = true;
     } catch (err) {
@@ -315,17 +318,27 @@ return false;
 
   // Initialize game when dependencies change
   useEffect(() => {
-    if (!initializedRef.current && players && players.length >= 2 && smallBlind && bigBlind) {
-      initializeGame();
+    // Skip initialization if players don't have positions assigned yet
+    const allPlayersHavePositions = players?.every(p => p.position && p.position.trim() !== '');
+    
+    if (!initializedRef.current && players && players.length >= 2 && smallBlind && bigBlind && allPlayersHavePositions) {
+      // Debounce initialization to prevent rapid calls
+      const timeoutId = setTimeout(() => {
+        if (!initializedRef.current) {
+          initializeGame();
+        }
+      }, 300);
+      
+      return () => clearTimeout(timeoutId);
     }
     
     // Reset when players change
-    if (!players || players.length < 2) {
+    if (!players || players.length < 2 || !allPlayersHavePositions) {
       initializedRef.current = false;
       setGameState(null);
       gameStateRef.current = null;
     }
-  }, [players?.length, smallBlind, bigBlind, initializeGame]);
+  }, [players?.length, smallBlind, bigBlind, players?.map(p => p.position).join(','), initializeGame]);
 
   // Handle street changes
   useEffect(() => {

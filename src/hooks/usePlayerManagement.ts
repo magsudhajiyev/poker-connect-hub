@@ -1,23 +1,24 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Player, ShareHandFormData } from '@/types/shareHand';
 
 export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (data: ShareHandFormData) => void) => {
-  const [isInitialized, setIsInitialized] = useState(false);
+  const isInitializedRef = useRef(false);
 
-  // Initialize empty players array if needed
+  // Initialize empty players array if needed - only check players, not entire formData
   useEffect(() => {
-    if (!isInitialized && (!formData.players || formData.players.length === 0)) {
+    // Only run once on mount or when players is undefined/null
+    if (!isInitializedRef.current && !formData.players) {
       console.log('Initializing empty players array');
       
-      setFormData({
-        ...formData,
+      setFormData((prevData) => ({
+        ...prevData,
         players: [],
-      });
+      }));
       
-      setIsInitialized(true);
+      isInitializedRef.current = true;
     }
-  }, [isInitialized, formData, setFormData]);
+  }, []); // Run only once on mount
 
   const players: Player[] = formData.players || [];
 
@@ -42,17 +43,19 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
     const heroPlayer = updatedPlayers.find(p => p.isHero);
     const villainPlayer = updatedPlayers.find(p => !p.isHero);
     
-    const newFormData = {
-      ...formData,
-      players: updatedPlayers,
-      heroPosition: heroPlayer?.position || '',
-      villainPosition: villainPlayer?.position || '',
-      heroStackSize: heroPlayer?.stackSize ? [...heroPlayer.stackSize] : [100],
-      villainStackSize: villainPlayer?.stackSize ? [...villainPlayer.stackSize] : [100],
-    };
-    
-    console.log('Player updated, triggering action reinitialization:', newFormData);
-    setFormData(newFormData);
+    setFormData((prevData) => {
+      const newFormData = {
+        ...prevData,
+        players: updatedPlayers,
+        heroPosition: heroPlayer?.position || '',
+        villainPosition: villainPlayer?.position || '',
+        heroStackSize: heroPlayer?.stackSize ? [...heroPlayer.stackSize] : [100],
+        villainStackSize: villainPlayer?.stackSize ? [...villainPlayer.stackSize] : [100],
+      };
+      
+      console.log('Player updated, triggering action reinitialization:', newFormData);
+      return newFormData;
+    });
   };
 
   // Add a new player - not needed anymore since we add players directly via table clicks
@@ -69,17 +72,19 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
     const heroPlayer = updatedPlayers.find(p => p.isHero);
     const villainPlayer = updatedPlayers.find(p => !p.isHero);
     
-    const newFormData = {
-      ...formData,
-      players: updatedPlayers,
-      heroPosition: heroPlayer?.position || '',
-      villainPosition: villainPlayer?.position || '',
-      heroStackSize: heroPlayer?.stackSize ? [...heroPlayer.stackSize] : [100],
-      villainStackSize: villainPlayer?.stackSize ? [...villainPlayer.stackSize] : [100],
-    };
-    
-    console.log('Player removed, triggering action reinitialization:', newFormData);
-    setFormData(newFormData);
+    setFormData((prevData) => {
+      const newFormData = {
+        ...prevData,
+        players: updatedPlayers,
+        heroPosition: heroPlayer?.position || '',
+        villainPosition: villainPlayer?.position || '',
+        heroStackSize: heroPlayer?.stackSize ? [...heroPlayer.stackSize] : [100],
+        villainStackSize: villainPlayer?.stackSize ? [...villainPlayer.stackSize] : [100],
+      };
+      
+      console.log('Player removed, triggering action reinitialization:', newFormData);
+      return newFormData;
+    });
   };
 
   return {

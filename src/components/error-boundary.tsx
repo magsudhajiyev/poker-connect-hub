@@ -90,7 +90,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {import.meta.env.DEV && this.state.error && (
+              {process.env.NODE_ENV === 'development' && this.state.error && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-md">
                   <p className="text-sm font-medium text-red-800 mb-1">Error Details:</p>
                   <p className="text-xs text-red-700 font-mono break-all">
@@ -137,7 +137,7 @@ export const useErrorHandler = () => {
     console.error(`Error in ${context || 'component'}:`, error);
     
     // In production, report to error service
-    if (import.meta.env.PROD) {
+    if (process.env.NODE_ENV === 'production') {
       console.warn('Error should be reported to error service:', {
         message: error.message,
         stack: error.stack,
@@ -208,7 +208,7 @@ export class ShareHandErrorBoundary extends Component<Props, State> {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {import.meta.env.DEV && this.state.error && (
+              {process.env.NODE_ENV === 'development' && this.state.error && (
                 <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
                   <p className="text-sm font-medium text-amber-800 mb-1">Poker Engine Error:</p>
                   <p className="text-xs text-amber-700 font-mono break-all">
