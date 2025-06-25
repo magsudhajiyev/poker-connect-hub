@@ -12,14 +12,22 @@ export async function middleware(request: NextRequest) {
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
   
   if (isProtectedRoute) {
-    // Check for authentication token
-    const token = await getToken({ 
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET
-    });
-    
-    if (!token) {
-      // Redirect to auth page if not authenticated
+    try {
+      // Check for authentication token with proper error handling
+      const token = await getToken({ 
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET
+      });
+      
+      if (!token || !token.email) {
+        // Redirect to auth page if not authenticated or missing email
+        const url = new URL('/auth/signin', request.url);
+        url.searchParams.set('callbackUrl', pathname);
+        return NextResponse.redirect(url);
+      }
+    } catch (error) {
+      console.error('Middleware auth error:', error);
+      // Redirect to signin on any auth error
       const url = new URL('/auth/signin', request.url);
       url.searchParams.set('callbackUrl', pathname);
       return NextResponse.redirect(url);

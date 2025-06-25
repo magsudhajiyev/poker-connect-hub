@@ -182,11 +182,6 @@ function advanceToNextRound(gameState: GameState): void {
     const activePositions = stillActive.map(p => p.position);
     gameState.actionOrder = postFlopOrder.filter(pos => activePositions.includes(pos));
     
-    console.log('Advanced to new round:', {
-      round: gameState.round,
-      activePositions,
-      newActionOrder: gameState.actionOrder,
-    });
   }
   
   // Set first active player as current
@@ -215,10 +210,6 @@ export const processAction = (
     amount,
   });
   
-  console.log(`Processing action: ${playerPosition} ${action} ${amount}`, {
-    currentRound: newState.round,
-    activePlayers: newState.activePlayers.filter(p => p.isActive).map(p => p.position),
-  });
   
   // Update game state based on action
   switch (action) {
@@ -227,8 +218,6 @@ export const processAction = (
       newState.activePlayers = newState.activePlayers.map(p => 
         p.position === playerPosition ? { ...p, isActive: false } : p,
       );
-      console.log(`${playerPosition} folded. Remaining active players:`, 
-        newState.activePlayers.filter(p => p.isActive).map(p => p.position));
       break;
       
     case 'check':
@@ -271,18 +260,14 @@ export const processAction = (
     // If only one player remains, game is over
     if (stillActive.length <= 1) {
       newState.round = 'showdown';
-      console.log('Game complete - only one player remaining');
       return newState;
     }
     
     // Advance to next round
     advanceToNextRound(newState);
-    console.log(`Round complete. Advanced to ${newState.round} with players:`, 
-      newState.activePlayers.filter(p => p.isActive).map(p => p.position));
   } else {
     // Set next player to act
     newState.currentPosition = getNextToAct(newState);
-    console.log(`Next to act: ${newState.currentPosition}`);
   }
   
   return newState;
@@ -292,7 +277,6 @@ export const removeFoldedPlayerFromFutureStreets = (
   formData: ShareHandFormData,
   foldedPlayerId: string,
 ): ShareHandFormData => {
-  console.log(`Removing folded player ${foldedPlayerId} from future streets`);
   
   return {
     ...formData,

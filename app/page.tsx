@@ -3,14 +3,14 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Menu } from 'lucide-react';
-import Header from '@/components/HeaderNext';
-import HeroSection from '@/components/HeroSectionNext';
+import Header from '@/components/Header';
+import HeroSection from '@/components/HeroSection';
 import FeaturesSection from '@/components/FeaturesSection';
 import TestimonialsSection from '@/components/TestimonialsSection';
 import StatsSection from '@/components/StatsSection';
 import PricingSection from '@/components/PricingSection';
-import Footer from '@/components/FooterNext';
-import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebarNext';
+import Footer from '@/components/Footer';
+import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
 import {
   Sheet,
   SheetContent,

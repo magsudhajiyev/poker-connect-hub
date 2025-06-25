@@ -43,7 +43,6 @@ const ActionFlow = ({
   const handleActionClick = (actionStep: any, index: number, action: string) => {
     // Validate action step and position
     if (!actionStep || !actionStep.position) {
-      console.warn('Invalid action step or missing position:', actionStep);
       updateAction(street, index, action);
       return;
     }
@@ -80,12 +79,10 @@ const ActionFlow = ({
 
         // If player folded, remove them from future streets
         if (action === 'fold') {
-          console.log(`Player ${actionStep.playerId} folded, removing from future streets`);
           const updatedFormData = removeFoldedPlayerFromFutureStreets(formData, actionStep.playerId);
           setFormData(updatedFormData);
         }
       } catch (error) {
-        console.error('Error processing action through game state:', error);
       }
     }
     
@@ -97,7 +94,6 @@ const ActionFlow = ({
     // Validate input is numeric
     const numericValue = parseFloat(value);
     if (value !== '' && (isNaN(numericValue) || numericValue < 0)) {
-      console.warn('Invalid bet input:', value);
       return;
     }
     

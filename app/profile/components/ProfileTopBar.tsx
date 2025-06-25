@@ -7,8 +7,8 @@ import { Search, Home, Bell, User, Settings, LogOut, Menu } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useRouter } from 'next/navigation';
-import { useSidebar } from '@/components/GlobalSidebarNext';
-import { useAuth } from '@/contexts/AuthContextNext';
+import { useSidebar } from '@/components/GlobalSidebar';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const ProfileTopBar = () => {
   const [searchValue, setSearchValue] = useState('');

@@ -53,7 +53,6 @@ const ActionSelectionButtons = ({
   };
 
   const handleActionSelect = (action: string) => {
-    console.log('Action selected:', action, Date.now());
     // Immediate execution to prevent timing issues
     onActionSelect(action);
   };

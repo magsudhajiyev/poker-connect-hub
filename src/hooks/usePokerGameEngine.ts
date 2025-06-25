@@ -98,7 +98,6 @@ export const usePokerGameEngine = ({
           
           setPotAmount(newEngine.pot);
           
-          console.log('Poker engine initialized successfully');
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Failed to initialize poker engine';
           console.error('Error initializing poker engine:', error);
