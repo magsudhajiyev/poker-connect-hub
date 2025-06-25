@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 // Define protected routes
-const protectedRoutes = ['/feed', '/profile', '/settings', '/share-hand', '/onboarding'];
+const protectedRoutes = ['/profile', '/settings', '/share-hand', '/feed'];
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -13,7 +13,10 @@ export async function middleware(request: NextRequest) {
   
   if (isProtectedRoute) {
     // Check for authentication token
-    const token = await getToken({ req: request });
+    const token = await getToken({ 
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET
+    });
     
     if (!token) {
       // Redirect to auth page if not authenticated

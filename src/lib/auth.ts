@@ -1,13 +1,7 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
-import { MongoDBAdapter } from "@auth/mongodb-adapter";
-import { MongoClient } from "mongodb";
-
-const client = new MongoClient(process.env.MONGODB_URI!);
-const clientPromise = client.connect();
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: MongoDBAdapter(clientPromise),
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -15,22 +9,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async session({ session, user }) {
-      // Add user id to session
-      if (session?.user && user) {
-        session.user.id = user.id;
-        // Add any additional user properties
-        session.user.hasCompletedOnboarding = (user as any).hasCompletedOnboarding || false;
-      }
-      return session;
+    async signIn({ user, account, profile }) {
+      // Always allow sign in
+      return true;
     },
-    async jwt({ token, user }) {
-      // Persist the OAuth access_token to the token right after signin
-      if (user) {
-        token.id = user.id;
-        token.hasCompletedOnboarding = (user as any).hasCompletedOnboarding || false;
+    async jwt({ token, user, account }) {
+      // Initial sign in
+      if (account && user) {
+        return {
+          ...token,
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        };
       }
+      
       return token;
+    },
+    async session({ session, token }) {      
+      // Add token data to session
+      if (token && session.user) {
+        session.user.id = token.id as string;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
+        session.user.image = token.image as string;
+      }
+      
+      return session;
     },
   },
   pages: {
@@ -38,7 +44,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: '/auth/error',
   },
   session: {
-    strategy: "database",
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
   },
+  // Let NextAuth handle cookies with default configuration
   debug: process.env.NODE_ENV === "development",
 });

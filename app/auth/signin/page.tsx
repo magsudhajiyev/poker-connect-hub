@@ -9,10 +9,11 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { signIn, getSession } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 
 export default function SignInPage() {
+  const [mounted, setMounted] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,8 +25,12 @@ export default function SignInPage() {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState(false);
   
-  const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Check for auth error from URL params
   useEffect(() => {
@@ -43,17 +48,6 @@ export default function SignInPage() {
     }
   }, [searchParams]);
 
-  // Check if user is already authenticated
-  useEffect(() => {
-    const checkSession = async () => {
-      const session = await getSession();
-      if (session?.user) {
-        router.push('/feed');
-      }
-    };
-    checkSession();
-  }, [router]);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('Traditional email/password authentication not implemented yet. Please use Google sign-in.');
@@ -64,27 +58,26 @@ export default function SignInPage() {
       setLoading(true);
       setError('');
       
-      const result = await signIn('google', {
-        callbackUrl: '/feed',
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError('Google sign-in failed. Please try again.');
-      } else if (result?.url) {
-        router.push(result.url);
-      }
+      // Get callback URL from search params or default to /feed
+      const callbackUrl = searchParams?.get('callbackUrl') || '/feed';
+      
+      // Sign in with Google and redirect to the callback URL
+      await signIn('google', { redirectTo: callbackUrl });
     } catch (error) {
       console.error('Google sign-in error:', error);
       setError('An unexpected error occurred. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
 
-  const handleBackHome = () => {
-    router.push('/');
-  };
+  // Show loading until mounted to prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
@@ -131,121 +124,110 @@ export default function SignInPage() {
           </CardHeader>
           
           <CardContent className="space-y-6">
-
-            {/* Email Form */}
+            {/* Email/Password Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
-                <div className="space-y-2">
+                <div>
                   <Label htmlFor="name" className="text-slate-200">Full Name</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <div className="relative mt-1">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
                     <Input
                       id="name"
                       type="text"
-                      placeholder="Enter your full name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className="pl-10 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500"
-                      required
+                      placeholder="Your full name"
+                      required={!isLogin}
                     />
                   </div>
                 </div>
               )}
-
-              <div className="space-y-2">
+              
+              <div>
                 <Label htmlFor="email" className="text-slate-200">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <div className="relative mt-1">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500"
+                    placeholder="your@email.com"
                     required
                   />
                 </div>
               </div>
-
-              <div className="space-y-2">
+              
+              <div>
                 <Label htmlFor="password" className="text-slate-200">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <div className="relative mt-1">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
                   <Input
                     id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
+                    type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-10 pr-10 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500"
+                    placeholder="Your password"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-200"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
-
+              
               {!isLogin && (
-                <div className="space-y-2">
+                <div>
                   <Label htmlFor="confirmPassword" className="text-slate-200">Confirm Password</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <div className="relative mt-1">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
                     <Input
                       id="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="Confirm your password"
+                      type={showConfirmPassword ? "text" : "password"}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       className="pl-10 pr-10 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500"
-                      required
+                      placeholder="Confirm your password"
+                      required={!isLogin}
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-200"
                     >
-                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
               )}
-
+              
               {!isLogin && (
-                <div className="flex items-start space-x-3 pt-2">
+                <div className="flex items-center space-x-2">
                   <Checkbox
-                    id="acceptTerms"
+                    id="terms"
                     checked={acceptTerms}
-                    onCheckedChange={(checked) => setAcceptTerms(Boolean(checked))}
-                    className="mt-0.5"
+                    onCheckedChange={setAcceptTerms}
+                    className="border-slate-600 data-[state=checked]:bg-emerald-500"
                   />
-                  <Label htmlFor="acceptTerms" className="text-sm text-slate-300 leading-relaxed">
+                  <Label htmlFor="terms" className="text-sm text-slate-300">
                     I agree to the{' '}
-                    <Link 
-                      href="/terms-conditions" 
-                      className="text-emerald-400 hover:text-emerald-300 underline"
-                    >
+                    <Link href="/terms-conditions" className="text-emerald-400 hover:text-emerald-300">
                       Terms & Conditions
-                    </Link>
-                    {' '}and{' '}
-                    <Link 
-                      href="/privacy-policy" 
-                      className="text-emerald-400 hover:text-emerald-300 underline"
-                    >
-                      Privacy Policy
                     </Link>
                   </Label>
                 </div>
               )}
-
+              
               <Button 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-emerald-500 to-violet-500 hover:from-emerald-600 hover:to-violet-600 text-slate-900 font-medium py-3"
+                className="w-full bg-gradient-to-r from-emerald-500 to-violet-500 hover:from-emerald-600 hover:to-violet-600 text-slate-900 font-medium"
                 disabled={!isLogin && !acceptTerms}
               >
                 {isLogin ? 'Sign In' : 'Create Account'}
