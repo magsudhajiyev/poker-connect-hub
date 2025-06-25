@@ -25,3 +25,7 @@ dist-ssr
 .history
 .env
 .env.example
+
+# Next.js build output
+.next/
+out/
