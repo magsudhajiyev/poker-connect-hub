@@ -1,12 +1,12 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  UseGuards, 
-  Req, 
-  Res, 
+import {
+  Controller,
+  Get,
+  Post,
+  UseGuards,
   UnauthorizedException,
   HttpStatus,
+  Req,
+  Res,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
@@ -37,10 +37,10 @@ export class AuthController {
   @UseGuards(GoogleAuthGuard)
   async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
     const frontendUrl = this.configService.get<string>('FRONTEND_URL');
-    
+
     try {
       const user = req.user as User;
-      
+
       if (!user) {
         console.error('Google auth callback: No user object in request');
         throw new UnauthorizedException('Authentication failed - no user data');
@@ -53,7 +53,7 @@ export class AuthController {
 
       // Set secure HTTP-only cookies
       const isProduction = this.configService.get('NODE_ENV') === 'production';
-      
+
       res.cookie('access_token', accessToken, {
         httpOnly: true,
         secure: isProduction,
@@ -68,23 +68,25 @@ export class AuthController {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
-      console.log('Google auth callback: Authentication successful, redirecting to appropriate page');
-      
+      console.log(
+        'Google auth callback: Authentication successful, redirecting to appropriate page',
+      );
+
       // Redirect based on onboarding status
       const redirectPath = user.hasCompletedOnboarding ? '/feed' : '/onboarding';
       res.redirect(`${frontendUrl}${redirectPath}`);
-    } catch (error) {
+    } catch {
       console.error('Google auth callback error:', error);
       console.error('Error details:', {
         name: error.name,
         message: error.message,
         stack: error.stack,
       });
-      
+
       // Clear any partial cookies
       res.clearCookie('access_token');
       res.clearCookie('refresh_token');
-      
+
       // Determine error type for better user feedback
       let errorParam = 'authentication_failed';
       if (error.message?.includes('MongoDB') || error.message?.includes('database')) {
@@ -92,7 +94,7 @@ export class AuthController {
       } else if (error.message?.includes('token')) {
         errorParam = 'token_error';
       }
-      
+
       res.redirect(`${frontendUrl}/auth?error=${errorParam}`);
     }
   }
@@ -102,7 +104,7 @@ export class AuthController {
   async refresh(@Req() req: Request, @Res() res: Response) {
     try {
       const refreshToken = req.cookies['refresh_token'];
-      
+
       if (!refreshToken) {
         throw new UnauthorizedException('Refresh token not found');
       }
@@ -111,7 +113,7 @@ export class AuthController {
 
       // Set new access token cookie
       const isProduction = this.configService.get('NODE_ENV') === 'production';
-      
+
       res.cookie('access_token', accessToken, {
         httpOnly: true,
         secure: isProduction,
@@ -119,14 +121,14 @@ export class AuthController {
         maxAge: 15 * 60 * 1000, // 15 minutes
       });
 
-      res.status(HttpStatus.OK).json({ 
+      res.status(HttpStatus.OK).json({
         success: true,
         message: 'Token refreshed successfully',
       });
-    } catch (error) {
+    } catch {
       res.clearCookie('access_token');
       res.clearCookie('refresh_token');
-      
+
       throw new UnauthorizedException('Token refresh failed');
     }
   }
@@ -159,7 +161,7 @@ export class AuthController {
         success: true,
         message: 'Logged out successfully',
       });
-    } catch (error) {
+    } catch {
       console.error('Logout error:', error);
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
@@ -172,10 +174,10 @@ export class AuthController {
   @Public()
   async getAuthStatus(@Req() req: Request) {
     const accessToken = req.cookies['access_token'];
-    
+
     return {
-      isAuthenticated: !!accessToken,
-      hasToken: !!accessToken,
+      isAuthenticated: Boolean(accessToken),
+      hasToken: Boolean(accessToken),
     };
   }
 
@@ -183,7 +185,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async completeOnboarding(@CurrentUser() user: User) {
     await this.authService.completeOnboarding(user.id);
-    
+
     return {
       success: true,
       message: 'Onboarding completed successfully',

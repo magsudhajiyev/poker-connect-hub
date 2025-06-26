@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -9,10 +8,10 @@ import { Share2, Image, Smile } from 'lucide-react';
 
 export const PostComposer = () => {
   const [content, setContent] = useState('');
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleShareHand = () => {
-    navigate('/share-hand');
+    router.push('/share-hand');
   };
 
   return (
@@ -32,11 +31,19 @@ export const PostComposer = () => {
             />
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-2 sm:mt-3 gap-2 sm:gap-0">
               <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto flex-shrink-0">
-                <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200 p-1.5 sm:p-2 flex-shrink-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-slate-400 hover:text-slate-200 p-1.5 sm:p-2 flex-shrink-0"
+                >
                   <Image className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                   <span className="hidden sm:inline text-xs sm:text-sm">Photo</span>
                 </Button>
-                <Button variant="ghost" size="sm" className="text-slate-400 hover:text-slate-200 p-1.5 sm:p-2 flex-shrink-0">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-slate-400 hover:text-slate-200 p-1.5 sm:p-2 flex-shrink-0"
+                >
                   <Smile className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                   <span className="hidden sm:inline text-xs sm:text-sm">Feeling</span>
                 </Button>

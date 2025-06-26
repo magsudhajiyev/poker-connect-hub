@@ -1,14 +1,13 @@
-
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Edit3, Settings, Check, Share, Users, UserPlus, ThumbsUp } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
 export const ProfileHeader = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleSettingsClick = () => {
-    navigate('/settings');
+    router.push('/settings');
   };
 
   return (
@@ -26,15 +25,18 @@ export const ProfileHeader = () => {
               <Check className="w-2.5 h-2.5 lg:w-3 lg:h-3 text-slate-800" />
             </div>
           </div>
-          
+
           {/* Profile Info and Actions */}
           <div className="flex-1 text-center sm:text-left w-full min-w-0">
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 lg:gap-4">
               <div className="min-w-0 flex-1">
-                <h1 className="text-xl lg:text-2xl font-bold text-slate-200 truncate">Michael Johnson</h1>
+                <h1 className="text-xl lg:text-2xl font-bold text-slate-200 truncate">
+                  Michael Johnson
+                </h1>
                 <p className="text-slate-400 text-sm lg:text-base break-words">@pokerpro92</p>
                 <p className="text-slate-300 mt-2 text-sm lg:text-base leading-relaxed break-words">
-                  Mid-stakes grinder focusing on NLH cash games. Sharing hands and learning from the community. Based in Las Vegas.
+                  Mid-stakes grinder focusing on NLH cash games. Sharing hands and learning from the
+                  community. Based in Las Vegas.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-2 lg:gap-3 flex-shrink-0 w-full sm:w-auto">
@@ -42,9 +44,9 @@ export const ProfileHeader = () => {
                   <Edit3 className="w-4 h-4 mr-2" />
                   Edit Profile
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
+                <Button
+                  variant="outline"
+                  size="icon"
                   onClick={handleSettingsClick}
                   className="border-slate-700/30 bg-slate-800/40 self-center sm:self-auto flex-shrink-0"
                 >
@@ -54,7 +56,7 @@ export const ProfileHeader = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Stats Summary */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-6">
           <div className="flex items-center gap-2 lg:gap-3 p-2 lg:p-0 min-w-0">

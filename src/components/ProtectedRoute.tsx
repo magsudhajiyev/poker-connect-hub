@@ -1,4 +1,5 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { useRouter, usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface ProtectedRouteProps {
@@ -7,7 +8,16 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, loading, isLoggingOut } = useAuth();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Don't redirect during logout to prevent visual glitch
+  useEffect(() => {
+    if (!isAuthenticated && !isLoggingOut && !loading) {
+      // Redirect to login page but save the attempted location
+      router.push(`/auth?from=${encodeURIComponent(pathname)}`);
+    }
+  }, [isAuthenticated, isLoggingOut, loading, router, pathname]);
 
   if (loading) {
     return (
@@ -20,10 +30,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  // Don't redirect during logout to prevent visual glitch
   if (!isAuthenticated && !isLoggingOut) {
-    // Redirect to login page but save the attempted location
-    return <Navigate to="/auth" state={{ from: location }} replace />;
+    return null; // Return null while redirecting
   }
 
   // Show loading screen during logout for smooth transition

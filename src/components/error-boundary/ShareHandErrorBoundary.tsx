@@ -3,7 +3,7 @@ import ErrorBoundary from './ErrorBoundary';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
 interface ShareHandErrorBoundaryProps {
   children: React.ReactNode;
@@ -21,7 +21,7 @@ const ShareHandErrorFallback: React.FC<{ onRetry: () => void; onGoBack: () => vo
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle className="text-destructive">Hand Sharing Error</AlertTitle>
           <AlertDescription className="text-slate-300">
-            We encountered an issue while processing your poker hand. This could be due to invalid 
+            We encountered an issue while processing your poker hand. This could be due to invalid
             game state, network issues, or unexpected input. Your progress may have been lost.
           </AlertDescription>
         </Alert>
@@ -38,10 +38,7 @@ const ShareHandErrorFallback: React.FC<{ onRetry: () => void; onGoBack: () => vo
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
-          <Button
-            onClick={onRetry}
-            className="flex-1 bg-blue-600 hover:bg-blue-700"
-          >
+          <Button onClick={onRetry} className="flex-1 bg-blue-600 hover:bg-blue-700">
             <RefreshCw className="h-4 w-4 mr-2" />
             Try Again
           </Button>
@@ -65,11 +62,8 @@ const ShareHandErrorFallback: React.FC<{ onRetry: () => void; onGoBack: () => vo
   );
 };
 
-const ShareHandErrorBoundary: React.FC<ShareHandErrorBoundaryProps> = ({
-  children,
-  onReset,
-}) => {
-  const navigate = useNavigate();
+const ShareHandErrorBoundary: React.FC<ShareHandErrorBoundaryProps> = ({ children, onReset }) => {
+  const router = useRouter();
 
   const handleShareHandError = (error: Error, errorInfo: React.ErrorInfo) => {
     // Log specific share hand errors
@@ -96,17 +90,12 @@ const ShareHandErrorBoundary: React.FC<ShareHandErrorBoundaryProps> = ({
   };
 
   const handleGoBack = () => {
-    navigate('/feed');
+    router.push('/feed');
   };
 
   return (
     <ErrorBoundary
-      fallback={
-        <ShareHandErrorFallback
-          onRetry={handleRetry}
-          onGoBack={handleGoBack}
-        />
-      }
+      fallback={<ShareHandErrorFallback onRetry={handleRetry} onGoBack={handleGoBack} />}
       onError={handleShareHandError}
       resetOnPropsChange={true}
       resetKeys={[]} // Will reset when any props change
