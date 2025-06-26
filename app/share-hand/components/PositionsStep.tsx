@@ -22,8 +22,8 @@ const PositionsStep = ({
 
   const handleUpdatePlayer = (newPlayer: Player) => {
     // Use callback pattern to ensure we have the latest state
-    setFormData((prevFormData: ShareHandFormData): ShareHandFormData => {
-      const currentPlayers = prevFormData.players || [];
+    setFormData((prevFormData) => {
+      const currentPlayers = (prevFormData as ShareHandFormData).players || [];
 
       // If this player is being set as hero, remove hero status from others
       let updatedPlayers = currentPlayers.map((p) => {
