@@ -3,7 +3,7 @@
 import { TrendingUp, Trophy, Clock } from 'lucide-react';
 import { useSidebar } from './SidebarContext';
 
-export const SidebarStatsOverviewNext = () => {
+export const SidebarStatsOverview = () => {
   const { isCollapsed } = useSidebar();
 
   if (isCollapsed) {
