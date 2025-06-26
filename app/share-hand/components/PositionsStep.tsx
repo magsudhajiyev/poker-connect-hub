@@ -1,13 +1,14 @@
 'use client';
 
+import React from 'react';
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';
 import { getAvailablePositions } from '@/utils/positionUtils';
 import { PokerTable } from './poker-table';
-import { Player } from '@/types/shareHand';
+import { Player, ShareHandFormData } from '@/types/shareHand';
 
 interface PositionsStepProps {
-  formData: any;
-  setFormData: (data: any) => void;
+  formData: ShareHandFormData;
+  setFormData: React.Dispatch<React.SetStateAction<ShareHandFormData>>;
   showValidationErrors?: boolean;
   getCurrencySymbol?: () => string;
 }
@@ -21,7 +22,7 @@ const PositionsStep = ({
 
   const handleUpdatePlayer = (newPlayer: Player) => {
     // Use callback pattern to ensure we have the latest state
-    setFormData((prevFormData) => {
+    setFormData((prevFormData): ShareHandFormData => {
       const currentPlayers = prevFormData.players || [];
 
       // If this player is being set as hero, remove hero status from others

@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { ShareHandFormData, StreetType } from '@/types/shareHand';
 import {
   initializeActions,
@@ -9,7 +9,7 @@ import { ActionType } from '@/constants';
 
 export const useActionManagement = (
   formData: ShareHandFormData,
-  setFormData: (data: ShareHandFormData | ((prev: ShareHandFormData) => ShareHandFormData)) => void,
+  setFormData: React.Dispatch<React.SetStateAction<ShareHandFormData>>,
 ) => {
   const _addNextActionStep = (street: StreetType, currentIndex: number) => {
     const actions = formData[street];

@@ -65,7 +65,7 @@ const ShareHandForm = () => {
         const actionStep = allActions[index];
         if (actionStep && actionStep.playerId) {
           if (pokerActions.isPlayerToAct(actionStep.playerId)) {
-            const validActions = pokerActions.getValidActionsForPlayer(actionStep.playerId);
+            const validActions = pokerActions.getAvailableActions(actionStep.playerId);
             const actionTypes = validActions.map((action: any) => action.type || action);
             console.log('Poker algorithm actions for player:', actionStep.playerId, actionTypes);
             return actionTypes;
@@ -77,31 +77,47 @@ const ShareHandForm = () => {
       },
       updateAction: (street: any, index: number, action: string, betAmount?: string) => {
         // Execute action using poker algorithm if we're in action steps
-        if (currentStep > 1 && pokerActions.algorithm) {
-          const amount = betAmount ? parseFloat(betAmount) : 0;
-          const success = pokerActions.executeAction(action, amount);
+        if (currentStep > 1 && pokerActions) {
+          // Get the action step to find the playerId
+          const allActions = (formData as any)[street] || [];
+          const actionStep = allActions[index];
 
-          if (success) {
-            console.log(`Action ${action} executed successfully`);
-            // Update the form data as well for consistency
-            updateAction(street, index, action, betAmount);
+          if (actionStep && actionStep.playerId) {
+            const amount = betAmount ? parseFloat(betAmount) : 0;
+            const success = pokerActions.executeAction(actionStep.playerId, action as any, amount);
+
+            if (success) {
+              console.log(`Action ${action} executed successfully`);
+              // Update the form data as well for consistency
+              updateAction(street, index, action as any, betAmount);
+            }
           }
         } else {
           // Fall back to original logic for positions step
-          updateAction(street, index, action, betAmount);
+          updateAction(street, index, action as any, betAmount);
         }
       },
       getActionButtonClass,
       handleBetSizeSelect: (street: any, index: number, amount: string) => {
         // Use poker algorithm for action steps
-        if (currentStep > 1 && pokerActions.algorithm) {
-          const numericAmount = parseFloat(amount);
-          const success = pokerActions.executeAction('bet', numericAmount);
+        if (currentStep > 1 && pokerActions) {
+          // Get the action step to find the playerId
+          const allActions = (formData as any)[street] || [];
+          const actionStep = allActions[index];
 
-          if (success) {
-            console.log(`Bet size ${amount} executed successfully`);
-            // Update the form data as well for consistency
-            handleBetSizeSelect(street, index, amount);
+          if (actionStep && actionStep.playerId) {
+            const numericAmount = parseFloat(amount);
+            const success = pokerActions.executeAction(
+              actionStep.playerId,
+              'bet' as any,
+              numericAmount,
+            );
+
+            if (success) {
+              console.log(`Bet size ${amount} executed successfully`);
+              // Update the form data as well for consistency
+              handleBetSizeSelect(street, index, amount);
+            }
           }
         } else {
           // Fall back to original logic

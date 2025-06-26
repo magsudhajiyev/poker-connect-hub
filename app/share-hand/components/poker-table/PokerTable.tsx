@@ -30,7 +30,7 @@ const PokerTable = React.memo(
   ({
     players,
     communityCards = [],
-    _currentPlayer,
+    currentPlayer: _currentPlayer,
     pot = 0,
     getCurrencySymbol = () => '$',
     gameFormat = 'cash',

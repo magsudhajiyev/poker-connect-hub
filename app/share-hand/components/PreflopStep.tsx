@@ -26,13 +26,13 @@ interface PreflopStepProps {
 const PreflopStep = ({
   formData,
   setFormData,
-  _showPot,
-  _getPositionName,
+  showPot: _showPot,
+  getPositionName: _getPositionName,
   getCurrencySymbol,
-  _calculatePotSize,
+  calculatePotSize: _calculatePotSize,
   getAvailableActions,
   updateAction,
-  _getActionButtonClass,
+  getActionButtonClass: _getActionButtonClass,
   handleBetSizeSelect,
   getAllSelectedCards,
 }: PreflopStepProps) => {

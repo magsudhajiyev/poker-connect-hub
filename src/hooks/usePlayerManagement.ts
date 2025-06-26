@@ -1,9 +1,9 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Player, ShareHandFormData } from '@/types/shareHand';
 
 export const usePlayerManagement = (
   formData: ShareHandFormData,
-  setFormData: (data: ShareHandFormData) => void,
+  setFormData: React.Dispatch<React.SetStateAction<ShareHandFormData>>,
 ) => {
   const isInitializedRef = useRef(false);
 

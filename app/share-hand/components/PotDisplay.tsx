@@ -18,7 +18,7 @@ const PotDisplay = ({
   potSize,
   formData,
   getCurrencySymbol,
-  _isFinal = false,
+  isFinal: _isFinal = false,
   gameState,
   pokerActions,
 }: PotDisplayProps) => {
