@@ -1,4 +1,26 @@
-import { PokerPlayer, PokerAction, SidePot } from '@/types/poker';
+// Types for the Fixed Poker Game Engine
+interface PokerPlayer {
+  id: string | number;
+  name: string;
+  stack: number;
+  hand: string[];
+  bet: number;
+  folded: boolean;
+  allIn: boolean;
+  position: string;
+}
+
+interface PokerAction {
+  id: string | number;
+  action: string;
+  amount: number;
+  street: string;
+}
+
+interface SidePot {
+  amount: number;
+  eligiblePlayers: (string | number)[];
+}
 
 /**
  * Fixed PokerGameEngine with proper minimum raise tracking and side pot calculations
@@ -41,10 +63,9 @@ export class PokerGameEngineFixed {
 
     this.players = players.map((p) => ({
       ...p,
-      betAmount: 0,
-      hasFolded: false,
-      isAllIn: false,
-      lastAction: undefined,
+      bet: 0,
+      folded: false,
+      allIn: false,
     }));
 
     this.smallBlind = smallBlind;
@@ -75,22 +96,22 @@ export class PokerGameEngineFixed {
     // Post small blind
     const sbAmount = Math.min(this.smallBlind, sbPlayer.stack);
     sbPlayer.stack -= sbAmount;
-    sbPlayer.betAmount = sbAmount;
+    sbPlayer.bet = sbAmount;
     this.pot += sbAmount;
 
     if (sbPlayer.stack === 0) {
-      sbPlayer.isAllIn = true;
+      sbPlayer.allIn = true;
     }
 
     // Post big blind
     const bbAmount = Math.min(this.bigBlind, bbPlayer.stack);
     bbPlayer.stack -= bbAmount;
-    bbPlayer.betAmount = bbAmount;
+    bbPlayer.bet = bbAmount;
     this.pot += bbAmount;
     this.currentBet = bbAmount;
 
     if (bbPlayer.stack === 0) {
-      bbPlayer.isAllIn = true;
+      bbPlayer.allIn = true;
     }
 
     // Set first player to act (UTG or BTN in heads-up)
@@ -98,7 +119,7 @@ export class PokerGameEngineFixed {
   }
 
   private setFirstPlayerToAct(): void {
-    const activePlayers = this.players.filter((p) => !p.hasFolded && p.stack > 0);
+    const activePlayers = this.players.filter((p) => !p.folded && p.stack > 0);
 
     if (this.street === 'preflop') {
       if (activePlayers.length === 2) {
@@ -110,7 +131,7 @@ export class PokerGameEngineFixed {
         const bbIndex = this.players.findIndex((p) => p.position === 'BB');
         let nextIndex = (bbIndex + 1) % this.players.length;
 
-        while (this.players[nextIndex].hasFolded || this.players[nextIndex].isAllIn) {
+        while (this.players[nextIndex].folded || this.players[nextIndex].allIn) {
           nextIndex = (nextIndex + 1) % this.players.length;
           if (nextIndex === bbIndex) {
             break;
@@ -122,7 +143,7 @@ export class PokerGameEngineFixed {
     } else {
       // Post-flop: SB acts first
       const sbIndex = this.players.findIndex(
-        (p) => p.position === 'SB' && !p.hasFolded && p.stack > 0,
+        (p) => p.position === 'SB' && !p.folded && p.stack > 0,
       );
       if (sbIndex >= 0) {
         this.currentPlayerIndex = sbIndex;
@@ -130,9 +151,7 @@ export class PokerGameEngineFixed {
         // If SB folded, find next active player
         const positions = ['BB', 'UTG', 'UTG+1', 'MP', 'MP+1', 'CO', 'BTN'];
         for (const pos of positions) {
-          const idx = this.players.findIndex(
-            (p) => p.position === pos && !p.hasFolded && p.stack > 0,
-          );
+          const idx = this.players.findIndex((p) => p.position === pos && !p.folded && p.stack > 0);
           if (idx >= 0) {
             this.currentPlayerIndex = idx;
             break;
@@ -157,11 +176,11 @@ export class PokerGameEngineFixed {
     const gamePlayer = this.players[playerIndex];
 
     // Validate player can act
-    if (gamePlayer.hasFolded || gamePlayer.isAllIn) {
+    if (gamePlayer.folded || gamePlayer.allIn) {
       throw new Error('Player cannot act (folded or all-in)');
     }
 
-    switch (action.type) {
+    switch (action.action) {
       case 'fold':
         this.handleFold(gamePlayer);
         break;
@@ -186,52 +205,49 @@ export class PokerGameEngineFixed {
         break;
 
       default:
-        throw new Error(`Invalid action type: ${action.type}`);
+        throw new Error(`Invalid action type: ${action.action}`);
     }
 
     // Record action
     this.actions.push({
-      ...action,
-      playerId: player.id,
+      id: player.id,
+      action: action.action,
+      amount: action.amount,
       street: this.street,
-      timestamp: new Date().toISOString(),
     });
-
-    // Update player's last action
-    gamePlayer.lastAction = action.type;
 
     // Move to next player
     this.moveToNextPlayer();
   }
 
   private handleFold(player: PokerPlayer): void {
-    player.hasFolded = true;
+    player.folded = true;
   }
 
   private handleCheck(player: PokerPlayer): void {
-    if (player.betAmount < this.currentBet) {
+    if (player.bet < this.currentBet) {
       throw new Error('Cannot check - must call, raise, or fold');
     }
   }
 
   private handleCall(player: PokerPlayer): void {
-    const toCall = this.currentBet - player.betAmount;
+    const toCall = this.currentBet - player.bet;
     if (toCall <= 0) {
       throw new Error('Nothing to call');
     }
 
     const callAmount = Math.min(toCall, player.stack);
     player.stack -= callAmount;
-    player.betAmount += callAmount;
+    player.bet += callAmount;
     this.pot += callAmount;
 
     if (player.stack === 0) {
-      player.isAllIn = true;
+      player.allIn = true;
     }
   }
 
   private handleRaise(player: PokerPlayer, raiseToAmount: number): void {
-    const toCall = this.currentBet - player.betAmount;
+    const toCall = this.currentBet - player.bet;
     const raiseAmount = raiseToAmount - this.currentBet;
 
     // Validate minimum raise
@@ -251,7 +267,7 @@ export class PokerGameEngineFixed {
 
     // Update game state
     player.stack -= totalRequired;
-    player.betAmount += totalRequired;
+    player.bet += totalRequired;
     this.pot += totalRequired;
 
     // Update raise tracking
@@ -259,7 +275,7 @@ export class PokerGameEngineFixed {
     this.currentBet = raiseToAmount;
 
     if (player.stack === 0) {
-      player.isAllIn = true;
+      player.allIn = true;
     }
   }
 
@@ -270,19 +286,19 @@ export class PokerGameEngineFixed {
     }
 
     player.stack = 0;
-    player.betAmount += allInAmount;
+    player.bet += allInAmount;
     this.pot += allInAmount;
-    player.isAllIn = true;
+    player.allIn = true;
 
     // Update current bet if this all-in is larger
-    if (player.betAmount > this.currentBet) {
-      this.lastRaiseSize = player.betAmount - this.currentBet;
-      this.currentBet = player.betAmount;
+    if (player.bet > this.currentBet) {
+      this.lastRaiseSize = player.bet - this.currentBet;
+      this.currentBet = player.bet;
     }
   }
 
   private moveToNextPlayer(): void {
-    const activePlayers = this.players.filter((p) => !p.hasFolded && !p.isAllIn && p.stack > 0);
+    const activePlayers = this.players.filter((p) => !p.folded && !p.allIn && p.stack > 0);
 
     if (activePlayers.length <= 1) {
       // Betting round is over
@@ -293,8 +309,8 @@ export class PokerGameEngineFixed {
     // Find next active player
     let nextIndex = (this.currentPlayerIndex! + 1) % this.players.length;
     while (
-      this.players[nextIndex].hasFolded ||
-      this.players[nextIndex].isAllIn ||
+      this.players[nextIndex].folded ||
+      this.players[nextIndex].allIn ||
       this.players[nextIndex].stack === 0
     ) {
       nextIndex = (nextIndex + 1) % this.players.length;
@@ -310,19 +326,17 @@ export class PokerGameEngineFixed {
   }
 
   private checkBettingRoundComplete(): boolean {
-    const activePlayers = this.players.filter((p) => !p.hasFolded && !p.isAllIn && p.stack > 0);
+    const activePlayers = this.players.filter((p) => !p.folded && !p.allIn && p.stack > 0);
 
     // All active players must have bet the same amount
-    return activePlayers.every((p) => p.betAmount === this.currentBet);
+    return activePlayers.every((p) => p.bet === this.currentBet);
   }
 
   calculateSidePots(): void {
     this.sidePots = [];
 
     // Get all players who have bet money (including folded players)
-    const playersWithBets = this.players
-      .filter((p) => p.betAmount > 0)
-      .sort((a, b) => a.betAmount - b.betAmount);
+    const playersWithBets = this.players.filter((p) => p.bet > 0).sort((a, b) => a.bet - b.bet);
 
     if (playersWithBets.length === 0) {
       return;
@@ -332,7 +346,7 @@ export class PokerGameEngineFixed {
     let lastBetAmount = 0;
 
     while (remainingPlayers.length > 0) {
-      const currentBetLevel = remainingPlayers[0].betAmount;
+      const currentBetLevel = remainingPlayers[0].bet;
       const betIncrement = currentBetLevel - lastBetAmount;
 
       if (betIncrement > 0) {
@@ -340,7 +354,7 @@ export class PokerGameEngineFixed {
         const potAmount = betIncrement * remainingPlayers.length;
 
         // Eligible players are those who haven't folded
-        const eligiblePlayers = remainingPlayers.filter((p) => !p.hasFolded).map((p) => p.id);
+        const eligiblePlayers = remainingPlayers.filter((p) => !p.folded).map((p) => p.id);
 
         if (eligiblePlayers.length > 0) {
           this.sidePots.push({
@@ -351,7 +365,7 @@ export class PokerGameEngineFixed {
       }
 
       // Remove players who have no more money to contribute
-      remainingPlayers = remainingPlayers.filter((p) => p.betAmount > currentBetLevel);
+      remainingPlayers = remainingPlayers.filter((p) => p.bet > currentBetLevel);
       lastBetAmount = currentBetLevel;
     }
   }
@@ -389,14 +403,14 @@ export class PokerGameEngineFixed {
   private resetBettingRound(): void {
     // Reset bet amounts for new street
     this.players.forEach((p) => {
-      p.betAmount = 0;
+      p.bet = 0;
     });
 
     this.currentBet = 0;
     this.lastRaiseSize = this.bigBlind; // Reset to big blind for new street
 
     // Set first player to act (SB or first active player after SB)
-    const activePlayers = this.players.filter((p) => !p.hasFolded && !p.isAllIn && p.stack > 0);
+    const activePlayers = this.players.filter((p) => !p.folded && !p.allIn && p.stack > 0);
 
     if (activePlayers.length > 1) {
       // Find first active player from SB position
@@ -404,7 +418,7 @@ export class PokerGameEngineFixed {
 
       for (const pos of positions) {
         const playerIndex = this.players.findIndex(
-          (p) => p.position === pos && !p.hasFolded && !p.isAllIn && p.stack > 0,
+          (p) => p.position === pos && !p.folded && !p.allIn && p.stack > 0,
         );
 
         if (playerIndex !== -1) {

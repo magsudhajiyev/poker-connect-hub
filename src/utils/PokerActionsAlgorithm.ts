@@ -30,6 +30,8 @@ export class PokerActionsAlgorithm {
       turn: [],
       river: [],
     };
+    this.actionOrder = [];
+    this.currentActionIndex = 0;
 
     // Set initial blinds
     this.setInitialBlinds();
@@ -329,8 +331,6 @@ export class PokerActionsAlgorithm {
   }
 
   processRaise(player: any, playerIndex: number, totalAmount: number, actionType: string): boolean {
-    const _callAmount = Math.max(0, this.currentBet - player.currentBet);
-
     if (totalAmount > player.stack) {
       return false;
     }

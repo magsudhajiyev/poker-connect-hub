@@ -9,7 +9,6 @@ export const getEnvVar = (key: string): string | undefined => {
   }
 
   // For Vite (fallback)
-  // @ts-expect-error - import.meta is available in Vite environment
   if (typeof window !== 'undefined' && (window as any).import?.meta?.env) {
     // @ts-expect-error - import.meta is available in Vite environment
     return import.meta.env[key];
@@ -23,7 +22,6 @@ export const isDevelopment = (): boolean => {
     return process.env.NODE_ENV === 'development';
   }
 
-  // @ts-expect-error - import.meta is available in Vite environment
   if (typeof window !== 'undefined' && (window as any).import?.meta?.env) {
     // @ts-expect-error - import.meta is available in Vite environment
     return import.meta.env.DEV;
@@ -37,7 +35,6 @@ export const isProduction = (): boolean => {
     return process.env.NODE_ENV === 'production';
   }
 
-  // @ts-expect-error - import.meta is available in Vite environment
   if (typeof window !== 'undefined' && (window as any).import?.meta?.env) {
     // @ts-expect-error - import.meta is available in Vite environment
     return import.meta.env.PROD;

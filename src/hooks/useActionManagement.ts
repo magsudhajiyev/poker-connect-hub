@@ -11,37 +11,6 @@ export const useActionManagement = (
   formData: ShareHandFormData,
   setFormData: React.Dispatch<React.SetStateAction<ShareHandFormData>>,
 ) => {
-  const _addNextActionStep = (street: StreetType, currentIndex: number) => {
-    const actions = formData[street];
-
-    // Add bounds checking to prevent undefined access
-    if (currentIndex < 0 || currentIndex >= actions.length) {
-      return;
-    }
-
-    const currentAction = actions[currentIndex];
-
-    // Additional safety check
-    if (!currentAction || !currentAction.action) {
-      return;
-    }
-
-    if (shouldAddNextAction(currentAction.action)) {
-      const nextActionStep = createNextActionStep(currentAction, formData.players);
-
-      // Check if next action already exists
-      const nextActionExists = actions.find(
-        (action, index) => index > currentIndex && action.playerId === nextActionStep.playerId,
-      );
-
-      if (!nextActionExists) {
-        const updatedActions = [...actions, nextActionStep];
-
-        setFormData((prev: ShareHandFormData) => ({ ...prev, [street]: updatedActions }));
-      }
-    }
-  };
-
   const updateAction = (
     street: StreetType,
     index: number,
@@ -169,7 +138,7 @@ export const useActionManagement = (
       }
 
       // Add next action step if this is a bet or raise and it doesn't already exist
-      if (currentAction.action && shouldAddNextAction(currentAction.action)) {
+      if (currentAction.action && shouldAddNextAction(currentAction.action as ActionType)) {
         const nextActionStep = createNextActionStep(currentAction, prev.players);
 
         // Check if next action already exists

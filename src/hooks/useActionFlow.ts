@@ -131,7 +131,7 @@ export const useActionFlow = (
 
               setFormData((prev) => ({
                 ...prev,
-                players: prev.players.map((p) =>
+                players: prev.players.map((p: Player) =>
                   p.id === sbPlayer.id
                     ? {
                         ...p,
@@ -149,7 +149,7 @@ export const useActionFlow = (
 
               setFormData((prev) => ({
                 ...prev,
-                players: prev.players.map((p) =>
+                players: prev.players.map((p: Player) =>
                   p.id === bbPlayer.id
                     ? { ...p, stackSize: [Math.max(0, p.stackSize[0] - bigBlind), p.stackSize[1]] }
                     : p,
@@ -455,7 +455,7 @@ export const useActionFlow = (
           const newStackSize = roundStackSize(Math.max(0, playerStackSize - callAmount));
           setFormData((prev) => ({
             ...prev,
-            players: prev.players.map((p) =>
+            players: prev.players.map((p: Player) =>
               p.id === playerId ? { ...p, stackSize: [newStackSize, p.stackSize[1]] } : p,
             ),
           }));
@@ -481,7 +481,7 @@ export const useActionFlow = (
           const newStackSize = roundStackSize(Math.max(0, playerStackSize - amount));
           setFormData((prev) => ({
             ...prev,
-            players: prev.players.map((p) =>
+            players: prev.players.map((p: Player) =>
               p.id === playerId ? { ...p, stackSize: [newStackSize, p.stackSize[1]] } : p,
             ),
           }));
@@ -511,7 +511,7 @@ export const useActionFlow = (
           const newStackSize = roundStackSize(Math.max(0, playerStackSize - additionalAmount));
           setFormData((prev) => ({
             ...prev,
-            players: prev.players.map((p) =>
+            players: prev.players.map((p: Player) =>
               p.id === playerId ? { ...p, stackSize: [newStackSize, p.stackSize[1]] } : p,
             ),
           }));
@@ -539,7 +539,7 @@ export const useActionFlow = (
         if (setFormData) {
           setFormData((prev) => ({
             ...prev,
-            players: prev.players.map((p) =>
+            players: prev.players.map((p: Player) =>
               p.id === playerId ? { ...p, stackSize: [0, p.stackSize[1]] } : p,
             ),
           }));

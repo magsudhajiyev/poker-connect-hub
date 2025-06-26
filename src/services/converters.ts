@@ -70,23 +70,6 @@ function getPositionString(positionIndex: number): string {
 }
 
 /**
- * Convert position string to position index
- */
-function _getPositionIndex(position: string): number {
-  const positionMap: { [key: string]: number } = {
-    UTG: 0,
-    MP: 1,
-    CO: 2,
-    BTN: 3,
-    SB: 4,
-    BB: 5,
-    sb: 4,
-    bb: 5,
-  };
-  return positionMap[position] || 0;
-}
-
-/**
  * Convert string to Card object
  */
 export function stringToCard(cardString: string): Card | null {

@@ -16,7 +16,10 @@ export interface DisplayValue {
   formatted: string;
 }
 
-export const useDisplayValues = ({ formData, _displayMode }: UseDisplayValuesProps) => {
+export const useDisplayValues = ({
+  formData,
+  displayMode: _displayMode,
+}: UseDisplayValuesProps) => {
   // Always use chips mode for simplified currency system
   const effectiveDisplayMode = useMemo((): DisplayMode => {
     return 'chips'; // Always chips regardless of game format

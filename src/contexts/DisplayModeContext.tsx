@@ -26,8 +26,8 @@ export const DisplayModeProvider = ({ children, defaultMode = null }: DisplayMod
     // Try to load from localStorage (future feature)
     try {
       const saved = localStorage.getItem('poker-display-mode');
-      if (saved === 'chips' || saved === 'bb') {
-        return saved;
+      if (saved === 'chips') {
+        return saved as DisplayMode;
       }
       if (saved === 'auto' || saved === null) {
         return null;
@@ -58,11 +58,8 @@ export const DisplayModeProvider = ({ children, defaultMode = null }: DisplayMod
     if (displayMode === null) {
       // If in auto mode, switch to chips
       setDisplayMode('chips');
-    } else if (displayMode === 'chips') {
-      // If in chips mode, switch to BB
-      setDisplayMode('bb');
     } else {
-      // If in BB mode, switch back to auto
+      // If in chips mode, switch back to auto
       setDisplayMode(null);
     }
   }, [displayMode, setDisplayMode]);

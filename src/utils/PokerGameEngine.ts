@@ -70,7 +70,7 @@ export class PokerGameEngine {
     this.players = players.map((p, i) => ({
       id: p.id || i,
       name: p.name || `Player ${i + 1}`,
-      stack: p.stack || (p.stackSize && p.stackSize[0]) || 100,
+      stack: p.stack || 100,
       hand: p.hand || [],
       bet: 0,
       folded: false,
@@ -176,7 +176,6 @@ export class PokerGameEngine {
     }
 
     // Betting/raising options
-    const _minBet = this.currentBet === 0 ? this.bigBlind : this.currentBet * 2; // Min raise = current bet
     const availableForBet = player.stack - toCall;
 
     if (this.currentBet === 0 && availableForBet >= this.bigBlind) {

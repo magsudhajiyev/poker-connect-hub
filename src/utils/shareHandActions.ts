@@ -1,6 +1,6 @@
 import { ActionStep, StreetType, ShareHandFormData, Player } from '@/types/shareHand';
 import { positionOrder } from './shareHandConstants';
-import { createGameState, GameState, ActionHistoryEntry } from './gameState';
+import { createGameState, GameState, ActionHistoryEntry, GameStatePlayer } from './gameState';
 import { standardizePosition, getActionOrder } from './positionMapping';
 
 export const initializeActions = (
@@ -209,14 +209,14 @@ export const processAction = (
   switch (action) {
     case 'fold':
       // Mark player as inactive
-      newState.activePlayers = newState.activePlayers.map((p) =>
+      newState.activePlayers = newState.activePlayers.map((p: GameStatePlayer) =>
         p.position === playerPosition ? { ...p, isActive: false } : p,
       );
       break;
 
     case 'check':
       // Mark player as having acted
-      newState.activePlayers = newState.activePlayers.map((p) =>
+      newState.activePlayers = newState.activePlayers.map((p: GameStatePlayer) =>
         p.position === playerPosition ? { ...p, hasActedAfterRaise: true } : p,
       );
       break;
@@ -224,7 +224,7 @@ export const processAction = (
     case 'call':
       // Add call amount to pot and mark as acted
       newState.pot += amount;
-      newState.activePlayers = newState.activePlayers.map((p) =>
+      newState.activePlayers = newState.activePlayers.map((p: GameStatePlayer) =>
         p.position === playerPosition ? { ...p, hasActedAfterRaise: true } : p,
       );
       break;
@@ -239,7 +239,7 @@ export const processAction = (
       newState.lastAggressor = playerPosition;
 
       // Reset action status for all players, set current player as acted
-      newState.activePlayers = newState.activePlayers.map((player) => ({
+      newState.activePlayers = newState.activePlayers.map((player: GameStatePlayer) => ({
         ...player,
         hasActedAfterRaise: player.position === playerPosition,
       }));
@@ -249,7 +249,7 @@ export const processAction = (
   // Check if round is complete
   if (isRoundComplete(newState)) {
     // Get active players
-    const stillActive = newState.activePlayers.filter((p) => p.isActive);
+    const stillActive = newState.activePlayers.filter((p: GameStatePlayer) => p.isActive);
 
     // If only one player remains, game is over
     if (stillActive.length <= 1) {
@@ -331,11 +331,13 @@ export const getAvailableActions = (
   }
 
   // Create mock action history for hasRaiseInRound check
-  const actionHistory = previousActions.map((action) => ({
-    round,
-    action: action.action,
-    player: action.playerName,
-  }));
+  const actionHistory = previousActions
+    .filter((action) => action.action !== undefined)
+    .map((action) => ({
+      round,
+      action: action.action as string,
+      player: action.playerName,
+    }));
 
   // Determine available actions
   const actions: string[] = ['fold']; // Can always fold
@@ -369,7 +371,7 @@ export const getAvailableActions = (
   return actions;
 };
 
-export const getActionButtonClass = (action: string, isSelected: boolean): string => {
+export const getActionButtonClass = (_action: string, isSelected: boolean): string => {
   const baseClass = 'transition-colors';
   if (isSelected) {
     return `${baseClass} bg-emerald-500 text-slate-900`;

@@ -29,7 +29,7 @@ class PokerConnectErrorLogger implements ErrorLogger {
 
   constructor() {
     this.sessionId = this.generateSessionId();
-    
+
     // Log unhandled errors
     window.addEventListener('error', (event) => {
       this.logException(event.error, 'Unhandled Error', {
@@ -72,7 +72,7 @@ class PokerConnectErrorLogger implements ErrorLogger {
 
   private addLog(entry: ErrorLogEntry): void {
     this.logs.push(entry);
-    
+
     // Keep only the most recent logs
     if (this.logs.length > this.maxLogs) {
       this.logs = this.logs.slice(-this.maxLogs);
@@ -80,13 +80,20 @@ class PokerConnectErrorLogger implements ErrorLogger {
 
     // Console log in development
     if (process.env.NODE_ENV === 'development') {
-      const logMethod = entry.level === 'error' ? console.error : 
-                      entry.level === 'warning' ? console.warn : console.log;
-      
-      logMethod(`[${entry.level.toUpperCase()}] ${entry.context ? `${entry.context}: ` : ''}${entry.message}`, {
-        timestamp: entry.timestamp,
-        additionalData: entry.additionalData,
-      });
+      const logMethod =
+        entry.level === 'error'
+          ? console.error
+          : entry.level === 'warning'
+            ? console.warn
+            : console.log;
+
+      logMethod(
+        `[${entry.level.toUpperCase()}] ${entry.context ? `${entry.context}: ` : ''}${entry.message}`,
+        {
+          timestamp: entry.timestamp,
+          additionalData: entry.additionalData,
+        },
+      );
     }
 
     // In production, you might want to send logs to an external service
@@ -102,9 +109,9 @@ class PokerConnectErrorLogger implements ErrorLogger {
       // - LogRocket
       // - DataDog
       // - Custom logging endpoint
-      
+
       console.warn('Error logging service not configured:', entry);
-      
+
       // Example of sending to a custom endpoint:
       /*
       await fetch('/api/errors', {
@@ -150,15 +157,15 @@ class PokerConnectErrorLogger implements ErrorLogger {
   }
 
   getLogsByLevel(level: 'error' | 'warning' | 'info'): ErrorLogEntry[] {
-    return this.logs.filter(log => log.level === level);
+    return this.logs.filter((log) => log.level === level);
   }
 
   getLogsByContext(context: string): ErrorLogEntry[] {
-    return this.logs.filter(log => log.context === context);
+    return this.logs.filter((log) => log.context === context);
   }
 
   getLogsInTimeRange(startTime: Date, endTime: Date): ErrorLogEntry[] {
-    return this.logs.filter(log => {
+    return this.logs.filter((log) => {
       const logTime = new Date(log.timestamp);
       return logTime >= startTime && logTime <= endTime;
     });
@@ -176,7 +183,13 @@ class PokerConnectErrorLogger implements ErrorLogger {
   getLogsSummary(): { errors: number; warnings: number; info: number; total: number } {
     const summary = this.logs.reduce(
       (acc, log) => {
-        acc[log.level]++;
+        if (log.level === 'error') {
+          acc.errors++;
+        } else if (log.level === 'warning') {
+          acc.warnings++;
+        } else if (log.level === 'info') {
+          acc.info++;
+        }
         acc.total++;
         return acc;
       },
@@ -203,16 +216,16 @@ class PokerConnectErrorLogger implements ErrorLogger {
 const errorLogger = new PokerConnectErrorLogger();
 
 // Export convenience functions
-export const logError = (message: string, context?: string, data?: Record<string, unknown>) => 
+export const logError = (message: string, context?: string, data?: Record<string, unknown>) =>
   errorLogger.error(message, context, data);
 
-export const logWarning = (message: string, context?: string, data?: Record<string, unknown>) => 
+export const logWarning = (message: string, context?: string, data?: Record<string, unknown>) =>
   errorLogger.warning(message, context, data);
 
-export const logInfo = (message: string, context?: string, data?: Record<string, unknown>) => 
+export const logInfo = (message: string, context?: string, data?: Record<string, unknown>) =>
   errorLogger.info(message, context, data);
 
-export const logException = (error: Error, context?: string, data?: Record<string, unknown>) => 
+export const logException = (error: Error, context?: string, data?: Record<string, unknown>) =>
   errorLogger.logException(error, context, data);
 
 export const getErrorLogs = () => errorLogger.getLogs();
