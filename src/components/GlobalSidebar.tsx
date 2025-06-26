@@ -6,6 +6,7 @@ import { SidebarNavigation } from '@/components/sidebar/SidebarNavigation';
 import { SidebarStatsOverview } from '@/components/sidebar/SidebarStatsOverview';
 
 // Re-export for convenience
+// eslint-disable-next-line react-refresh/only-export-components
 export { useSidebar, SidebarProvider };
 
 export const GlobalSidebar = () => {
@@ -14,7 +15,7 @@ export const GlobalSidebar = () => {
   return (
     <aside
       className={`hidden lg:block fixed left-0 top-0 h-screen z-40 bg-slate-950 border-r border-zinc-700/20 transition-all duration-300 ease-in-out ${
-        isCollapsed ? 'w-16' : 'w-64'
+        isCollapsed ? 'w-20' : 'w-64'
       }`}
     >
       <SidebarNavigation />

@@ -1,41 +1,23 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { auth } from '@/lib/auth';
 
 // Define protected routes
 const protectedRoutes = ['/profile', '/settings', '/share-hand', '/feed'];
 
-export async function middleware(request: NextRequest) {
-  const pathname = request.nextUrl.pathname;
-  
+export default auth((req) => {
+  const pathname = req.nextUrl.pathname;
+
   // Check if the route is protected
-  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-  
-  if (isProtectedRoute) {
-    try {
-      // Check for authentication token with proper error handling
-      const token = await getToken({ 
-        req: request,
-        secret: process.env.NEXTAUTH_SECRET
-      });
-      
-      if (!token || !token.email) {
-        // Redirect to auth page if not authenticated or missing email
-        const url = new URL('/auth/signin', request.url);
-        url.searchParams.set('callbackUrl', pathname);
-        return NextResponse.redirect(url);
-      }
-    } catch (error) {
-      console.error('Middleware auth error:', error);
-      // Redirect to signin on any auth error
-      const url = new URL('/auth/signin', request.url);
-      url.searchParams.set('callbackUrl', pathname);
-      return NextResponse.redirect(url);
-    }
+  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
+
+  if (isProtectedRoute && !req.auth) {
+    const url = new URL('/auth/signin', req.url);
+    url.searchParams.set('callbackUrl', pathname);
+    return NextResponse.redirect(url);
   }
-  
+
   return NextResponse.next();
-}
+});
 
 // Configure which routes the middleware should run on
 export const config = {

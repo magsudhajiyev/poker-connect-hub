@@ -92,7 +92,7 @@ const SettingsContent = () => {
       {/* Main Content */}
       <main
         className={`flex-1 min-w-0 px-3 sm:px-4 md:px-6 py-4 sm:py-6 transition-all duration-300 ${
-          isCollapsed ? 'lg:ml-16' : 'lg:ml-64'
+          isCollapsed ? 'lg:ml-20' : 'lg:ml-64'
         } pt-16 lg:pt-6`}
       >
         <div className="max-w-4xl mx-auto w-full">

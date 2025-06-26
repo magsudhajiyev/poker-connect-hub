@@ -29,7 +29,9 @@ const MobileSidebar = () => {
       </SheetTrigger>
       <SheetContent side="left" className="p-0 w-64 bg-slate-950 border-slate-800">
         <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-        <SheetDescription className="sr-only">Main navigation menu for the application</SheetDescription>
+        <SheetDescription className="sr-only">
+          Main navigation menu for the application
+        </SheetDescription>
         <MobileSidebarContent onNavigate={() => setIsOpen(false)} />
       </SheetContent>
     </Sheet>
@@ -48,9 +50,11 @@ const ProfileContent_Internal = () => {
       </div>
 
       {/* Main Content Container */}
-      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out overflow-hidden ${
-        isCollapsed ? 'lg:ml-16' : 'lg:ml-64'
-      }`}>
+      <div
+        className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out overflow-hidden ${
+          isCollapsed ? 'lg:ml-20' : 'lg:ml-64'
+        }`}
+      >
         {/* Mobile Header */}
         <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800/50">
           <div className="flex items-center justify-between h-14 px-4">
@@ -60,12 +64,12 @@ const ProfileContent_Internal = () => {
             </div>
           </div>
         </div>
-        
+
         {/* Desktop Profile Top Bar */}
         <div className="hidden lg:block">
           <ProfileTopBar />
         </div>
-        
+
         {/* Main Content */}
         <main className="flex-1 pt-14 lg:pt-16 overflow-hidden">
           <div className="w-full h-full overflow-y-auto">

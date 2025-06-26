@@ -30,7 +30,7 @@ export const SidebarNavigation = () => {
     <div className="flex flex-col h-full">
       {/* Logo Section */}
       <div className="p-4 border-b border-zinc-800/50">
-        <div className="flex items-center space-x-3">
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'}`}>
           <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-violet-500 rounded-lg flex items-center justify-center flex-shrink-0">
             <span className="text-slate-800 text-lg font-bold">♦</span>
           </div>
@@ -52,7 +52,7 @@ export const SidebarNavigation = () => {
               key={item.path}
               onClick={() => handleNavigation(item.path)}
               className={`
-                w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200
+                w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} px-3 py-2.5 rounded-lg transition-all duration-200
                 ${
                   active
                     ? 'bg-gradient-to-r from-emerald-500/20 to-violet-500/20 text-white border border-emerald-500/30'
@@ -77,7 +77,7 @@ export const SidebarNavigation = () => {
               key={item.path}
               onClick={() => handleNavigation(item.path)}
               className={`
-                w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200
+                w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} px-3 py-2.5 rounded-lg transition-all duration-200
                 ${
                   active
                     ? 'bg-gradient-to-r from-emerald-500/20 to-violet-500/20 text-white border border-emerald-500/30'

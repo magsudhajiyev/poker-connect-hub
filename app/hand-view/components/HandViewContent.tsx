@@ -20,7 +20,7 @@ export const HandViewContent = () => {
 
   useEffect(() => {
     const handId = searchParams.get('id');
-    
+
     if (handId) {
       const foundHand = sharedHandsStore.getHand(handId);
       setHand(foundHand);
@@ -36,7 +36,10 @@ export const HandViewContent = () => {
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-slate-200 mb-4">Hand not found</h1>
-          <Button onClick={() => router.push('/feed')} className="bg-gradient-to-r from-emerald-500 to-violet-500 text-slate-900">
+          <Button
+            onClick={() => router.push('/feed')}
+            className="bg-gradient-to-r from-emerald-500 to-violet-500 text-slate-900"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Feed
           </Button>
@@ -54,9 +57,11 @@ export const HandViewContent = () => {
           <GlobalSidebar />
         </div>
 
-        <main className={`flex-1 min-w-0 px-2 sm:px-4 py-4 sm:py-6 transition-all duration-300 ${
-          isCollapsed ? 'lg:ml-16' : 'lg:ml-64'
-        } pt-16 lg:pt-6`}>
+        <main
+          className={`flex-1 min-w-0 px-2 sm:px-4 py-4 sm:py-6 transition-all duration-300 ${
+            isCollapsed ? 'lg:ml-20' : 'lg:ml-64'
+          } pt-16 lg:pt-6`}
+        >
           <div className="max-w-4xl mx-auto space-y-6 w-full">
             <HandViewCard hand={hand} />
 

@@ -47,29 +47,33 @@ export const FeedMainContent = () => {
   };
 
   return (
-    <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'lg:ml-16' : 'lg:ml-64'}`}>
+    <div
+      className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}
+    >
       {/* Mobile Header */}
       <FeedHeader />
-      
+
       {/* Desktop Profile Top Bar */}
       <div className="hidden lg:block">
         <ProfileTopBar />
       </div>
-      
+
       {/* Main Content */}
       <main className="flex-1 pt-14 lg:pt-0 overflow-hidden">
         <div className="w-full h-full overflow-y-auto">
           <div className="px-4 lg:px-6 py-4 lg:py-6">
             <div className="max-w-4xl mx-auto space-y-4 lg:space-y-6">
               <div className="text-center mb-6 sm:mb-8">
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-200 mb-2">Your Poker Feed</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-200 mb-2">
+                  Your Poker Feed
+                </h1>
               </div>
 
               {/* Post Composer */}
               <PostComposer />
 
               <div className="space-y-4 sm:space-y-6">
-                {sharedHands.map(hand => (
+                {sharedHands.map((hand) => (
                   <FeedPostCard
                     key={hand.id}
                     hand={hand}
@@ -79,7 +83,7 @@ export const FeedMainContent = () => {
                 ))}
 
                 {/* Sample static posts for demo */}
-                {[1, 2].map(item => (
+                {[1, 2].map((item) => (
                   <SamplePostCard key={`sample-${item}`} item={item} />
                 ))}
               </div>
