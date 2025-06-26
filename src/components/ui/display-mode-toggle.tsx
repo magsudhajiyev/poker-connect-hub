@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, Hash, Zap } from 'lucide-react';
+import { DollarSign, Zap } from 'lucide-react';
 import { useDisplayMode } from '@/contexts/DisplayModeContext';
 import { DisplayMode } from '@/hooks/useDisplayValues';
 
@@ -26,8 +26,6 @@ export const DisplayModeToggle = ({
     switch (mode) {
       case 'chips':
         return <DollarSign size={iconSize} />;
-      case 'bb':
-        return <Hash size={iconSize} />;
       case null:
         return <Zap size={iconSize} />;
       default:
@@ -39,8 +37,6 @@ export const DisplayModeToggle = ({
     switch (mode) {
       case 'chips':
         return 'Chips';
-      case 'bb':
-        return 'Big Blinds';
       case null:
         return 'Auto';
       default:
@@ -52,8 +48,6 @@ export const DisplayModeToggle = ({
     switch (mode) {
       case 'chips':
         return 'Display all values in chip amounts ($)';
-      case 'bb':
-        return 'Display all values in big blind units (BB)';
       case null:
         return 'Auto-detect based on game format ($ for cash, BB for tournaments)';
       default:

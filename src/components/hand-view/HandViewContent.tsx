@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { sharedHandsStore, SharedHand } from '@/stores/sharedHandsStore';
 import { GlobalSidebar, useSidebar } from '@/components/GlobalSidebar';
-import HandReplay from '@/components/share-hand/HandReplay';
+import HandReplay from '../../../app/share-hand/components/HandReplay';
 import { getPositionName } from '@/utils/shareHandConstants';
 import { HandViewHeader } from './HandViewHeader';
 import { HandViewCard } from './HandViewCard';
