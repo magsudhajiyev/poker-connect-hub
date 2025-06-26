@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -17,9 +17,9 @@ const NotFound = () => {
             The page you're looking for doesn't exist or has been moved.
           </p>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button 
+          <Button
             onClick={() => router.back()}
             variant="outline"
             className="border-slate-700/50 text-slate-300"
@@ -27,7 +27,7 @@ const NotFound = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Go Back
           </Button>
-          <Button 
+          <Button
             onClick={() => router.push('/')}
             className="bg-gradient-to-r from-emerald-500 to-violet-500 text-slate-900"
           >

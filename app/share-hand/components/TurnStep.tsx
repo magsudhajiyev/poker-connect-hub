@@ -1,6 +1,5 @@
 'use client';
 
-
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import CardInput from '@/components/CardInput';
@@ -24,56 +23,54 @@ interface TurnStepProps {
   getAllSelectedCards: () => string[];
 }
 
-const TurnStep = ({ 
-  formData, 
-  setFormData, 
-  showPot, 
-  getPositionName, 
-  getCurrencySymbol, 
-  calculatePotSize, 
-  getAvailableActions, 
-  updateAction, 
-  getActionButtonClass, 
+const TurnStep = ({
+  formData,
+  setFormData,
+  _showPot,
+  _getPositionName,
+  getCurrencySymbol,
+  _calculatePotSize,
+  getAvailableActions,
+  updateAction,
+  _getActionButtonClass,
   handleBetSizeSelect,
   getAllSelectedCards,
 }: TurnStepProps) => {
-  const { players, updatePlayer, removePlayer } = usePlayerManagement(formData, setFormData);
+  const { players } = usePlayerManagement(formData, setFormData);
   const { pokerActions } = useShareHandContext();
-  const potSize = pokerActions?.pot || calculatePotSize(formData);
 
   // Don't allow player updates in action steps - players should be locked
-  const handleUpdatePlayer = (newPlayer: any) => {
+  const handleUpdatePlayer = (_newPlayer: any) => {
     // Do nothing - players are locked after positions step
   };
 
-  const handleRemovePlayer = (playerId: string) => {
+  const handleRemovePlayer = (_playerId: string) => {
     // Do nothing - players are locked after positions step
   };
 
   return (
     <div className="space-y-4">
-
       <h3 className="text-base font-medium text-slate-200 mb-2">Turn</h3>
-      
+
       <div className="space-y-3">
         <div className="flex flex-wrap items-start gap-3">
           <SelectedCardsDisplay cards={formData.holeCards} label="Your Hole Cards" />
           <SelectedCardsDisplay cards={formData.flopCards} label="Flop" />
-          
+
           <CardInput
             label="Turn Card"
             cards={formData.turnCard}
-            onCardsChange={(cards) => setFormData({...formData, turnCard: cards})}
+            onCardsChange={(cards) => setFormData({ ...formData, turnCard: cards })}
             maxCards={1}
             placeholder="Type turn card (e.g., 2h)"
-            excludeCards={getAllSelectedCards().filter(card => !formData.turnCard.includes(card))}
+            excludeCards={getAllSelectedCards().filter((card) => !formData.turnCard.includes(card))}
           />
         </div>
       </div>
 
       {/* Interactive Poker Table with Actions */}
       <div className="bg-slate-900/30 rounded-lg p-4 border border-slate-700/30">
-        <PokerTable 
+        <PokerTable
           players={players}
           communityCards={[...formData.flopCards, ...formData.turnCard]}
           getCurrencySymbol={getCurrencySymbol}
@@ -92,11 +89,13 @@ const TurnStep = ({
       </div>
 
       <div>
-        <Label htmlFor="turn-description" className="text-slate-300 text-sm">Turn Insights (Optional)</Label>
+        <Label htmlFor="turn-description" className="text-slate-300 text-sm">
+          Turn Insights (Optional)
+        </Label>
         <Textarea
           id="turn-description"
           value={formData.turnDescription}
-          onChange={(e) => setFormData({...formData, turnDescription: e.target.value})}
+          onChange={(e) => setFormData({ ...formData, turnDescription: e.target.value })}
           placeholder="How did the turn card change the dynamics? Your reasoning for the action..."
           rows={2}
           className="bg-slate-900/50 border-slate-700/50 text-slate-200 text-sm mt-1"

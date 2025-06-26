@@ -8,18 +8,12 @@ export async function POST(request: NextRequest) {
     const { gameState, playerId } = body;
 
     if (!gameState) {
-      return NextResponse.json(
-        { error: 'Game state is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Game state is required' }, { status: 400 });
     }
 
     // Validate the game state
     if (!pokerService.validateGameState(gameState as GameState)) {
-      return NextResponse.json(
-        { error: 'Invalid game state provided' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid game state provided' }, { status: 400 });
     }
 
     // Get legal actions for the current player
@@ -29,11 +23,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error in poker actions API:', error);
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to calculate legal actions',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

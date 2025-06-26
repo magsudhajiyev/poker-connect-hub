@@ -6,7 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, Home, Bell, User, Settings, LogOut, Menu } from 'lucide-react';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useSidebar } from '@/components/sidebar/SidebarContext';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -49,7 +55,7 @@ export const ProfileTopBar = () => {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          
+
           <div className="relative max-w-md flex-1 hidden sm:block">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
             <Input
@@ -64,38 +70,52 @@ export const ProfileTopBar = () => {
 
         {/* Right Section - Icons & Profile */}
         <div className="flex items-center space-x-2 lg:space-x-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"
             onClick={handleHomeClick}
           >
             <Home className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 relative">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 relative"
+          >
             <Bell className="h-5 w-5" />
             <span className="absolute top-1 right-1 h-2 w-2 bg-emerald-500 rounded-full"></span>
           </Button>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center space-x-2 hover:bg-slate-800/60 px-2">
+              <Button
+                variant="ghost"
+                className="flex items-center space-x-2 hover:bg-slate-800/60 px-2"
+              >
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.image || "https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg"} />
+                  <AvatarImage
+                    src={
+                      user?.picture ||
+                      'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg'
+                    }
+                  />
                   <AvatarFallback>{user?.name?.charAt(0) || 'U'}</AvatarFallback>
                 </Avatar>
-                <span className="text-slate-200 font-medium hidden lg:inline">{user?.name || 'User'}</span>
+                <span className="text-slate-200 font-medium hidden lg:inline">
+                  {user?.name || 'User'}
+                </span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 bg-slate-900 border-slate-700/30">
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={handleProfileClick}
                 className="text-slate-200 hover:bg-slate-800/60 hover:text-slate-100 cursor-pointer"
               >
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={handleSettingsClick}
                 className="text-slate-200 hover:bg-slate-800/60 hover:text-slate-100 cursor-pointer"
               >
@@ -103,7 +123,7 @@ export const ProfileTopBar = () => {
                 <span>Settings</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-slate-700/30" />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 onClick={handleLogout}
                 disabled={isLoggingOut}
                 className="text-red-400 hover:bg-slate-800/60 hover:text-red-300 cursor-pointer"

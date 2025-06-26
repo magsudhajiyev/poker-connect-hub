@@ -1,10 +1,9 @@
 'use client';
 
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { ShareHandFormData, StreetType } from '@/types/shareHand';
+import { ShareHandFormData } from '@/types/shareHand';
 import SelectedCardsDisplay from './SelectedCardsDisplay';
 import ActionDisplay from './ActionDisplay';
 import { useGameStateUI } from '@/hooks/useGameStateUI';
@@ -17,35 +16,40 @@ interface HandReplayProps {
   gameState?: GameState | null;
 }
 
-const HandReplay = ({ formData, getPositionName, getCurrencySymbol, gameState }: HandReplayProps) => {
+const HandReplay = ({
+  formData,
+  getPositionName,
+  getCurrencySymbol,
+  gameState,
+}: HandReplayProps) => {
   const [currentStreet, setCurrentStreet] = useState<number>(0);
   const { isRoundActive } = useGameStateUI(gameState);
-  
+
   const streets = [
-    { 
-      id: 'preflop', 
-      title: 'Preflop', 
+    {
+      id: 'preflop',
+      title: 'Preflop',
       actions: formData.preflopActions,
       cards: [],
       description: formData.preflopDescription,
     },
-    { 
-      id: 'flop', 
-      title: 'Flop', 
+    {
+      id: 'flop',
+      title: 'Flop',
       actions: formData.flopActions,
       cards: formData.flopCards,
       description: formData.flopDescription,
     },
-    { 
-      id: 'turn', 
-      title: 'Turn', 
+    {
+      id: 'turn',
+      title: 'Turn',
       actions: formData.turnActions,
       cards: formData.turnCard,
       description: formData.turnDescription,
     },
-    { 
-      id: 'river', 
-      title: 'River', 
+    {
+      id: 'river',
+      title: 'River',
       actions: formData.riverActions,
       cards: formData.riverCard,
       description: formData.riverDescription,
@@ -73,7 +77,7 @@ const HandReplay = ({ formData, getPositionName, getCurrencySymbol, gameState }:
   return (
     <div className="bg-slate-800/40 rounded-xl p-4 border border-slate-700/30">
       <h3 className="text-slate-200 font-medium mb-4">Hand Replay</h3>
-      
+
       {/* Hand Navigation */}
       <div className="flex items-center justify-between mb-6">
         <Button
@@ -85,12 +89,12 @@ const HandReplay = ({ formData, getPositionName, getCurrencySymbol, gameState }:
         >
           <ChevronLeft className="w-5 h-5" />
         </Button>
-        
+
         <div className="flex space-x-2">
           {streets.map((street, index) => {
             const isGameStateActive = isRoundActive(street.id);
             const isCurrentStreet = index === currentStreet;
-            
+
             return (
               <Button
                 key={street.id}
@@ -100,8 +104,8 @@ const HandReplay = ({ formData, getPositionName, getCurrencySymbol, gameState }:
                   isCurrentStreet
                     ? 'bg-gradient-to-r from-emerald-500 to-violet-500 text-slate-900'
                     : isGameStateActive
-                    ? 'bg-emerald-900/60 border border-emerald-500/50 text-emerald-300 hover:bg-emerald-800/50'
-                    : 'bg-slate-900/60 border border-slate-700/50 text-slate-300 hover:bg-slate-800/50'
+                      ? 'bg-emerald-900/60 border border-emerald-500/50 text-emerald-300 hover:bg-emerald-800/50'
+                      : 'bg-slate-900/60 border border-slate-700/50 text-slate-300 hover:bg-slate-800/50'
                 }`}
                 data-round={street.id}
               >
@@ -113,7 +117,7 @@ const HandReplay = ({ formData, getPositionName, getCurrencySymbol, gameState }:
             );
           })}
         </div>
-        
+
         <Button
           variant="outline"
           size="sm"

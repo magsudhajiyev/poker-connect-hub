@@ -6,8 +6,7 @@ import {
   Position,
   getActionOrder,
   DEFAULT_VALUES,
-  VALIDATION_MESSAGES,
-  GAME_STATE
+  GAME_STATE,
 } from '@/constants';
 
 interface ActionState {
@@ -27,10 +26,10 @@ interface ActionState {
 }
 
 export const useActionFlow = (
-  players: Player[], 
-  smallBlind: number, 
-  bigBlind: number, 
-  street: string, 
+  players: Player[],
+  smallBlind: number,
+  bigBlind: number,
+  street: string,
   setFormData?: (updater: (prev: any) => any) => void,
   currentStep?: number,
 ) => {
@@ -68,21 +67,21 @@ export const useActionFlow = (
   const getOrderedPlayers = (): Player[] => {
     const order = getStreetActionOrder(street);
     const orderedPlayers: Player[] = [];
-    
+
     for (const position of order) {
-      const player = players.find(p => p.position === position);
+      const player = players.find((p) => p.position === position);
       if (player) {
         orderedPlayers.push(player);
       }
     }
-    
+
     return orderedPlayers;
   };
 
   const orderedPlayers = getOrderedPlayers();
 
   function getBBIndex(): number {
-    return orderedPlayers.findIndex(p => p.position === Position.BIG_BLIND);
+    return orderedPlayers.findIndex((p) => p.position === Position.BIG_BLIND);
   }
 
   // Initialize action flow when players change or street changes
@@ -91,26 +90,26 @@ export const useActionFlow = (
       const bbIndex = getBBIndex();
       const isStreetChange = actionState.street !== street;
       const isFirstInitialization = actionState.actions.length === 0;
-      
+
       // Detect navigation to preflop (user clicked "Next" from positions step)
-      const isNavigatingToPreflop = street === StreetType.PREFLOP && 
-                                   !gameStartedRef.current && 
-                                   orderedPlayers.length > 0 &&
-                                   currentStep === 2 && // Currently on preflop step (index 2)
-                                   previousStepRef.current === 1 && // Was on positions step (index 1)
-                                   isFirstInitialization;
-      
-      
+      const isNavigatingToPreflop =
+        street === StreetType.PREFLOP &&
+        !gameStartedRef.current &&
+        orderedPlayers.length > 0 &&
+        currentStep === 2 && // Currently on preflop step (index 2)
+        previousStepRef.current === 1 && // Was on positions step (index 1)
+        isFirstInitialization;
+
       // Only reinitialize if it's the first time OR street has changed OR navigating to preflop
       if (isFirstInitialization || isStreetChange || isNavigatingToPreflop) {
         const initialBets = new Map();
         let initialPot = actionState.pot; // Carry over pot from previous street
         let initialCurrentBet = 0; // Reset current bet for new street
-        
+
         // Set initial blinds only for preflop
         if (street === StreetType.PREFLOP) {
-          const sbPlayer = orderedPlayers.find(p => p.position === Position.SMALL_BLIND);
-          const bbPlayer = orderedPlayers.find(p => p.position === Position.BIG_BLIND);
+          const sbPlayer = orderedPlayers.find((p) => p.position === Position.SMALL_BLIND);
+          const bbPlayer = orderedPlayers.find((p) => p.position === Position.BIG_BLIND);
           if (sbPlayer) {
             initialBets.set(sbPlayer.id, smallBlind);
           }
@@ -127,47 +126,50 @@ export const useActionFlow = (
 
           // CRITICAL: Deduct blind amounts only when navigating to preflop (not during positions setup)
           if (setFormData && isNavigatingToPreflop) {
-            
             if (sbPlayer) {
               deductedPlayersRef.current.add(sbPlayer.id);
-              
-              setFormData(prev => ({
+
+              setFormData((prev) => ({
                 ...prev,
-                players: prev.players.map(p => 
-                  p.id === sbPlayer.id 
-                    ? { ...p, stackSize: [Math.max(0, p.stackSize[0] - smallBlind), p.stackSize[1]] }
-                    : p
-                )
+                players: prev.players.map((p) =>
+                  p.id === sbPlayer.id
+                    ? {
+                        ...p,
+                        stackSize: [Math.max(0, p.stackSize[0] - smallBlind), p.stackSize[1]],
+                      }
+                    : p,
+                ),
               }));
             } else {
+              // No SB player found
             }
-            
+
             if (bbPlayer) {
               deductedPlayersRef.current.add(bbPlayer.id);
-              
-              setFormData(prev => ({
+
+              setFormData((prev) => ({
                 ...prev,
-                players: prev.players.map(p => 
-                  p.id === bbPlayer.id 
+                players: prev.players.map((p) =>
+                  p.id === bbPlayer.id
                     ? { ...p, stackSize: [Math.max(0, p.stackSize[0] - bigBlind), p.stackSize[1]] }
-                    : p
-                )
+                    : p,
+                ),
               }));
             } else {
+              // No BB player found
             }
-            
           } else if (setFormData && !isNavigatingToPreflop) {
+            // Handle other conditions
           }
-        }
-        // For post-flop streets, reset player bets to 0 but keep pot
-        else {
+        } else {
+          // For post-flop streets, reset player bets to 0 but keep pot
           // Reset all player bets for new street
-          orderedPlayers.forEach(player => {
+          orderedPlayers.forEach((player) => {
             initialBets.set(player.id, 0);
           });
         }
-        
-        setActionState(prev => ({
+
+        setActionState((prev) => ({
           currentPlayerIndex: GAME_STATE.FIRST_PLAYER_INDEX,
           pot: initialPot,
           currentBet: initialCurrentBet,
@@ -180,7 +182,7 @@ export const useActionFlow = (
         }));
       }
     }
-    
+
     // Track step changes for next render
     if (currentStep !== undefined) {
       previousStepRef.current = currentStep;
@@ -189,107 +191,109 @@ export const useActionFlow = (
 
   // Check if all remaining active players are all-in (no action needed)
   const areAllActivePlayersAllIn = (): boolean => {
-    const activePlayers = orderedPlayers.filter(p => !actionState.foldedPlayers.has(p.id));
-    const activeNonAllInPlayers = activePlayers.filter(p => !actionState.allInPlayers.has(p.id));
-    
+    const activePlayers = orderedPlayers.filter((p) => !actionState.foldedPlayers.has(p.id));
+    const activeNonAllInPlayers = activePlayers.filter((p) => !actionState.allInPlayers.has(p.id));
+
     // Case 1: No players can act (all folded or all-in) - hand is over
     if (activeNonAllInPlayers.length === 0) {
       return true;
     }
-    
-    // Case 2: Only 1 active player remains (others folded) - hand is over  
+
+    // Case 2: Only 1 active player remains (others folded) - hand is over
     if (activePlayers.length === 1) {
       return true;
     }
-    
+
     // Case 3: Multiple active players but all are all-in - no action needed for rest of hand
     if (activePlayers.length > 1 && activeNonAllInPlayers.length === 0) {
       return true;
     }
-    
+
     // Case 4: Big stack scenario - if only one player has chips but everyone else is all-in
     // Even though one player can "act", there's no one to bet against
     if (activeNonAllInPlayers.length === 1 && activePlayers.length > 1) {
-      const otherActivePlayers = activePlayers.filter(p => !activeNonAllInPlayers.includes(p));
-      const allOthersAllIn = otherActivePlayers.every(p => actionState.allInPlayers.has(p.id));
-      
+      const otherActivePlayers = activePlayers.filter((p) => !activeNonAllInPlayers.includes(p));
+      const allOthersAllIn = otherActivePlayers.every((p) => actionState.allInPlayers.has(p.id));
+
       if (allOthersAllIn) {
         return true;
       }
     }
-    
+
     // Case 5: At least one player can still act AND there are others who can respond
     if (activeNonAllInPlayers.length > 0) {
       return false;
     }
-    
+
     return false;
   };
 
   // Check if betting round is complete
   const isBettingRoundComplete = (): boolean => {
     // Count active (non-folded) players
-    const activePlayers = orderedPlayers.filter(p => !actionState.foldedPlayers.has(p.id));
+    const activePlayers = orderedPlayers.filter((p) => !actionState.foldedPlayers.has(p.id));
     // Count players who can still act (non-folded, non-all-in)
-    const playersWhoCanAct = orderedPlayers.filter(p => 
-      !actionState.foldedPlayers.has(p.id) && 
-      !actionState.allInPlayers.has(p.id),
+    const playersWhoCanAct = orderedPlayers.filter(
+      (p) => !actionState.foldedPlayers.has(p.id) && !actionState.allInPlayers.has(p.id),
     );
-    
+
     // If only one active player remains, round is complete
     if (activePlayers.length <= GAME_STATE.ROUND_COMPLETE_THRESHOLD) {
       return true;
     }
-    
+
     // Special logic for all-in scenarios
     if (actionState.allInPlayers.size > 0) {
       // Find when the first all-in occurred in this round
-      const allInActionIndex = actionState.actions.findIndex(action => action.action === ActionType.ALL_IN);
-      
+      const allInActionIndex = actionState.actions.findIndex(
+        (action) => action.action === ActionType.ALL_IN,
+      );
+
       // Count players who were active when the all-in happened and haven't acted since
-      const playersWhoNeedToRespondToAllIn = activePlayers.filter(player => {
+      const playersWhoNeedToRespondToAllIn = activePlayers.filter((player) => {
         // Skip the all-in player themselves
         if (actionState.allInPlayers.has(player.id)) {
           return false;
         }
-        
-        // Skip folded players  
+
+        // Skip folded players
         if (actionState.foldedPlayers.has(player.id)) {
           return false;
         }
-        
+
         // Check if this player has acted AFTER the all-in occurred
-        const playerActionsAfterAllIn = actionState.actions.slice(allInActionIndex + 1)
-          .filter(action => action.playerId === player.id);
-        
+        const playerActionsAfterAllIn = actionState.actions
+          .slice(allInActionIndex + 1)
+          .filter((action) => action.playerId === player.id);
+
         // If they haven't acted since all-in, they need to respond
         return playerActionsAfterAllIn.length === 0;
       });
-      
+
       if (playersWhoNeedToRespondToAllIn.length > 0) {
         return false;
       } else {
         return true;
       }
     }
-    
+
     // Regular betting round logic (no all-ins)
-    
+
     // If only one player can act and no all-ins, round is complete
     if (playersWhoCanAct.length <= GAME_STATE.ROUND_COMPLETE_THRESHOLD) {
       return true;
     }
-    
+
     // If we haven't gone around the table once yet, continue
     if (actionState.currentPlayerIndex < orderedPlayers.length) {
       return false;
     }
-    
+
     // If no one has raised (no lastRaiserIndex), round is complete after going around once
     if (actionState.lastRaiserIndex === null) {
       return true;
     }
-    
+
     // Round is complete when we get back to the last raiser (but only after going around at least once)
     const adjustedIndex = actionState.currentPlayerIndex % orderedPlayers.length;
     const isBackToRaiser = adjustedIndex === actionState.lastRaiserIndex;
@@ -302,30 +306,32 @@ export const useActionFlow = (
     if (areAllActivePlayersAllIn()) {
       return null;
     }
-    
+
     const roundComplete = isBettingRoundComplete();
-    
+
     if (roundComplete) {
       return null; // Round complete
     }
-    
+
     // Find the next active (non-folded, non-all-in) player starting from current index
     let searchIndex = actionState.currentPlayerIndex;
     const maxSearches = orderedPlayers.length * 2; // Prevent infinite loop
-    
+
     for (let i = 0; i < maxSearches; i++) {
       const adjustedIndex = searchIndex % orderedPlayers.length;
       const player = orderedPlayers[adjustedIndex];
-      
-      if (player && 
-          !actionState.foldedPlayers.has(player.id) && 
-          !actionState.allInPlayers.has(player.id)) {
+
+      if (
+        player &&
+        !actionState.foldedPlayers.has(player.id) &&
+        !actionState.allInPlayers.has(player.id)
+      ) {
         return player;
       }
-      
+
       searchIndex++;
     }
-    
+
     // If no active players found, return null
     return null;
   };
@@ -342,25 +348,25 @@ export const useActionFlow = (
       return [];
     }
 
-    const player = players.find(p => p.id === playerId);
+    const player = players.find((p) => p.id === playerId);
     if (!player) {
       return [];
     }
 
     const playerCurrentBet = actionState.playerBets.get(playerId) || 0;
     const amountToCall = Math.max(0, actionState.currentBet - playerCurrentBet);
-    
+
     // Check if someone has gone all-in this round
     const hasAllInThisRound = actionState.allInPlayers.size > 0;
-    
+
     // Calculate player's remaining stack
     const playerStackSize = player.stackSize?.[0] || DEFAULT_VALUES.STACK_SIZE;
     const remainingStack = playerStackSize - playerCurrentBet;
-    
+
     const actions: ActionType[] = [ActionType.FOLD];
-    
+
     // Logic: After an all-in, players can only fold, call, or all-in (no raise/bet unless they can cover)
-    
+
     if (actionState.currentBet === 0) {
       // No active bet this round - can check or bet
       actions.push(ActionType.CHECK);
@@ -374,7 +380,7 @@ export const useActionFlow = (
         if (remainingStack >= amountToCall) {
           actions.push(ActionType.CALL);
         }
-        
+
         // Can only raise if no one has gone all-in and player has enough stack
         if (!hasAllInThisRound && remainingStack > amountToCall) {
           actions.push(ActionType.RAISE);
@@ -382,19 +388,19 @@ export const useActionFlow = (
       } else {
         // Player has already matched the current bet - can check
         actions.push(ActionType.CHECK);
-        
+
         // Can raise if no all-in players and has remaining stack
         if (!hasAllInThisRound && remainingStack > 0) {
           actions.push(ActionType.RAISE);
         }
       }
     }
-    
+
     // All-in available if player has remaining stack and isn't already all-in
     if (!actionState.allInPlayers.has(playerId) && remainingStack > 0) {
       actions.push(ActionType.ALL_IN);
     }
-    
+
     return actions;
   };
 
@@ -412,53 +418,52 @@ export const useActionFlow = (
     let newCurrentBet = actionState.currentBet;
     let newLastRaiserIndex = actionState.lastRaiserIndex;
     const newPlayerBets = new Map(actionState.playerBets);
-    
+
     switch (action) {
       case ActionType.FOLD:
         // Player will be added to folded players in the main state update below
         break;
-        
+
       case ActionType.CHECK:
         if (amountToCall > 0) {
           return false;
         }
         break;
-        
-      case ActionType.CALL:
+
+      case ActionType.CALL: {
         // If amount is provided, use it as the total amount to add to pot
         // Otherwise, calculate the minimum amount needed to call
         const callAmount = amount || amountToCall;
-        
+
         if (callAmount === 0) {
           return false;
         }
-        
+
         // Check if player has enough stack to call
         const playerStackSize = currentPlayer.stackSize?.[0] || DEFAULT_VALUES.STACK_SIZE;
-        
+
         if (playerStackSize < callAmount) {
           return false;
         }
-        
+
         // Add the call amount to pot and update player's total bet
         newPot += callAmount;
         newPlayerBets.set(playerId, playerCurrentBet + callAmount);
-        
+
         // Update player stack in formData - deduct the call amount
         if (setFormData) {
           const newStackSize = roundStackSize(Math.max(0, playerStackSize - callAmount));
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
-            players: prev.players.map(p => 
-              p.id === playerId 
-                ? { ...p, stackSize: [newStackSize, p.stackSize[1]] }
-                : p,
+            players: prev.players.map((p) =>
+              p.id === playerId ? { ...p, stackSize: [newStackSize, p.stackSize[1]] } : p,
             ),
           }));
         }
         break;
-        
-      case ActionType.BET:
+      }
+
+      case ActionType.BET: {
         if (actionState.currentBet > 0) {
           return false;
         }
@@ -469,23 +474,22 @@ export const useActionFlow = (
         newCurrentBet = amount;
         newPlayerBets.set(playerId, amount);
         newLastRaiserIndex = actionState.currentPlayerIndex % orderedPlayers.length;
-        
+
         // Update player stack in formData
         if (setFormData) {
           const playerStackSize = currentPlayer.stackSize?.[0] || DEFAULT_VALUES.STACK_SIZE;
           const newStackSize = roundStackSize(Math.max(0, playerStackSize - amount));
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
-            players: prev.players.map(p => 
-              p.id === playerId 
-                ? { ...p, stackSize: [newStackSize, p.stackSize[1]] }
-                : p,
+            players: prev.players.map((p) =>
+              p.id === playerId ? { ...p, stackSize: [newStackSize, p.stackSize[1]] } : p,
             ),
           }));
         }
         break;
-        
-      case ActionType.RAISE:
+      }
+
+      case ActionType.RAISE: {
         if (actionState.currentBet === 0) {
           return false;
         }
@@ -495,56 +499,54 @@ export const useActionFlow = (
         // amount is the total bet amount (e.g., raise to 60 = total bet becomes 60)
         const totalBetAmount = amount;
         const additionalAmount = totalBetAmount - playerCurrentBet; // How much more they're adding
-        
+
         newPot += additionalAmount; // Only add the additional amount to pot
         newCurrentBet = totalBetAmount; // New current bet is the total amount
         newPlayerBets.set(playerId, totalBetAmount); // Player's total bet is the amount
         newLastRaiserIndex = actionState.currentPlayerIndex % orderedPlayers.length;
-        
+
         // Update player stack in formData - deduct only the additional amount
         if (setFormData) {
           const playerStackSize = currentPlayer.stackSize?.[0] || DEFAULT_VALUES.STACK_SIZE;
           const newStackSize = roundStackSize(Math.max(0, playerStackSize - additionalAmount));
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
-            players: prev.players.map(p => 
-              p.id === playerId 
-                ? { ...p, stackSize: [newStackSize, p.stackSize[1]] }
-                : p,
+            players: prev.players.map((p) =>
+              p.id === playerId ? { ...p, stackSize: [newStackSize, p.stackSize[1]] } : p,
             ),
           }));
         }
         break;
-        
-      case ActionType.ALL_IN:
+      }
+
+      case ActionType.ALL_IN: {
         // Use player's actual stack size or default
         const allInPlayerStackSize = currentPlayer.stackSize?.[0] || DEFAULT_VALUES.STACK_SIZE;
         const allInAmount = allInPlayerStackSize - playerCurrentBet;
-        
+
         if (allInAmount <= 0) {
           return false;
         }
-        
+
         newPot += allInAmount;
         if (playerCurrentBet + allInAmount > actionState.currentBet) {
           newCurrentBet = playerCurrentBet + allInAmount;
           newLastRaiserIndex = actionState.currentPlayerIndex % orderedPlayers.length;
         }
         newPlayerBets.set(playerId, playerCurrentBet + allInAmount);
-        
+
         // Update player stack in formData (set to 0 since they went all-in)
         if (setFormData) {
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
-            players: prev.players.map(p => 
-              p.id === playerId 
-                ? { ...p, stackSize: [0, p.stackSize[1]] }
-                : p,
+            players: prev.players.map((p) =>
+              p.id === playerId ? { ...p, stackSize: [0, p.stackSize[1]] } : p,
             ),
           }));
         }
         break;
-        
+      }
+
       default:
         return false;
     }
@@ -559,17 +561,19 @@ export const useActionFlow = (
     // Advance to next player
     const nextPlayerIndex = actionState.currentPlayerIndex + 1;
 
-    setActionState(prev => {
+    setActionState((prev) => {
       // Update folded players if this is a fold action
-      const newFoldedPlayers = action === ActionType.FOLD 
-        ? new Set([...prev.foldedPlayers, playerId])
-        : prev.foldedPlayers;
-        
+      const newFoldedPlayers =
+        action === ActionType.FOLD
+          ? new Set([...prev.foldedPlayers, playerId])
+          : prev.foldedPlayers;
+
       // Update all-in players if this is an all-in action
-      const newAllInPlayers = action === ActionType.ALL_IN
-        ? new Set([...prev.allInPlayers, playerId])
-        : prev.allInPlayers;
-        
+      const newAllInPlayers =
+        action === ActionType.ALL_IN
+          ? new Set([...prev.allInPlayers, playerId])
+          : prev.allInPlayers;
+
       return {
         currentPlayerIndex: nextPlayerIndex,
         pot: newPot,

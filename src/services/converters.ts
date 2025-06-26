@@ -1,11 +1,6 @@
 // Conversion utilities between frontend, unified, and backend data formats
 
-import { 
-  UnifiedPlayer, 
-  UnifiedGameState, 
-  Card, 
-  ConversionUtils, 
-} from '@/types/unified';
+import { UnifiedPlayer, UnifiedGameState, Card, ConversionUtils } from '@/types/unified';
 import { Player as FrontendPlayer } from '@/types/shareHand';
 
 /**
@@ -16,8 +11,8 @@ export function frontendPlayerToUnified(frontendPlayer: FrontendPlayer): Unified
     id: frontendPlayer.id,
     name: frontendPlayer.name,
     position: frontendPlayer.position,
-    chips: Array.isArray(frontendPlayer.stackSize) 
-      ? frontendPlayer.stackSize[0] || 0 
+    chips: Array.isArray(frontendPlayer.stackSize)
+      ? frontendPlayer.stackSize[0] || 0
       : (frontendPlayer.stackSize as any) || 0,
     isHero: frontendPlayer.isHero,
     currentBet: 0,
@@ -77,16 +72,16 @@ function getPositionString(positionIndex: number): string {
 /**
  * Convert position string to position index
  */
-function getPositionIndex(position: string): number {
+function _getPositionIndex(position: string): number {
   const positionMap: { [key: string]: number } = {
-    'UTG': 0,
-    'MP': 1,
-    'CO': 2,
-    'BTN': 3,
-    'SB': 4,
-    'BB': 5,
-    'sb': 4,
-    'bb': 5,
+    UTG: 0,
+    MP: 1,
+    CO: 2,
+    BTN: 3,
+    SB: 4,
+    BB: 5,
+    sb: 4,
+    bb: 5,
   };
   return positionMap[position] || 0;
 }
@@ -96,30 +91,44 @@ function getPositionIndex(position: string): number {
  */
 export function stringToCard(cardString: string): Card | null {
   if (!cardString || cardString.length < 2) {
-return null;
-}
-  
+    return null;
+  }
+
   const rank = cardString.slice(0, -1) as Card['rank'];
   const suitChar = cardString.slice(-1).toLowerCase();
-  
+
   const suitMap: { [key: string]: Card['suit'] } = {
-    'h': 'hearts',
-    'd': 'diamonds',
-    'c': 'clubs',
-    's': 'spades',
+    h: 'hearts',
+    d: 'diamonds',
+    c: 'clubs',
+    s: 'spades',
   };
-  
+
   const suit = suitMap[suitChar];
-  
+
   if (!suit) {
-return null;
-}
-  
-  const validRanks: Card['rank'][] = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+    return null;
+  }
+
+  const validRanks: Card['rank'][] = [
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    '10',
+    'J',
+    'Q',
+    'K',
+    'A',
+  ];
   if (!validRanks.includes(rank)) {
-return null;
-}
-  
+    return null;
+  }
+
   return { suit, rank };
 }
 
@@ -128,12 +137,12 @@ return null;
  */
 export function cardToString(card: Card): string {
   const suitMap: { [key in Card['suit']]: string } = {
-    'hearts': 'h',
-    'diamonds': 'd',
-    'clubs': 'c',
-    'spades': 's',
+    hearts: 'h',
+    diamonds: 'd',
+    clubs: 'c',
+    spades: 's',
   };
-  
+
   return `${card.rank}${suitMap[card.suit]}`;
 }
 
@@ -168,7 +177,7 @@ export function convertFromBackendResponse(backendResponse: any): any {
       players: backendResponse.players.map(backendPlayerToUnified),
     };
   }
-  
+
   // This might be a legal actions response or other response type
   return backendResponse;
 }
@@ -177,9 +186,7 @@ export function convertFromBackendResponse(backendResponse: any): any {
  * Convert array of string cards to Card objects
  */
 export function stringCardsToCards(cardStrings: string[]): Card[] {
-  return cardStrings
-    .map(stringToCard)
-    .filter((card): card is Card => card !== null);
+  return cardStrings.map(stringToCard).filter((card): card is Card => card !== null);
 }
 
 /**
@@ -193,11 +200,13 @@ export function cardsToStringCards(cards: Card[]): string[] {
  * Validate that a player array is compatible with unified format
  */
 export function validatePlayersForUnified(players: any[]): boolean {
-  return players.every(player => 
-    typeof player.id === 'string' &&
-    typeof player.name === 'string' &&
-    typeof player.position === 'string' &&
-    typeof player.chips === 'number' && player.chips >= 0,
+  return players.every(
+    (player) =>
+      typeof player.id === 'string' &&
+      typeof player.name === 'string' &&
+      typeof player.position === 'string' &&
+      typeof player.chips === 'number' &&
+      player.chips >= 0,
   );
 }
 

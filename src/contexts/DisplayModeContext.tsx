@@ -20,28 +20,28 @@ export const DisplayModeProvider = ({ children, defaultMode = null }: DisplayMod
     // In the future, this could load from localStorage
     // For now, default to null (auto-detect)
     if (defaultMode !== undefined) {
-return defaultMode;
-}
-    
+      return defaultMode;
+    }
+
     // Try to load from localStorage (future feature)
     try {
       const saved = localStorage.getItem('poker-display-mode');
       if (saved === 'chips' || saved === 'bb') {
-return saved;
-}
+        return saved;
+      }
       if (saved === 'auto' || saved === null) {
-return null;
-}
-    } catch (e) {
+        return null;
+      }
+    } catch {
       // localStorage not available or error
     }
-    
+
     return null; // Auto-detect based on game format
   });
 
   const setDisplayMode = useCallback((mode: DisplayMode | null) => {
     setDisplayModeState(mode);
-    
+
     // Save to localStorage for persistence (future feature)
     try {
       if (mode === null) {
@@ -49,7 +49,7 @@ return null;
       } else {
         localStorage.setItem('poker-display-mode', mode);
       }
-    } catch (e) {
+    } catch {
       // localStorage not available or error
     }
   }, []);
@@ -76,11 +76,7 @@ return null;
     isAutoMode,
   };
 
-  return (
-    <DisplayModeContext.Provider value={value}>
-      {children}
-    </DisplayModeContext.Provider>
-  );
+  return <DisplayModeContext.Provider value={value}>{children}</DisplayModeContext.Provider>;
 };
 
 export const useDisplayMode = (): DisplayModeContextType => {
@@ -94,12 +90,13 @@ export const useDisplayMode = (): DisplayModeContextType => {
 // Hook that combines display mode context with display values
 export const useDisplayModeWithValues = (formData: any) => {
   const displayModeContext = useDisplayMode();
-  
+
   // This hook can be used in components that need both display mode control
   // and display value calculations
   return {
     ...displayModeContext,
     // Future: could add computed values here
-    effectiveMode: displayModeContext.displayMode || (formData?.gameFormat === 'cash' ? 'chips' : 'bb'),
+    effectiveMode:
+      displayModeContext.displayMode || (formData?.gameFormat === 'cash' ? 'chips' : 'bb'),
   };
 };

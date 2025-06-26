@@ -1,7 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useSession, signIn, signOut } from 'next-auth/react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 export interface User {
@@ -34,14 +34,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const user = session?.user ? {
-    id: session.user.id || '',
-    email: session.user.email || '',
-    name: session.user.name || '',
-    picture: session.user.image || undefined,
-    hasCompletedOnboarding: (session.user as any).hasCompletedOnboarding || false,
-    createdAt: new Date().toISOString(),
-  } : null;
+  const user = session?.user
+    ? {
+        id: session.user.id || '',
+        email: session.user.email || '',
+        name: session.user.name || '',
+        picture: session.user.image || undefined,
+        hasCompletedOnboarding: (session.user as any).hasCompletedOnboarding || false,
+        createdAt: new Date().toISOString(),
+      }
+    : null;
 
   const loading = status === 'loading';
   const isAuthenticated = status === 'authenticated';

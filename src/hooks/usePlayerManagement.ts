@@ -1,20 +1,21 @@
-
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Player, ShareHandFormData } from '@/types/shareHand';
 
-export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (data: ShareHandFormData) => void) => {
+export const usePlayerManagement = (
+  formData: ShareHandFormData,
+  setFormData: (data: ShareHandFormData) => void,
+) => {
   const isInitializedRef = useRef(false);
 
   // Initialize empty players array if needed - only check players, not entire formData
   useEffect(() => {
     // Only run once on mount or when players is undefined/null
     if (!isInitializedRef.current && !formData.players) {
-      
       setFormData((prevData) => ({
         ...prevData,
         players: [],
       }));
-      
+
       isInitializedRef.current = true;
     }
   }, []); // Run only once on mount
@@ -23,11 +24,10 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
 
   // Update a player
   const updatePlayer = (playerId: string, updates: Partial<Player>) => {
-    
-    const updatedPlayers = players.map(player => {
+    const updatedPlayers = players.map((player) => {
       if (player.id === playerId) {
-        const updatedPlayer = { 
-          ...player, 
+        const updatedPlayer = {
+          ...player,
           ...updates,
           stackSize: updates.stackSize ? [...updates.stackSize] : [...player.stackSize],
         };
@@ -35,11 +35,11 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
       }
       return player;
     });
-    
+
     // Update legacy formData fields for backwards compatibility
-    const heroPlayer = updatedPlayers.find(p => p.isHero);
-    const villainPlayer = updatedPlayers.find(p => !p.isHero);
-    
+    const heroPlayer = updatedPlayers.find((p) => p.isHero);
+    const villainPlayer = updatedPlayers.find((p) => !p.isHero);
+
     setFormData((prevData) => {
       const newFormData = {
         ...prevData,
@@ -49,24 +49,24 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
         heroStackSize: heroPlayer?.stackSize ? [...heroPlayer.stackSize] : [100],
         villainStackSize: villainPlayer?.stackSize ? [...villainPlayer.stackSize] : [100],
       };
-      
+
       return newFormData;
     });
   };
 
   // Add a new player - not needed anymore since we add players directly via table clicks
-  const addPlayer = () => {
+  const _addPlayer = () => {
     // This method is kept for backwards compatibility but won't be used
   };
 
   // Remove a player
   const removePlayer = (playerId: string) => {
-    const updatedPlayers = players.filter(p => p.id !== playerId);
-    
+    const updatedPlayers = players.filter((p) => p.id !== playerId);
+
     // Update legacy formData fields
-    const heroPlayer = updatedPlayers.find(p => p.isHero);
-    const villainPlayer = updatedPlayers.find(p => !p.isHero);
-    
+    const heroPlayer = updatedPlayers.find((p) => p.isHero);
+    const villainPlayer = updatedPlayers.find((p) => !p.isHero);
+
     setFormData((prevData) => {
       const newFormData = {
         ...prevData,
@@ -76,7 +76,7 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
         heroStackSize: heroPlayer?.stackSize ? [...heroPlayer.stackSize] : [100],
         villainStackSize: villainPlayer?.stackSize ? [...villainPlayer.stackSize] : [100],
       };
-      
+
       return newFormData;
     });
   };
@@ -84,7 +84,7 @@ export const usePlayerManagement = (formData: ShareHandFormData, setFormData: (d
   return {
     players,
     updatePlayer,
-    addPlayer,
+    addPlayer: _addPlayer,
     removePlayer,
   };
 };

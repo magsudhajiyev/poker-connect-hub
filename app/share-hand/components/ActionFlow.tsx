@@ -1,6 +1,5 @@
 'use client';
 
-
 import React from 'react';
 import { ActionStepCard } from './action-flow';
 import { useGameStateUI } from '@/hooks/useGameStateUI';
@@ -21,22 +20,22 @@ interface ActionFlowProps {
   gameState?: GameState | null;
 }
 
-const ActionFlow = ({ 
-  street, 
-  formData, 
-  getPositionName, 
-  getCurrencySymbol, 
-  calculatePotSize, 
-  getAvailableActions, 
-  updateAction, 
-  getActionButtonClass, 
+const ActionFlow = ({
+  street,
+  formData,
+  getPositionName,
+  getCurrencySymbol,
+  calculatePotSize,
+  getAvailableActions,
+  updateAction,
+  getActionButtonClass,
   handleBetSizeSelect,
-  gameState, 
+  gameState,
 }: ActionFlowProps) => {
   const actions = formData[street];
   const potSize = calculatePotSize();
   const currentStackSize = formData.heroStackSize[0];
-  
+
   const { isPlayerActive } = useGameStateUI(gameState);
   const { gameStateUI, setFormData } = useShareHandContext();
 
@@ -50,11 +49,11 @@ const ActionFlow = ({
     // If we have a game state and this is the current player, process the action through game state
     if (gameState && isPlayerActive(actionStep.position)) {
       let amount = 0;
-      
+
       if (action === 'bet' || action === 'raise') {
         const betInput = actionStep.betAmount || '';
         amount = parseFloat(betInput);
-        
+
         if (isNaN(amount) || amount <= 0) {
           alert('Please enter a valid bet amount');
           return;
@@ -62,16 +61,11 @@ const ActionFlow = ({
       } else if (action === 'call') {
         amount = gameState.currentBet || 0;
       }
-      
+
       try {
         // Process action through game state
-        const newState = processAction(
-          gameState,
-          actionStep.position,
-          action,
-          amount,
-        );
-        
+        const newState = processAction(gameState, actionStep.position, action, amount);
+
         // Update the game state in the UI hook
         if (gameStateUI.updateGameState) {
           gameStateUI.updateGameState(newState);
@@ -79,13 +73,17 @@ const ActionFlow = ({
 
         // If player folded, remove them from future streets
         if (action === 'fold') {
-          const updatedFormData = removeFoldedPlayerFromFutureStreets(formData, actionStep.playerId);
+          const updatedFormData = removeFoldedPlayerFromFutureStreets(
+            formData,
+            actionStep.playerId,
+          );
           setFormData(updatedFormData);
         }
-      } catch (error) {
+      } catch {
+        // Silently handle error when updating folded players
       }
     }
-    
+
     // Also update the form data action (existing functionality)
     updateAction(street, index, action);
   };
@@ -96,7 +94,7 @@ const ActionFlow = ({
     if (value !== '' && (isNaN(numericValue) || numericValue < 0)) {
       return;
     }
-    
+
     updateAction(street, index, actionStep.action!, value);
   };
 
@@ -105,7 +103,7 @@ const ActionFlow = ({
       <h4 className="text-sm font-medium text-slate-300">Action Flow</h4>
       {actions.map((actionStep: any, index: number) => {
         const availableActions = getAvailableActions(street, index, actions);
-        
+
         return (
           <ActionStepCard
             key={`${actionStep.playerId}-${index}`}

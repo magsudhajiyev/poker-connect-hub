@@ -1,7 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { Player } from '@/types/shareHand';
 import { usePlayerActionDialog } from './hooks/usePlayerActionDialog';
 import ActionSelectionButtons from './components/ActionSelectionButtons';
@@ -16,7 +22,7 @@ interface PlayerActionDialogProps {
   currentStreet: string;
   formData: any;
   pokerActions?: any;
-  getAvailableActions?: (street: string, index: number, allActions: any[]) => ActionType[];
+  getAvailableActions?: (street: string, index: number, allActions: any[]) => string[];
   updateAction?: (street: any, index: number, action: ActionType, betAmount?: string) => void;
   handleBetSizeSelect?: (street: any, index: number, amount: string) => void;
 }
@@ -34,14 +40,14 @@ const PlayerActionDialog = ({
   handleBetSizeSelect,
 }: PlayerActionDialogProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Reset submitting state when dialog closes
   useEffect(() => {
     if (!isOpen) {
       setIsSubmitting(false);
     }
   }, [isOpen]);
-  
+
   const {
     selectedAction,
     setSelectedAction,
@@ -61,14 +67,13 @@ const PlayerActionDialog = ({
   });
 
   const handleActionSelect = (action: ActionType) => {
-    
     // Prevent action if already submitting
     if (isSubmitting) {
       return;
     }
-    
+
     setSelectedAction(action);
-    
+
     // For actions that don't require bet amount, submit immediately
     // bet and raise require amount input, so don't submit immediately
     if (!requiresBetAmount(action)) {
@@ -78,10 +83,10 @@ const PlayerActionDialog = ({
 
   const handleBetSizeButtonSelect = (amount: string) => {
     setBetAmount(amount);
-    
+
     // Use a valid index - if actionIndex is -1, use 0 as fallback
     const validIndex = actionIndex >= 0 ? actionIndex : 0;
-    
+
     // If we have pokerActions (action flow system), always use submitAction
     // to ensure both form data AND action flow are updated
     if (pokerActions && pokerActions.executeAction) {
@@ -100,23 +105,20 @@ const PlayerActionDialog = ({
     if (isSubmitting) {
       return;
     }
-    
+
     setIsSubmitting(true);
-    
-    
+
     // PRIORITIZE action flow for proper game logic
     if (pokerActions && pokerActions.executeAction) {
       const numericAmount = amount ? parseFloat(amount) : 0;
       const success = pokerActions.executeAction(player.id, action, numericAmount);
-      
+
       if (success) {
-        
         // Add minimal delay to ensure state update is processed before closing dialog
         setTimeout(() => {
           onOpenChange(false);
           setIsSubmitting(false);
         }, 50); // Reduced from 100ms to 50ms for better responsiveness
-        
       } else {
         setIsSubmitting(false);
         return; // Don't proceed if action flow fails
@@ -126,13 +128,14 @@ const PlayerActionDialog = ({
       setIsSubmitting(false);
       onOpenChange(false);
     }
-    
+
     // ALSO try to update form data for UI consistency (but don't fail if this fails)
     if (updateAction) {
       try {
         const validIndex = actionIndex >= 0 ? actionIndex : 0;
         updateAction(currentStreet, validIndex, action, amount || betAmount);
-      } catch (error) {
+      } catch {
+        // Silently handle error
       }
     }
   };
@@ -141,7 +144,7 @@ const PlayerActionDialog = ({
     if (isSubmitting) {
       return;
     }
-    
+
     if (selectedAction && requiresBetAmount(selectedAction as ActionType)) {
       if (!betAmount || parseFloat(betAmount) <= 0) {
         alert('Please enter a valid bet amount');

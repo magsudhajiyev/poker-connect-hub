@@ -1,6 +1,5 @@
 'use client';
 
-
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import CardInput from '@/components/CardInput';
@@ -24,47 +23,43 @@ interface PreflopStepProps {
   getAllSelectedCards: () => string[];
 }
 
-const PreflopStep = ({ 
-  formData, 
-  setFormData, 
-  showPot, 
-  getPositionName, 
-  getCurrencySymbol, 
-  calculatePotSize, 
-  getAvailableActions, 
-  updateAction, 
-  getActionButtonClass, 
+const PreflopStep = ({
+  formData,
+  setFormData,
+  _showPot,
+  _getPositionName,
+  getCurrencySymbol,
+  _calculatePotSize,
+  getAvailableActions,
+  updateAction,
+  _getActionButtonClass,
   handleBetSizeSelect,
   getAllSelectedCards,
 }: PreflopStepProps) => {
   const { players } = usePlayerManagement(formData, setFormData);
   const { pokerActions } = useShareHandContext();
-  const potSize = pokerActions?.pot || calculatePotSize(formData);
-  
-  
 
   // Don't allow player updates in action steps - players should be locked
-  const handleUpdatePlayer = (newPlayer: any) => {
+  const handleUpdatePlayer = (_newPlayer: any) => {
     // Do nothing - players are locked after positions step
   };
 
-  const handleRemovePlayer = (playerId: string) => {
+  const handleRemovePlayer = (_playerId: string) => {
     // Do nothing - players are locked after positions step
   };
 
   return (
     <div className="space-y-4">
-
       <h3 className="text-base font-medium text-slate-200 mb-2">Preflop Action</h3>
-      
+
       <div className="space-y-3">
         <CardInput
           label="Hole Cards"
           cards={formData.holeCards}
-          onCardsChange={(cards) => setFormData({...formData, holeCards: cards})}
+          onCardsChange={(cards) => setFormData({ ...formData, holeCards: cards })}
           maxCards={2}
           placeholder="Type your hole cards (e.g., Ah, 7d)"
-          excludeCards={getAllSelectedCards().filter(card => !formData.holeCards.includes(card))}
+          excludeCards={getAllSelectedCards().filter((card) => !formData.holeCards.includes(card))}
         />
 
         {formData.holeCards.length > 0 && (
@@ -74,7 +69,7 @@ const PreflopStep = ({
 
       {/* Interactive Poker Table with Actions */}
       <div className="bg-slate-900/30 rounded-lg p-4 border border-slate-700/30">
-        <PokerTable 
+        <PokerTable
           players={players}
           getCurrencySymbol={getCurrencySymbol}
           gameFormat={formData.gameFormat}
@@ -92,11 +87,13 @@ const PreflopStep = ({
       </div>
 
       <div>
-        <Label htmlFor="preflop-description" className="text-slate-300 text-sm">Preflop Insights (Optional)</Label>
+        <Label htmlFor="preflop-description" className="text-slate-300 text-sm">
+          Preflop Insights (Optional)
+        </Label>
         <Textarea
           id="preflop-description"
           value={formData.preflopDescription}
-          onChange={(e) => setFormData({...formData, preflopDescription: e.target.value})}
+          onChange={(e) => setFormData({ ...formData, preflopDescription: e.target.value })}
           placeholder="Describe your thoughts, reads, or situation before the flop..."
           rows={2}
           className="bg-slate-900/50 border-slate-700/50 text-slate-200 text-sm mt-1"

@@ -16,18 +16,22 @@ export class ApiService {
   private retryDelay: number;
 
   constructor(config: ApiConfig = {}) {
-    this.baseUrl = config.baseUrl || (typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_API_URL : undefined) || 'http://localhost:3000';
+    this.baseUrl =
+      config.baseUrl ||
+      (typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_API_URL : undefined) ||
+      'http://localhost:3000';
     this.timeout = config.timeout || 10000; // 10 seconds
     this.retries = config.retries || 3;
     this.retryDelay = config.retryDelay || 1000; // 1 second
-    
+
     // Log the base URL to help debug
     if (typeof window !== 'undefined') {
+      // Client-side initialization
     }
   }
 
   private async delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   private createApiError(
@@ -45,10 +49,7 @@ export class ApiService {
     return error;
   }
 
-  private async fetchWithTimeout(
-    url: string,
-    options: RequestInit = {},
-  ): Promise<Response> {
+  private async fetchWithTimeout(url: string, options: RequestInit = {}): Promise<Response> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
@@ -78,21 +79,17 @@ export class ApiService {
     }
   }
 
-  async request<T>(
-    endpoint: string,
-    options: RequestInit = {},
-  ): Promise<ApiResponse<T>> {
+  async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     const url = `${this.baseUrl}${endpoint}`;
     let lastError: Error | null = null;
 
     for (let attempt = 1; attempt <= this.retries; attempt++) {
       try {
-
         const response = await this.fetchWithTimeout(url, options);
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          
+
           // Handle different HTTP error codes
           switch (response.status) {
             case 400:
@@ -131,16 +128,16 @@ export class ApiService {
           success: true,
           data,
         };
-
       } catch (error) {
         lastError = error as Error;
 
         // Check if error is retryable
         const apiError = error as ApiError;
-        const isRetryable = apiError.retryable || 
-                           apiError.type === ApiErrorType.NETWORK_ERROR ||
-                           apiError.type === ApiErrorType.TIMEOUT_ERROR ||
-                           apiError.type === ApiErrorType.SERVER_ERROR;
+        const isRetryable =
+          apiError.retryable ||
+          apiError.type === ApiErrorType.NETWORK_ERROR ||
+          apiError.type === ApiErrorType.TIMEOUT_ERROR ||
+          apiError.type === ApiErrorType.SERVER_ERROR;
 
         // Don't retry if it's the last attempt or error is not retryable
         if (attempt === this.retries || !isRetryable) {

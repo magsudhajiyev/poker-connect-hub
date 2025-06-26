@@ -8,18 +8,12 @@ export async function POST(request: NextRequest) {
     const { gameState } = body;
 
     if (!gameState) {
-      return NextResponse.json(
-        { error: 'Game state is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Game state is required' }, { status: 400 });
     }
 
     // Validate the game state
     if (!pokerService.validateGameState(gameState as GameState)) {
-      return NextResponse.json(
-        { error: 'Invalid game state provided' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid game state provided' }, { status: 400 });
     }
 
     // For now, return the same game state
@@ -36,11 +30,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error in poker next-state API:', error);
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to get next game state',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

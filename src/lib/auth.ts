@@ -1,5 +1,5 @@
-import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
+import NextAuth from 'next-auth';
+import Google from 'next-auth/providers/google';
 
 // Validate required environment variables
 const requiredEnvVars = {
@@ -16,7 +16,7 @@ const missingVars = Object.entries(requiredEnvVars)
 if (missingVars.length > 0) {
   throw new Error(
     `Missing required environment variables: ${missingVars.join(', ')}. ` +
-    `Please check your .env.local file.`
+      'Please check your .env.local file.',
   );
 }
 
@@ -28,25 +28,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       // Validate user has required fields
       if (!user?.email) {
         return false;
       }
-      
+
       // Add any domain restrictions here if needed
       // Example: const allowedDomain = "@yourcompany.com";
       // if (!user.email.endsWith(allowedDomain)) return false;
-      
+
       // Log sign-in attempts in development
-      if (process.env.NODE_ENV === "development") {
-        console.log("Sign-in attempt:", {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Sign-in attempt:', {
           email: user.email,
           provider: account?.provider,
           timestamp: new Date().toISOString(),
         });
       }
-      
+
       return true;
     },
     async jwt({ token, user, account }) {
@@ -60,10 +60,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           image: user.image,
         };
       }
-      
+
       return token;
     },
-    async session({ session, token }) {      
+    async session({ session, token }) {
       // Add token data to session
       if (token && session.user) {
         session.user.id = token.id as string;
@@ -71,7 +71,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.name = token.name as string;
         session.user.image = token.image as string;
       }
-      
+
       return session;
     },
   },
@@ -80,10 +80,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: '/auth/error',
   },
   session: {
-    strategy: "jwt",
+    strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
     updateAge: 24 * 60 * 60, // 24 hours
   },
   // Let NextAuth handle cookies with default configuration
-  debug: process.env.NODE_ENV === "development",
+  debug: process.env.NODE_ENV === 'development',
 });

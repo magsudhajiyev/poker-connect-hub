@@ -49,7 +49,7 @@ export const useErrorRecovery = () => {
   const executeWithRetry = useCallback(
     async <T>(
       operation: () => Promise<T>,
-      options: ErrorRecoveryOptions = {}
+      options: ErrorRecoveryOptions = {},
     ): Promise<T | null> => {
       const {
         maxRetries = 3,
@@ -60,15 +60,16 @@ export const useErrorRecovery = () => {
         onFailure,
         shouldRetry = (error, attempt) => {
           // Don't retry on client errors (4xx) or after max retries
-          const isClientError = 'status' in error && 
-            typeof error.status === 'number' && 
-            error.status >= 400 && 
+          const isClientError =
+            'status' in error &&
+            typeof error.status === 'number' &&
+            error.status >= 400 &&
             error.status < 500;
           return !isClientError && attempt < maxRetries;
         },
       } = options;
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isRetrying: false,
         lastError: null,
@@ -76,12 +77,12 @@ export const useErrorRecovery = () => {
 
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-          setState(prev => ({ ...prev, isRetrying: attempt > 1 }));
-          
+          setState((prev) => ({ ...prev, isRetrying: attempt > 1 }));
+
           const result = await operation();
-          
+
           // Success
-          setState(prev => ({
+          setState((prev) => ({
             ...prev,
             isRetrying: false,
             retryCount: attempt - 1,
@@ -98,33 +99,32 @@ export const useErrorRecovery = () => {
 
           onSuccess?.();
           return result;
-
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : String(error);
-          
-          setState(prev => ({
+
+          setState((prev) => ({
             ...prev,
             retryCount: attempt,
             lastError: errorMessage,
             canRetry: shouldRetry(error as Error, attempt),
           }));
 
-          logError(
-            `${context} failed on attempt ${attempt}: ${errorMessage}`,
-            'ErrorRecovery',
-            { attempt, maxRetries, error: error instanceof Error ? error.stack : error }
-          );
+          logError(`${context} failed on attempt ${attempt}: ${errorMessage}`, 'ErrorRecovery', {
+            attempt,
+            maxRetries,
+            error: error instanceof Error ? error.stack : error,
+          });
 
           if (attempt === maxRetries || !shouldRetry(error as Error, attempt)) {
             // Final failure
-            setState(prev => ({
+            setState((prev) => ({
               ...prev,
               isRetrying: false,
               canRetry: false,
             }));
 
             onFailure?.(error as Error);
-            
+
             toast({
               title: 'Operation Failed',
               description: `${context} failed after ${attempt} attempts: ${errorMessage}`,
@@ -135,11 +135,9 @@ export const useErrorRecovery = () => {
           }
 
           // Wait before retry
-          const delay = exponentialBackoff 
-            ? retryDelay * Math.pow(2, attempt - 1) 
-            : retryDelay;
+          const delay = exponentialBackoff ? retryDelay * Math.pow(2, attempt - 1) : retryDelay;
 
-          await new Promise(resolve => {
+          await new Promise((resolve) => {
             retryTimeoutRef.current = setTimeout(resolve, delay);
           });
         }
@@ -147,7 +145,7 @@ export const useErrorRecovery = () => {
 
       return null;
     },
-    [clearRetryTimeout]
+    [clearRetryTimeout],
   );
 
   const retryOperation = useCallback(
@@ -163,19 +161,16 @@ export const useErrorRecovery = () => {
 
       return executeWithRetry(operation, options);
     },
-    [state.canRetry, executeWithRetry]
+    [state.canRetry, executeWithRetry],
   );
 
   const createRetryableFunction = useCallback(
-    <T extends any[], R>(
-      fn: (...args: T) => Promise<R>,
-      options?: ErrorRecoveryOptions
-    ) => {
+    <T extends any[], R>(fn: (...args: T) => Promise<R>, options?: ErrorRecoveryOptions) => {
       return async (...args: T): Promise<R | null> => {
         return executeWithRetry(() => fn(...args), options);
       };
     },
-    [executeWithRetry]
+    [executeWithRetry],
   );
 
   // Cleanup on unmount
@@ -196,21 +191,20 @@ export const useErrorRecovery = () => {
 // Higher-order component for error recovery
 export const withErrorRecovery = <P extends object>(
   Component: React.ComponentType<P>,
-  defaultOptions?: ErrorRecoveryOptions
+  defaultOptions?: ErrorRecoveryOptions,
 ) => {
-  return (props: P) => {
+  const WrappedComponent = (props: P) => {
     const errorRecovery = useErrorRecovery();
-    
-    return (
-      <Component 
-        {...props} 
-        errorRecovery={errorRecovery}
-        executeWithRetry={(operation: () => Promise<any>, options?: ErrorRecoveryOptions) =>
-          errorRecovery.executeWithRetry(operation, { ...defaultOptions, ...options })
-        }
-      />
-    );
+    const componentProps = {
+      ...props,
+      errorRecovery,
+      executeWithRetry: (operation: () => Promise<any>, options?: ErrorRecoveryOptions) =>
+        errorRecovery.executeWithRetry(operation, { ...defaultOptions, ...options }),
+    };
+
+    return React.createElement(Component, componentProps);
   };
+  return WrappedComponent;
 };
 
 export default useErrorRecovery;

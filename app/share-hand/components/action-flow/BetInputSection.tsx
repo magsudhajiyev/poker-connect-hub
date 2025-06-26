@@ -1,6 +1,5 @@
 'use client';
 
-
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,20 +28,18 @@ export const BetInputSection = ({
   handleBetInputChange,
   handleBetSizeSelect,
 }: BetInputSectionProps) => {
-  
   // Use display values for proper unit handling
   const displayValues = useDisplayValues({ formData });
-  
+
   // Calculate pot size in chips if not provided
   const potSizeInChips = potSize || calculatePotSize(formData, { returnInChips: true });
-  
+
   // Format stack size for display
   const stackDisplay = displayValues.formatChipAmount(currentStackSize);
-  
+
   // Get display configuration
   const displayConfig = displayValues.getDisplayConfig();
-  
-  
+
   const getBetSizeLabel = () => {
     return `Bet Size (${displayConfig.symbol})`;
   };
@@ -57,11 +54,11 @@ export const BetInputSection = ({
   const validateAndFormatInput = (value: string) => {
     const chipAmount = displayValues.parseInputToChips(value);
     const validation = displayValues.validateBetAmount(chipAmount, currentStackSize);
-    
+
     if (!validation.isValid && validation.error) {
       console.warn('Bet validation:', validation.error);
     }
-    
+
     return value; // Return original value for now, validation can be added later
   };
 
@@ -91,7 +88,9 @@ export const BetInputSection = ({
         <div className="relative">
           <Input
             value={actionStep.betAmount || ''}
-            onChange={(e) => handleBetInputChange(actionStep, index, validateAndFormatInput(e.target.value))}
+            onChange={(e) =>
+              handleBetInputChange(actionStep, index, validateAndFormatInput(e.target.value))
+            }
             placeholder={displayValues.effectiveDisplayMode === 'chips' ? '25.0' : '12.5'}
             className="bg-slate-900/50 border-slate-700/50 text-slate-200 text-xs h-8 mt-1 w-full bet-size-input"
             type="number"
@@ -99,10 +98,9 @@ export const BetInputSection = ({
             step={displayValues.effectiveDisplayMode === 'chips' ? '0.25' : '0.1'}
           />
           {/* Stack size indicator */}
-          <div className="text-xs text-slate-400 mt-1">
-            Stack: {stackDisplay.formatted}
-          </div>
+          <div className="text-xs text-slate-400 mt-1">Stack: {stackDisplay.formatted}</div>
         </div>
+      </div>
     </div>
   );
 };

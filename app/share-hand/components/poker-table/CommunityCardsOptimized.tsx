@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { CardType } from '@/types/shareHand';
 
 // Static data outside component
 const SUIT_SYMBOLS: { [key: string]: string } = {
@@ -19,7 +18,7 @@ const SUIT_COLORS: { [key: string]: string } = {
 };
 
 interface CommunityCardsProps {
-  cards: CardType[];
+  cards: string[];
 }
 
 const CommunityCardsOptimized = React.memo<CommunityCardsProps>(({ cards }) => {
@@ -47,8 +46,8 @@ const CommunityCardsOptimized = React.memo<CommunityCardsProps>(({ cards }) => {
       <div className="flex flex-wrap justify-center gap-2 p-4 bg-slate-900/80 rounded-lg backdrop-blur-sm">
         {parsedCards.map((card, index) => {
           if (!card) {
-return null;
-}
+            return null;
+          }
 
           const suitSymbol = SUIT_SYMBOLS[card.suit] || card.suit;
           const suitColor = SUIT_COLORS[card.suit] || 'text-slate-400';

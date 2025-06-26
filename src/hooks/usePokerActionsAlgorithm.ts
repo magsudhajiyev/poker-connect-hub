@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { PokerActionsAlgorithm } from '@/utils/PokerActionsAlgorithm';
 import { Player } from '@/types/shareHand';
@@ -24,21 +23,19 @@ export const usePokerActionsAlgorithm = ({
 
   // Initialize algorithm when players and blinds are available
   useEffect(() => {
-
     if (players && players.length >= 2 && smallBlind && bigBlind) {
       const sb = parseFloat(smallBlind);
       const bb = parseFloat(bigBlind);
-      
+
       if (!isNaN(sb) && !isNaN(bb) && sb > 0 && bb > 0) {
-        
         try {
           const newAlgorithm = new PokerActionsAlgorithm(sb, bb, players);
           setAlgorithm(newAlgorithm);
           algorithmRef.current = newAlgorithm;
-          
+
           // Get initial state
           const currentState = newAlgorithm.getCurrentPlayerActions();
-          
+
           // Check if this is a normal player action state
           if (currentState && 'playerId' in currentState && currentState.playerId) {
             setCurrentPlayerToAct(currentState.playerId);
@@ -56,6 +53,7 @@ export const usePokerActionsAlgorithm = ({
         console.warn('Invalid blind values for algorithm:', { sb, bb, smallBlind, bigBlind });
       }
     } else {
+      // No valid players found
     }
   }, [players, smallBlind, bigBlind]);
 
@@ -63,20 +61,20 @@ export const usePokerActionsAlgorithm = ({
   useEffect(() => {
     if (algorithm && currentStreet) {
       const streetMapping: { [key: string]: string } = {
-        'preflopActions': 'preFlop',
-        'flopActions': 'flop',
-        'turnActions': 'turn',
-        'riverActions': 'river',
+        preflopActions: 'preFlop',
+        flopActions: 'flop',
+        turnActions: 'turn',
+        riverActions: 'river',
       };
-      
+
       const algorithmStreet = streetMapping[currentStreet] || 'preFlop';
-      
+
       if (algorithm.currentStreet !== algorithmStreet) {
         algorithm.currentStreet = algorithmStreet;
         algorithm.updateActionOrder();
-        
+
         const currentState = algorithm.getCurrentPlayerActions();
-        
+
         // Check if this is a normal player action state
         if (currentState && 'playerId' in currentState && currentState.playerId) {
           setCurrentPlayerToAct(currentState.playerId);
@@ -97,16 +95,15 @@ export const usePokerActionsAlgorithm = ({
       return false;
     }
 
-    
     const success = algorithmRef.current.executeAction(actionType, amount || 0);
-    
+
     if (success) {
       // Get updated state
       const newState = algorithmRef.current.getCurrentPlayerActions();
-      
+
       // Update pot
       setPotAmount(algorithmRef.current.pot);
-      
+
       // Check if this is a normal player action state
       if (newState && 'playerId' in newState && newState.playerId) {
         setCurrentPlayerToAct(newState.playerId);
@@ -116,10 +113,10 @@ export const usePokerActionsAlgorithm = ({
         setCurrentPlayerToAct(null);
         setAvailableActions([]);
       }
-      
+
       return true;
     }
-    
+
     return false;
   };
 
@@ -127,14 +124,14 @@ export const usePokerActionsAlgorithm = ({
     if (!algorithmRef.current) {
       return [];
     }
-    
+
     const currentState = algorithmRef.current.getCurrentPlayerActions();
-    
+
     // Check if this is a normal player action state and the player matches
     if (currentState && 'playerId' in currentState && currentState.playerId === playerId) {
       return currentState.actions || [];
     }
-    
+
     return [];
   };
 

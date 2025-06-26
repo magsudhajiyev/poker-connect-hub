@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Pagination, 
-  PaginationContent, 
-  PaginationItem, 
-  PaginationLink, 
-  PaginationNext, 
-  PaginationPrevious, 
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
 } from '@/components/ui/pagination';
 import { useState } from 'react';
 
@@ -78,7 +78,10 @@ const Blog = () => {
 
       <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-12 relative">
         {/* Back Button */}
-        <Link href="/" className="inline-flex items-center text-slate-400 hover:text-slate-200 transition-colors mb-8">
+        <Link
+          href="/"
+          className="inline-flex items-center text-slate-400 hover:text-slate-200 transition-colors mb-8"
+        >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Home
         </Link>
@@ -96,7 +99,10 @@ const Blog = () => {
         {/* Blog Posts Grid */}
         <div className="grid gap-6 md:gap-8 mb-8">
           {currentPosts.map((post) => (
-            <Card key={post.id} className="bg-slate-800/40 border-slate-700/50 backdrop-blur-xl hover:bg-slate-800/60 transition-all duration-300">
+            <Card
+              key={post.id}
+              className="bg-slate-800/40 border-slate-700/50 backdrop-blur-xl hover:bg-slate-800/60 transition-all duration-300"
+            >
               <CardHeader>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full">
@@ -111,12 +117,10 @@ const Blog = () => {
                 <CardTitle className="text-xl text-slate-200 hover:text-emerald-400 transition-colors cursor-pointer">
                   {post.title}
                 </CardTitle>
-                <CardDescription className="text-slate-400">
-                  {post.description}
-                </CardDescription>
+                <CardDescription className="text-slate-400">{post.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <Link 
+                <Link
                   href={`/blog/${post.id}`}
                   className="text-emerald-400 hover:text-emerald-300 text-sm font-medium inline-flex items-center transition-colors"
                 >
@@ -134,20 +138,20 @@ const Blog = () => {
             <Pagination>
               <PaginationContent className="bg-slate-800/40 border border-slate-700/50 backdrop-blur-xl rounded-lg p-2">
                 <PaginationItem>
-                  <PaginationPrevious 
+                  <PaginationPrevious
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
                       if (currentPage > 1) {
-handlePageChange(currentPage - 1);
-}
+                        handlePageChange(currentPage - 1);
+                      }
                     }}
                     className={`text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 ${
                       currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   />
                 </PaginationItem>
-                
+
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <PaginationItem key={page}>
                     <PaginationLink
@@ -167,15 +171,15 @@ handlePageChange(currentPage - 1);
                     </PaginationLink>
                   </PaginationItem>
                 ))}
-                
+
                 <PaginationItem>
-                  <PaginationNext 
+                  <PaginationNext
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
                       if (currentPage < totalPages) {
-handlePageChange(currentPage + 1);
-}
+                        handlePageChange(currentPage + 1);
+                      }
                     }}
                     className={`text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 ${
                       currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''

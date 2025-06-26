@@ -4,7 +4,7 @@ export class PokerActionsAlgorithm {
   constructor(smallBlind: number, bigBlind: number, players: any[]) {
     this.smallBlind = smallBlind;
     this.bigBlind = bigBlind;
-    
+
     // Initialize players with positions and names
     this.players = players.map((player, index) => ({
       id: player.id || index,
@@ -19,7 +19,7 @@ export class PokerActionsAlgorithm {
       isAllIn: false,
       hasActed: false,
     }));
-    
+
     this.currentStreet = 'preFlop';
     this.pot = smallBlind + bigBlind;
     this.currentBet = bigBlind;
@@ -30,10 +30,10 @@ export class PokerActionsAlgorithm {
       turn: [],
       river: [],
     };
-    
+
     // Set initial blinds
     this.setInitialBlinds();
-    
+
     // Determine action order for current street
     this.updateActionOrder();
   }
@@ -53,7 +53,7 @@ export class PokerActionsAlgorithm {
     if (totalPlayers === 2) {
       return index === 0 ? 'BTN/SB' : 'BB';
     }
-    
+
     const positions: { [key: number]: string[] } = {
       2: ['BTN/SB', 'BB'],
       3: ['BTN', 'SB', 'BB'],
@@ -64,7 +64,7 @@ export class PokerActionsAlgorithm {
       8: ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'UTG+2', 'LJ', 'HJ'],
       9: ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'UTG+2', 'UTG+3', 'LJ', 'HJ'],
     };
-    
+
     const positionArray = positions[totalPlayers] || positions[9];
     return positionArray[index] || `UTG+${index - 3}`;
   }
@@ -72,7 +72,7 @@ export class PokerActionsAlgorithm {
   setInitialBlinds() {
     const sbIndex = this.players.length === 2 ? 0 : 1;
     const bbIndex = this.players.length === 2 ? 1 : 2;
-    
+
     // Small blind
     const sbPlayer = this.players[sbIndex];
     const sbAmount = Math.min(this.smallBlind, sbPlayer.stack);
@@ -80,9 +80,9 @@ export class PokerActionsAlgorithm {
     sbPlayer.totalInvested = sbAmount;
     sbPlayer.stack -= sbAmount;
     if (sbPlayer.stack === 0) {
-sbPlayer.isAllIn = true;
-}
-    
+      sbPlayer.isAllIn = true;
+    }
+
     // Big blind
     const bbPlayer = this.players[bbIndex];
     const bbAmount = Math.min(this.bigBlind, bbPlayer.stack);
@@ -90,8 +90,8 @@ sbPlayer.isAllIn = true;
     bbPlayer.totalInvested = bbAmount;
     bbPlayer.stack -= bbAmount;
     if (bbPlayer.stack === 0) {
-bbPlayer.isAllIn = true;
-}
+      bbPlayer.isAllIn = true;
+    }
   }
 
   updateActionOrder() {
@@ -212,7 +212,7 @@ bbPlayer.isAllIn = true;
     return actions;
   }
 
-  getMinRaiseAmount(callAmount: number): number {
+  getMinRaiseAmount(_callAmount: number): number {
     // Minimum raise is the size of the last raise, or big blind if no raises
     const lastRaiseSize = this.getLastRaiseSize();
     return Math.max(this.bigBlind, lastRaiseSize);
@@ -233,8 +233,8 @@ bbPlayer.isAllIn = true;
   executeAction(actionType: string, amount: number = 0): boolean {
     const playerIndex = this.getCurrentPlayerIndex();
     if (playerIndex === -1) {
-return false;
-}
+      return false;
+    }
 
     const player = this.players[playerIndex];
     let success = false;
@@ -266,7 +266,7 @@ return false;
     return success;
   }
 
-  processFold(player: any, playerIndex: number): boolean {
+  processFold(player: any, _playerIndex: number): boolean {
     player.isFolded = true;
     player.isActive = false;
 
@@ -281,11 +281,11 @@ return false;
 
     this.streetActions[this.currentStreet].push(action);
     this.actionHistory.push(action);
-    
+
     return true;
   }
 
-  processCheck(player: any, playerIndex: number): boolean {
+  processCheck(player: any, _playerIndex: number): boolean {
     const action = {
       playerId: player.id,
       playerName: player.name,
@@ -297,21 +297,21 @@ return false;
 
     this.streetActions[this.currentStreet].push(action);
     this.actionHistory.push(action);
-    
+
     return true;
   }
 
-  processCall(player: any, playerIndex: number): boolean {
+  processCall(player: any, _playerIndex: number): boolean {
     const callAmount = Math.min(this.currentBet - player.currentBet, player.stack);
-    
+
     player.currentBet += callAmount;
     player.totalInvested += callAmount;
     player.stack -= callAmount;
     this.pot += callAmount;
 
     if (player.stack === 0) {
-player.isAllIn = true;
-}
+      player.isAllIn = true;
+    }
 
     const action = {
       playerId: player.id,
@@ -324,16 +324,16 @@ player.isAllIn = true;
 
     this.streetActions[this.currentStreet].push(action);
     this.actionHistory.push(action);
-    
+
     return true;
   }
 
   processRaise(player: any, playerIndex: number, totalAmount: number, actionType: string): boolean {
-    const callAmount = Math.max(0, this.currentBet - player.currentBet);
-    
+    const _callAmount = Math.max(0, this.currentBet - player.currentBet);
+
     if (totalAmount > player.stack) {
-return false;
-}
+      return false;
+    }
 
     const newBetLevel = player.currentBet + totalAmount;
     const raiseSize = newBetLevel - this.currentBet;
@@ -345,8 +345,8 @@ return false;
     this.currentBet = newBetLevel;
 
     if (player.stack === 0) {
-player.isAllIn = true;
-}
+      player.isAllIn = true;
+    }
 
     // Reset other players' hasActed status
     this.players.forEach((p, i) => {
@@ -368,7 +368,7 @@ player.isAllIn = true;
 
     this.streetActions[this.currentStreet].push(action);
     this.actionHistory.push(action);
-    
+
     return true;
   }
 
@@ -385,12 +385,12 @@ player.isAllIn = true;
     // Check if this is effectively a raise
     let effectiveActionType = 'allIn';
     let raiseSize = 0;
-    
+
     if (newBetLevel > this.currentBet) {
       raiseSize = newBetLevel - this.currentBet;
       this.currentBet = newBetLevel;
       effectiveActionType = 'allInRaise';
-      
+
       // Reset other players' hasActed status
       this.players.forEach((p, i) => {
         if (i !== playerIndex && p.isActive && !p.isFolded && !p.isAllIn) {
@@ -412,18 +412,18 @@ player.isAllIn = true;
 
     this.streetActions[this.currentStreet].push(action);
     this.actionHistory.push(action);
-    
+
     return true;
   }
 
   moveToNextPlayer() {
     this.currentActionIndex++;
-    
+
     // Skip inactive players
     while (this.currentActionIndex < this.actionOrder.length) {
       const playerIndex = this.actionOrder[this.currentActionIndex];
       const player = this.players[playerIndex];
-      
+
       if (player.isActive && !player.isFolded && !player.isAllIn) {
         break;
       }
@@ -434,7 +434,7 @@ player.isAllIn = true;
   // NEW METHOD: Get street completion state without causing recursion
   getStreetCompletionState() {
     const activePlayers = this.players.filter((p: any) => p.isActive && !p.isFolded);
-    
+
     // Hand complete if only one player left
     if (activePlayers.length <= 1) {
       return {
@@ -446,10 +446,13 @@ player.isAllIn = true;
     }
 
     const playersWhoCanAct = activePlayers.filter((p: any) => !p.isAllIn);
-    
+
     // Street complete if no one can act OR all have acted and matched bets
-    const streetComplete = playersWhoCanAct.length === 0 || 
-      playersWhoCanAct.every((p: any) => p.hasActed && (p.currentBet === this.currentBet || p.stack === 0));
+    const streetComplete =
+      playersWhoCanAct.length === 0 ||
+      playersWhoCanAct.every(
+        (p: any) => p.hasActed && (p.currentBet === this.currentBet || p.stack === 0),
+      );
 
     if (streetComplete) {
       return this.advanceToNextStreet();
@@ -457,7 +460,7 @@ player.isAllIn = true;
 
     // If we get here, there's an issue with action order - rebuild it
     this.updateActionOrder();
-    
+
     // Return waiting state instead of calling getCurrentPlayerActions again
     return {
       street: this.currentStreet,
@@ -475,10 +478,10 @@ player.isAllIn = true;
   advanceToNextStreet() {
     const streets = ['preFlop', 'flop', 'turn', 'river'];
     const currentIndex = streets.indexOf(this.currentStreet);
-    
+
     if (currentIndex < streets.length - 1) {
       this.currentStreet = streets[currentIndex + 1];
-      
+
       // Reset for new street
       this.players.forEach((p: any) => {
         if (p.isActive && !p.isFolded) {
@@ -486,10 +489,10 @@ player.isAllIn = true;
           p.hasActed = false;
         }
       });
-      
+
       this.currentBet = 0;
       this.updateActionOrder();
-      
+
       // Return new street state, not a recursive call
       return {
         street: this.currentStreet,

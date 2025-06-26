@@ -14,23 +14,7 @@ import { useState, useEffect } from 'react';
 
 const ShareHandForm = () => {
   const [showValidationErrors, setShowValidationErrors] = useState(false);
-  
-  // Check if we're within the ShareHandProvider context
-  let contextData;
-  try {
-    contextData = useShareHandContext();
-  } catch (error) {
-    // If we're not within the provider, show a message or return null
-    return (
-      <div className="w-full overflow-x-hidden">
-        <Card className="bg-slate-800/40 border-slate-700/30 w-full">
-          <CardContent className="p-6 text-center">
-            <p className="text-slate-400">Share Hand form is not available on this page.</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const contextData = useShareHandContext();
 
   const {
     currentStep,
@@ -73,10 +57,10 @@ const ShareHandForm = () => {
         if (currentStep === 1) {
           return getAvailableActions(street, index, allActions);
         }
-        
+
         // For action steps, try to get actions from poker algorithm first
         console.log('Getting available actions for street:', street, 'index:', index);
-        
+
         // Find the player that should be acting at this index
         const actionStep = allActions[index];
         if (actionStep && actionStep.playerId) {
@@ -87,7 +71,7 @@ const ShareHandForm = () => {
             return actionTypes;
           }
         }
-        
+
         // Fall back to original logic
         return getAvailableActions(street, index, allActions);
       },
@@ -96,7 +80,7 @@ const ShareHandForm = () => {
         if (currentStep > 1 && pokerActions.algorithm) {
           const amount = betAmount ? parseFloat(betAmount) : 0;
           const success = pokerActions.executeAction(action, amount);
-          
+
           if (success) {
             console.log(`Action ${action} executed successfully`);
             // Update the form data as well for consistency
@@ -113,7 +97,7 @@ const ShareHandForm = () => {
         if (currentStep > 1 && pokerActions.algorithm) {
           const numericAmount = parseFloat(amount);
           const success = pokerActions.executeAction('bet', numericAmount);
-          
+
           if (success) {
             console.log(`Bet size ${amount} executed successfully`);
             // Update the form data as well for consistency
@@ -141,7 +125,15 @@ const ShareHandForm = () => {
       case 4:
         return <TurnStep {...commonProps} showPot={showPot} />;
       case 5:
-        return <RiverStep {...commonProps} showPot={showPot} tags={tags} addTag={addTag} removeTag={removeTag} />;
+        return (
+          <RiverStep
+            {...commonProps}
+            showPot={showPot}
+            tags={tags}
+            addTag={addTag}
+            removeTag={removeTag}
+          />
+        );
       default:
         return null;
     }
@@ -156,11 +148,9 @@ const ShareHandForm = () => {
             <ShareHandProgress />
           </div>
         </CardHeader>
-        
+
         <CardContent className="space-y-3 px-3 overflow-x-hidden">
-          <div className="w-full overflow-x-hidden">
-            {renderStepContent()}
-          </div>
+          <div className="w-full overflow-x-hidden">{renderStepContent()}</div>
           <ShareHandNavigation onValidationError={() => setShowValidationErrors(true)} />
         </CardContent>
       </Card>

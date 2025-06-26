@@ -1,4 +1,3 @@
-
 // Pure Poker Game Engine (Editor Mode for Hand Sharing)
 // Assumes hand is already played — no shuffling, no dealing, no button movement
 
@@ -38,19 +37,19 @@ export class PokerGameEngine {
     if (!players || players.length < 2) {
       throw new Error('At least 2 players are required to start a poker game');
     }
-    
+
     if (players.length > 10) {
       throw new Error('Maximum of 10 players allowed in a poker game');
     }
-    
+
     if (!smallBlind || smallBlind <= 0) {
       throw new Error('Small blind must be a positive number');
     }
-    
+
     if (!bigBlind || bigBlind <= 0) {
       throw new Error('Big blind must be a positive number');
     }
-    
+
     if (bigBlind <= smallBlind) {
       throw new Error('Big blind must be greater than small blind');
     }
@@ -102,42 +101,43 @@ export class PokerGameEngine {
     sb.bet = Math.min(this.smallBlind, sb.stack);
     sb.stack -= sb.bet;
     if (sb.stack === 0) {
-sb.allIn = true;
-}
+      sb.allIn = true;
+    }
 
     bb.bet = Math.min(this.bigBlind, bb.stack);
     bb.stack -= bb.bet;
     if (bb.stack === 0) {
-bb.allIn = true;
-}
+      bb.allIn = true;
+    }
 
     this.pot += sb.bet + bb.bet;
     this.currentBet = bb.bet; // Set current bet to BB amount
-    
+
     // Blinds posted successfully
   }
 
   startBettingRound(startIndex?: number) {
-    const active = this.players.filter(p => !p.folded && !p.allIn);
+    const active = this.players.filter((p) => !p.folded && !p.allIn);
     if (active.length <= 1) {
       this.street = 'complete';
       return;
     }
-    
+
     // Define proper position ordering for action flow
     const actionOrder = this.street === 'preflop' ? PREFLOP_ACTION_ORDER : POSTFLOP_ACTION_ORDER;
-    
+
     // Find first active player in correct order
     for (const position of actionOrder) {
-      const playerIndex = this.players.findIndex(p => p.position === position && !p.folded && !p.allIn);
+      const playerIndex = this.players.findIndex(
+        (p) => p.position === position && !p.folded && !p.allIn,
+      );
       if (playerIndex !== -1) {
         this.currentPlayerIndex = playerIndex;
-        const player = this.players[playerIndex];
         // Set first player to act based on position order
         return;
       }
     }
-    
+
     // Fallback to provided startIndex or first active player
     if (startIndex !== undefined) {
       this.currentPlayerIndex = startIndex;
@@ -149,16 +149,16 @@ bb.allIn = true;
 
   getCurrentPlayer() {
     if (this.currentPlayerIndex === null) {
-return null;
-}
+      return null;
+    }
     return this.players[this.currentPlayerIndex];
   }
 
   getLegalActions(): string[] {
     const player = this.getCurrentPlayer();
     if (!player || player.folded || player.allIn) {
-return [];
-}
+      return [];
+    }
 
     const toCall = Math.max(0, this.currentBet - player.bet);
     const actions: string[] = [];
@@ -176,9 +176,9 @@ return [];
     }
 
     // Betting/raising options
-    const minBet = this.currentBet === 0 ? this.bigBlind : this.currentBet * 2; // Min raise = current bet
+    const _minBet = this.currentBet === 0 ? this.bigBlind : this.currentBet * 2; // Min raise = current bet
     const availableForBet = player.stack - toCall;
-    
+
     if (this.currentBet === 0 && availableForBet >= this.bigBlind) {
       actions.push('bet');
     } else if (this.currentBet > 0 && availableForBet >= this.currentBet) {
@@ -226,16 +226,16 @@ return [];
         case 'fold':
           player.folded = true;
           break;
-          
+
         case 'check':
           if (toCall > 0) {
             throw new Error(`Cannot check when there's a bet of ${toCall} to call`);
           }
           break;
-          
-        case 'call':
+
+        case 'call': {
           if (toCall === 0) {
-            throw new Error('Cannot call when there\'s no bet to call');
+            throw new Error("Cannot call when there's no bet to call");
           }
           const callAmt = Math.min(toCall, player.stack);
           if (callAmt <= 0) {
@@ -249,10 +249,11 @@ return [];
           }
           move.amount = callAmt;
           break;
-        
+        }
+
         case 'bet': {
           if (this.currentBet > 0) {
-            throw new Error('Cannot bet when there\'s already a bet on the table');
+            throw new Error("Cannot bet when there's already a bet on the table");
           }
           if (amount <= 0) {
             throw new Error('Bet amount must be positive');
@@ -273,20 +274,24 @@ return [];
           move.amount = amount;
           break;
         }
-          
+
         case 'raise': {
           if (this.currentBet === 0) {
-            throw new Error('Cannot raise when there\'s no bet to raise');
+            throw new Error("Cannot raise when there's no bet to raise");
           }
           if (amount <= 0) {
             throw new Error('Raise amount must be positive');
           }
           const totalRequired = toCall + amount;
           if (amount < this.currentBet) {
-            throw new Error(`Raise amount (${amount}) must be at least the current bet (${this.currentBet})`);
+            throw new Error(
+              `Raise amount (${amount}) must be at least the current bet (${this.currentBet})`,
+            );
           }
           if (totalRequired > player.stack) {
-            throw new Error(`Total raise amount (${totalRequired}) exceeds player stack (${player.stack})`);
+            throw new Error(
+              `Total raise amount (${totalRequired}) exceeds player stack (${player.stack})`,
+            );
           }
           player.stack -= totalRequired;
           player.bet += totalRequired;
@@ -298,7 +303,7 @@ return [];
           move.amount = totalRequired;
           break;
         }
-        
+
         case 'all-in': {
           const allInAmt = player.stack;
           if (allInAmt === 0) {
@@ -314,7 +319,7 @@ return [];
           move.amount = allInAmt;
           break;
         }
-          
+
         default:
           throw new Error(`Unknown action: ${action}`);
       }
@@ -323,7 +328,6 @@ return [];
       // Advance to next player
       this.advanceToNextPlayer();
       return true;
-      
     } catch (error) {
       console.error('Error in takeAction:', error);
       // In a real application, you might want to handle this differently
@@ -333,7 +337,7 @@ return [];
   }
 
   advanceToNextPlayer() {
-    const activeCount = this.players.filter(p => !p.folded && !p.allIn).length;
+    const activeCount = this.players.filter((p) => !p.folded && !p.allIn).length;
     if (activeCount <= 1) {
       this.currentPlayerIndex = null;
       // Betting round complete - only one active player remaining
@@ -342,28 +346,29 @@ return [];
 
     // Use proper position ordering for next player
     const actionOrder = this.street === 'preflop' ? PREFLOP_ACTION_ORDER : POSTFLOP_ACTION_ORDER;
-    
+
     if (this.currentPlayerIndex === null) {
-          // Action validation error
+      // Action validation error
       return;
     }
     const currentPlayer = this.players[this.currentPlayerIndex];
     const currentPositionIndex = actionOrder.indexOf(currentPlayer.position);
-    
+
     // Find next active player in action order
     for (let i = 1; i < actionOrder.length; i++) {
       const nextPositionIndex = (currentPositionIndex + i) % actionOrder.length;
       const nextPosition = actionOrder[nextPositionIndex];
-      const nextPlayerIndex = this.players.findIndex(p => p.position === nextPosition && !p.folded && !p.allIn);
-      
+      const nextPlayerIndex = this.players.findIndex(
+        (p) => p.position === nextPosition && !p.folded && !p.allIn,
+      );
+
       if (nextPlayerIndex !== -1) {
         this.currentPlayerIndex = nextPlayerIndex;
-        const nextPlayer = this.players[nextPlayerIndex];
         // Found next player to act
         return;
       }
     }
-    
+
     this.currentPlayerIndex = null;
     // No more players to act
   }

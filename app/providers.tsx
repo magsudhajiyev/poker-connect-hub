@@ -41,7 +41,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     console.log('Production environment check:', {
       googleClientId: googleClientId ? 'Set' : 'Not set',
       apiUrl: process.env.NEXT_PUBLIC_API_URL || 'Not set',
-      appUrl: process.env.NEXT_PUBLIC_APP_URL || 'Not set'
+      appUrl: process.env.NEXT_PUBLIC_APP_URL || 'Not set',
     });
   }
 

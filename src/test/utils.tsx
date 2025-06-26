@@ -20,10 +20,7 @@ interface AllTheProvidersProps {
   session?: any;
 }
 
-const AllTheProviders: React.FC<AllTheProvidersProps> = ({ 
-  children, 
-  session = mockSession 
-}) => {
+const AllTheProviders: React.FC<AllTheProvidersProps> = ({ children, session = mockSession }) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -35,9 +32,7 @@ const AllTheProviders: React.FC<AllTheProvidersProps> = ({
   return (
     <SessionProvider session={session}>
       <QueryClientProvider client={queryClient}>
-        <SidebarProvider>
-          {children}
-        </SidebarProvider>
+        <SidebarProvider>{children}</SidebarProvider>
       </QueryClientProvider>
     </SessionProvider>
   );
@@ -45,14 +40,12 @@ const AllTheProviders: React.FC<AllTheProvidersProps> = ({
 
 const customRender = (
   ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'> & { session?: any }
+  options?: Omit<RenderOptions, 'wrapper'> & { session?: any },
 ) => {
   const { session, ...renderOptions } = options || {};
-  
+
   return render(ui, {
-    wrapper: ({ children }) => (
-      <AllTheProviders session={session}>{children}</AllTheProviders>
-    ),
+    wrapper: ({ children }) => <AllTheProviders session={session}>{children}</AllTheProviders>,
     ...renderOptions,
   });
 };

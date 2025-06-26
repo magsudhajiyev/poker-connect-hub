@@ -1,6 +1,5 @@
 'use client';
 
-
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';
 import { getAvailablePositions } from '@/utils/positionUtils';
 import { PokerTable } from './poker-table';
@@ -13,30 +12,32 @@ interface PositionsStepProps {
   getCurrencySymbol?: () => string;
 }
 
-const PositionsStep = ({ 
-  formData, 
-  setFormData, 
-  showValidationErrors = false,
+const PositionsStep = ({
+  formData,
+  setFormData,
+  _showValidationErrors = false,
   getCurrencySymbol = () => '$',
 }: PositionsStepProps) => {
-  const { players, updatePlayer, removePlayer } = usePlayerManagement(formData, setFormData);
+  const { players, removePlayer } = usePlayerManagement(formData, setFormData);
 
   const handleUpdatePlayer = (newPlayer: Player) => {
     // Use callback pattern to ensure we have the latest state
     setFormData((prevFormData) => {
       const currentPlayers = prevFormData.players || [];
-      
+
       // If this player is being set as hero, remove hero status from others
-      let updatedPlayers = currentPlayers.map(p => {
+      let updatedPlayers = currentPlayers.map((p) => {
         if (newPlayer.isHero && p.isHero && p.id !== newPlayer.id) {
           return { ...p, isHero: false };
         }
         return p;
       });
-      
+
       // Check if this is a new player or updating existing
-      const existingPlayerIndex = updatedPlayers.findIndex(p => p.position === newPlayer.position);
-      
+      const existingPlayerIndex = updatedPlayers.findIndex(
+        (p) => p.position === newPlayer.position,
+      );
+
       if (existingPlayerIndex >= 0) {
         // Update existing player
         updatedPlayers[existingPlayerIndex] = newPlayer;
@@ -44,7 +45,7 @@ const PositionsStep = ({
         // Add new player
         updatedPlayers = [...updatedPlayers, newPlayer];
       }
-      
+
       return {
         ...prevFormData,
         players: updatedPlayers,
@@ -60,12 +61,14 @@ const PositionsStep = ({
     <div className="space-y-6">
       <div className="text-center space-y-2">
         <h3 className="text-base font-medium text-slate-200">Player Positions & Stack Sizes</h3>
-        <p className="text-sm text-slate-400">Click on any position around the table to add or edit players</p>
+        <p className="text-sm text-slate-400">
+          Click on any position around the table to add or edit players
+        </p>
       </div>
 
       {/* Interactive Poker Table */}
       <div className="bg-slate-900/30 rounded-lg p-4 border border-slate-700/30">
-        <PokerTable 
+        <PokerTable
           players={players}
           getCurrencySymbol={getCurrencySymbol}
           gameFormat={formData.gameFormat}

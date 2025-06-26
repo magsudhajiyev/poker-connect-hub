@@ -12,17 +12,17 @@ interface DisplayModeToggleProps {
   disabled?: boolean;
 }
 
-export const DisplayModeToggle = ({ 
-  size = 'sm', 
+export const DisplayModeToggle = ({
+  size = 'sm',
   variant = 'button',
   showLabels = true,
-  disabled = false, 
+  disabled = false,
 }: DisplayModeToggleProps) => {
   const { displayMode, toggleDisplayMode, isAutoMode } = useDisplayMode();
 
   const getIcon = (mode: DisplayMode | null) => {
     const iconSize = size === 'lg' ? 20 : size === 'md' ? 16 : 14;
-    
+
     switch (mode) {
       case 'chips':
         return <DollarSign size={iconSize} />;
@@ -63,18 +63,14 @@ export const DisplayModeToggle = ({
 
   if (variant === 'badge') {
     return (
-      <Badge 
-        variant="outline" 
+      <Badge
+        variant="outline"
         className="cursor-pointer hover:bg-slate-700/50 transition-colors"
         onClick={disabled ? undefined : toggleDisplayMode}
         title={getDescription(displayMode)}
       >
         {getIcon(displayMode)}
-        {showLabels && (
-          <span className="ml-1 text-xs">
-            {getLabel(displayMode)}
-          </span>
-        )}
+        {showLabels && <span className="ml-1 text-xs">{getLabel(displayMode)}</span>}
       </Badge>
     );
   }
@@ -105,30 +101,22 @@ export const DisplayModeToggle = ({
       className={`${isAutoMode ? 'border-blue-400/50 bg-blue-500/10' : ''} transition-colors`}
     >
       {getIcon(displayMode)}
-      {showLabels && (
-        <span className="ml-2">
-          {getLabel(displayMode)}
-        </span>
-      )}
+      {showLabels && <span className="ml-2">{getLabel(displayMode)}</span>}
     </Button>
   );
 };
 
 // Utility component to show current display mode info
 export const DisplayModeInfo = () => {
-  const { displayMode, isAutoMode } = useDisplayMode();
-  
+  const { isAutoMode } = useDisplayMode();
+
   return (
     <div className="text-xs text-slate-400 space-y-1">
       <div className="flex items-center gap-2">
         <span>Display Mode:</span>
         <DisplayModeToggle variant="badge" size="sm" showLabels={true} />
       </div>
-      {isAutoMode && (
-        <div className="text-slate-500">
-          Cash games show $ • Tournaments show BB
-        </div>
-      )}
+      {isAutoMode && <div className="text-slate-500">Cash games show $ • Tournaments show BB</div>}
     </div>
   );
 };

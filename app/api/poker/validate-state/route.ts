@@ -8,30 +8,27 @@ export async function POST(request: NextRequest) {
     const { gameState } = body;
 
     if (!gameState) {
-      return NextResponse.json(
-        { error: 'Game state is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Game state is required' }, { status: 400 });
     }
 
     // Validate the game state
     const isValid = pokerService.validateGameState(gameState as GameState);
-    
+
     const result: ValidationResult = {
       isValid,
       message: isValid ? 'Game state is valid' : 'Invalid game state',
-      errors: isValid ? undefined : ['Invalid game state structure or data']
+      errors: isValid ? undefined : ['Invalid game state structure or data'],
     };
 
     return NextResponse.json(result);
   } catch (error) {
     console.error('Error in poker validate-state API:', error);
     return NextResponse.json(
-      { 
+      {
         error: 'Failed to validate game state',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
