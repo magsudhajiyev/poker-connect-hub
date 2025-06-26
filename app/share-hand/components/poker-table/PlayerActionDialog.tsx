@@ -66,7 +66,7 @@ const PlayerActionDialog = ({
     getAvailableActions,
   });
 
-  const handleActionSelect = (action: ActionType) => {
+  const handleActionSelect = (action: string) => {
     // Prevent action if already submitting
     if (isSubmitting) {
       return;
@@ -76,8 +76,8 @@ const PlayerActionDialog = ({
 
     // For actions that don't require bet amount, submit immediately
     // bet and raise require amount input, so don't submit immediately
-    if (!requiresBetAmount(action)) {
-      submitAction(action);
+    if (!requiresBetAmount(action as ActionType)) {
+      submitAction(action as ActionType);
     }
   };
 
@@ -90,13 +90,13 @@ const PlayerActionDialog = ({
     // If we have pokerActions (action flow system), always use submitAction
     // to ensure both form data AND action flow are updated
     if (pokerActions && pokerActions.executeAction) {
-      submitAction(selectedAction, amount);
+      submitAction(selectedAction as ActionType, amount);
     } else if (handleBetSizeSelect) {
       handleBetSizeSelect(currentStreet, validIndex, amount);
       onOpenChange(false);
     } else {
       // If no handleBetSizeSelect function, just submit the bet action
-      submitAction(selectedAction, amount);
+      submitAction(selectedAction as ActionType, amount);
     }
   };
 

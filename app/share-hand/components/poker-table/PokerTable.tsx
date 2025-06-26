@@ -30,7 +30,7 @@ const PokerTable = React.memo(
   ({
     players,
     communityCards = [],
-    currentPlayer,
+    _currentPlayer,
     pot = 0,
     getCurrencySymbol = () => '$',
     gameFormat = 'cash',
@@ -213,7 +213,6 @@ const PokerTable = React.memo(
             const positionData = seatPositions[position];
             const coords = isMobile ? positionData.mobile : positionData.desktop;
             const player = getPlayerAtPosition(position);
-            const _isCurrentPlayer = currentPlayer === position;
             const isToAct = isPlayerToAct(position);
 
             return (

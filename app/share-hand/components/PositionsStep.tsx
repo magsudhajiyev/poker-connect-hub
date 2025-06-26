@@ -15,7 +15,6 @@ interface PositionsStepProps {
 const PositionsStep = ({
   formData,
   setFormData,
-  _showValidationErrors = false,
   getCurrencySymbol = () => '$',
 }: PositionsStepProps) => {
   const { players, removePlayer } = usePlayerManagement(formData, setFormData);

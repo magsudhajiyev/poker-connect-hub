@@ -46,7 +46,7 @@ const PlayerSeatDisplayOptimized = React.memo<PlayerSeatDisplayProps>(
           'border border-slate-700 bg-gradient-to-br transition-all duration-300',
           isToAct
             ? 'from-emerald-900/40 to-emerald-800/30 shadow-emerald-500/20 shadow-lg animate-pulse ring-2 ring-emerald-500/50'
-            : player.hasFolded
+            : (player as any).hasFolded
               ? 'from-slate-900/90 to-slate-800/90 opacity-60'
               : 'from-slate-900 to-slate-800',
         )}
@@ -57,7 +57,10 @@ const PlayerSeatDisplayOptimized = React.memo<PlayerSeatDisplayProps>(
               <img
                 src={avatarUrl}
                 alt={player.name}
-                className={cn('w-12 h-12 rounded-full', player.hasFolded && 'grayscale opacity-60')}
+                className={cn(
+                  'w-12 h-12 rounded-full',
+                  (player as any).hasFolded && 'grayscale opacity-60',
+                )}
               />
               {isToAct && (
                 <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full animate-pulse" />
@@ -68,7 +71,7 @@ const PlayerSeatDisplayOptimized = React.memo<PlayerSeatDisplayProps>(
                 <p
                   className={cn(
                     'text-sm font-semibold truncate',
-                    player.hasFolded ? 'text-slate-500' : 'text-slate-200',
+                    (player as any).hasFolded ? 'text-slate-500' : 'text-slate-200',
                   )}
                 >
                   {player.name}
@@ -76,8 +79,10 @@ const PlayerSeatDisplayOptimized = React.memo<PlayerSeatDisplayProps>(
                 {isToAct && <ChevronRight className="w-3 h-3 text-emerald-400 animate-pulse" />}
               </div>
               <div className="flex items-center gap-2 text-xs">
-                <span className={cn(player.hasFolded ? 'text-slate-600' : 'text-slate-400')}>
-                  {player.isAllIn ? 'All-in' : `$${player.stack}`}
+                <span
+                  className={cn((player as any).hasFolded ? 'text-slate-600' : 'text-slate-400')}
+                >
+                  {(player as any).isAllIn ? 'All-in' : `$${(player as any).stack}`}
                 </span>
                 {shouldShowPosition && (
                   <>
@@ -90,10 +95,10 @@ const PlayerSeatDisplayOptimized = React.memo<PlayerSeatDisplayProps>(
               </div>
             </div>
           </div>
-          {player.betAmount > 0 && (
+          {(player as any).betAmount > 0 && (
             <div className="mt-2 text-center">
               <span className="text-xs font-medium px-2 py-1 bg-slate-800/80 rounded-full text-amber-400">
-                ${player.betAmount}
+                ${(player as any).betAmount}
               </span>
             </div>
           )}
@@ -105,10 +110,10 @@ const PlayerSeatDisplayOptimized = React.memo<PlayerSeatDisplayProps>(
     // Custom comparison function for better performance
     return (
       prevProps.player.id === nextProps.player.id &&
-      prevProps.player.stack === nextProps.player.stack &&
-      prevProps.player.betAmount === nextProps.player.betAmount &&
-      prevProps.player.hasFolded === nextProps.player.hasFolded &&
-      prevProps.player.isAllIn === nextProps.player.isAllIn &&
+      (prevProps.player as any).stack === (nextProps.player as any).stack &&
+      (prevProps.player as any).betAmount === (nextProps.player as any).betAmount &&
+      (prevProps.player as any).hasFolded === (nextProps.player as any).hasFolded &&
+      (prevProps.player as any).isAllIn === (nextProps.player as any).isAllIn &&
       prevProps.position === nextProps.position &&
       prevProps.isToAct === nextProps.isToAct
     );
