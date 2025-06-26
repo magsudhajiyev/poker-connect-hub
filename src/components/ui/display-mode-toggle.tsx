@@ -88,7 +88,7 @@ export const DisplayModeToggle = ({
   return (
     <Button
       variant="outline"
-      size={size}
+      size={size === 'md' ? 'default' : size}
       onClick={disabled ? undefined : toggleDisplayMode}
       disabled={disabled}
       title={getDescription(displayMode)}
