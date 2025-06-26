@@ -1,5 +1,4 @@
-
-import { useState, createContext, useContext } from 'react';
+import { useState, createContext, useContext, useEffect } from 'react';
 
 interface SidebarContextType {
   isCollapsed: boolean;
@@ -17,20 +16,24 @@ export const useSidebar = () => {
 };
 
 export const SidebarProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isCollapsed, setIsCollapsed] = useState(() => {
-    // Check if we're on the client side
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('sidebar-collapsed');
-      return saved ? JSON.parse(saved) : false;
+  // Initialize with false to match server-side rendering
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Apply localStorage value after hydration
+  useEffect(() => {
+    setIsHydrated(true);
+    const saved = localStorage.getItem('sidebar-collapsed');
+    if (saved) {
+      setIsCollapsed(JSON.parse(saved));
     }
-    return false;
-  });
+  }, []);
 
   const toggleSidebar = () => {
     const newState = !isCollapsed;
     setIsCollapsed(newState);
-    // Only access localStorage on client side
-    if (typeof window !== 'undefined') {
+    // Only save to localStorage after hydration
+    if (isHydrated) {
       localStorage.setItem('sidebar-collapsed', JSON.stringify(newState));
     }
   };
