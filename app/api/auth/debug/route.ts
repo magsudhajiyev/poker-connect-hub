@@ -8,7 +8,7 @@ export async function GET() {
     const session = await auth();
 
     // Get cookies for debugging
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const sessionToken = cookieStore.get('__Secure-next-auth.session-token');
     const csrfToken = cookieStore.get('authjs.csrf-token');
     const callbackUrl = cookieStore.get('authjs.callback-url');
