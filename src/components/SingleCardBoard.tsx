@@ -1,6 +1,5 @@
-
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { CardFromString, PlayingCard, type CardRank } from '@/components/ui/playing-card';
 
 interface SingleCardBoardProps {
   selectedCards: string[];
@@ -21,23 +20,20 @@ const SingleCardBoard = ({ selectedCards, onCardSelect, title }: SingleCardBoard
     onCardSelect(card);
   };
 
-  const getCardColor = (card: string) => {
-    const suit = card.slice(-1);
-    return suit === '♥' || suit === '♦' ? 'text-red-400' : 'text-white';
-  };
-
-  const getButtonColor = (suit: string, isSelected: boolean) => {
-    const isRedSuit = suit === '♥' || suit === '♦';
-    if (isSelected) {
-      return isRedSuit ? 'bg-emerald-500 text-red-600' : 'bg-emerald-500 text-slate-900';
-    }
-    return isRedSuit ? 'border-slate-700/50 text-red-400 hover:bg-slate-800/50' : 'border-slate-700/50 text-slate-300 hover:bg-slate-800/50';
+  const getSuitName = (suitSymbol: string) => {
+    const suitMap: { [key: string]: 'spades' | 'hearts' | 'diamonds' | 'clubs' } = {
+      '♠': 'spades',
+      '♥': 'hearts',
+      '♦': 'diamonds',
+      '♣': 'clubs',
+    };
+    return suitMap[suitSymbol];
   };
 
   return (
     <div className="space-y-4">
       <Label className="text-slate-300 text-lg font-medium">{title}</Label>
-      
+
       {/* Card Grid */}
       <div className="border border-slate-700/50 rounded-lg p-4 bg-slate-800/30">
         <div className="space-y-3">
@@ -46,17 +42,19 @@ const SingleCardBoard = ({ selectedCards, onCardSelect, title }: SingleCardBoard
               {ranks.map((rank) => {
                 const card = rank + suit;
                 const isSelected = isCardSelected(card);
-                
+                const suitName = getSuitName(suit);
+
                 return (
-                  <Button
-                    key={card}
-                    variant={isSelected ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => handleCardClick(rank, suit)}
-                    className={`w-12 h-16 text-xl font-bold ${getButtonColor(suit, isSelected)}`}
-                  >
-                    {card}
-                  </Button>
+                  <div key={card} className="relative">
+                    <PlayingCard
+                      rank={rank as CardRank}
+                      suit={suitName}
+                      size="sm"
+                      onClick={() => handleCardClick(rank, suit)}
+                      selected={isSelected}
+                      className="cursor-pointer hover:scale-105 transition-transform"
+                    />
+                  </div>
                 );
               })}
             </div>
@@ -70,9 +68,7 @@ const SingleCardBoard = ({ selectedCards, onCardSelect, title }: SingleCardBoard
           <Label className="text-slate-300">Selected Cards:</Label>
           <div className="flex flex-wrap gap-2">
             {selectedCards.map((card, index) => (
-              <div key={index} className={`w-14 h-20 bg-slate-800 border-2 border-slate-600 rounded-lg flex items-center justify-center font-bold text-2xl ${getCardColor(card)}`}>
-                {card}
-              </div>
+              <CardFromString key={index} card={card} size="md" />
             ))}
           </div>
         </div>
