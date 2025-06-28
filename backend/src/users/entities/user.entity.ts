@@ -8,21 +8,21 @@ export type UserDocument = User & Document;
   collection: 'users',
   toJSON: {
     virtuals: true,
-    transform: function(doc, ret) {
+    transform (doc, ret) {
       ret.id = ret._id;
       delete ret._id;
       delete ret.__v;
       return ret;
-    }
+    },
   },
 })
 export class User {
   _id?: Types.ObjectId;
-  
+
   id?: string;
 
-  @Prop({ required: true, unique: true, index: true })
-  googleId: string;
+  @Prop({ unique: true, sparse: true, index: true })
+  googleId?: string;
 
   @Prop({ required: true, unique: true, index: true })
   email: string;
@@ -31,10 +31,20 @@ export class User {
   name: string;
 
   @Prop({ maxlength: 500 })
-  picture: string;
+  picture?: string;
 
   @Prop()
-  refreshToken: string;
+  password?: string;
+
+  @Prop({
+    type: String,
+    enum: ['google', 'email'],
+    default: 'email',
+  })
+  authProvider: string;
+
+  @Prop()
+  refreshToken?: string;
 
   @Prop({ default: true })
   isActive: boolean;
@@ -49,6 +59,6 @@ export class User {
 export const UserSchema = SchemaFactory.createForClass(User);
 
 // Add virtual for id
-UserSchema.virtual('id').get(function() {
+UserSchema.virtual('id').get(function () {
   return this._id.toHexString();
 });

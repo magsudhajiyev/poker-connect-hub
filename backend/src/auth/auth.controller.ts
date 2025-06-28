@@ -7,6 +7,9 @@ import {
   HttpStatus,
   Req,
   Res,
+  Body,
+  ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
@@ -16,6 +19,8 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -46,7 +51,7 @@ export class AuthController {
         throw new UnauthorizedException('Authentication failed - no user data');
       }
 
-      console.log('Google auth callback: Processing user:', user.email);
+      // Process user authentication
 
       // Generate JWT tokens
       const { accessToken, refreshToken } = await this.authService.login(user);
@@ -68,20 +73,13 @@ export class AuthController {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
-      console.log(
-        'Google auth callback: Authentication successful, redirecting to appropriate page',
-      );
+      // Authentication successful, redirect to appropriate page
 
       // Redirect based on onboarding status
       const redirectPath = user.hasCompletedOnboarding ? '/feed' : '/onboarding';
       res.redirect(`${frontendUrl}${redirectPath}`);
-    } catch {
+    } catch (error) {
       console.error('Google auth callback error:', error);
-      console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-      });
 
       // Clear any partial cookies
       res.clearCookie('access_token');
@@ -162,7 +160,7 @@ export class AuthController {
         message: 'Logged out successfully',
       });
     } catch {
-      console.error('Logout error:', error);
+      console.error('Logout error');
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Logout failed',
@@ -190,5 +188,100 @@ export class AuthController {
       success: true,
       message: 'Onboarding completed successfully',
     };
+  }
+
+  @Post('register')
+  @Public()
+  async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
+    try {
+      const { accessToken, refreshToken } = await this.authService.register(registerDto);
+
+      // Set secure HTTP-only cookies
+      const isProduction = this.configService.get('NODE_ENV') === 'production';
+
+      res.cookie('access_token', accessToken, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'lax',
+        maxAge: 15 * 60 * 1000, // 15 minutes
+      });
+
+      res.cookie('refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      res.status(HttpStatus.CREATED).json({
+        success: true,
+        message: 'Registration successful',
+        hasCompletedOnboarding: false,
+      });
+    } catch (error) {
+      console.error('Registration error:', error);
+
+      if (error instanceof ConflictException) {
+        res.status(HttpStatus.CONFLICT).json({
+          success: false,
+          message: error.message,
+        });
+      } else {
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+          success: false,
+          message: 'Registration failed',
+          error: error.message,
+        });
+      }
+    }
+  }
+
+  @Post('login')
+  @Public()
+  async login(@Body() loginDto: LoginDto, @Res() res: Response) {
+    try {
+      const { accessToken, refreshToken } = await this.authService.validateEmailPassword(loginDto);
+
+      // Set secure HTTP-only cookies
+      const isProduction = this.configService.get('NODE_ENV') === 'production';
+
+      res.cookie('access_token', accessToken, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'lax',
+        maxAge: 15 * 60 * 1000, // 15 minutes
+      });
+
+      res.cookie('refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Login successful',
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+
+      if (error instanceof UnauthorizedException) {
+        res.status(HttpStatus.UNAUTHORIZED).json({
+          success: false,
+          message: error.message,
+        });
+      } else if (error instanceof BadRequestException) {
+        res.status(HttpStatus.BAD_REQUEST).json({
+          success: false,
+          message: error.message,
+        });
+      } else {
+        res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+          success: false,
+          message: 'Login failed',
+        });
+      }
+    }
   }
 }

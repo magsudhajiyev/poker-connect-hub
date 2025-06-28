@@ -4,11 +4,13 @@ import { Model } from 'mongoose';
 import { User, UserDocument } from './entities/user.entity';
 
 export interface CreateUserDto {
-  googleId: string;
+  googleId?: string;
   email: string;
   name?: string;
   picture?: string;
   refreshToken?: string;
+  password?: string;
+  authProvider?: string;
 }
 
 export interface UpdateUserDto {
@@ -32,16 +34,11 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]> {
-    return await this.userModel
-      .find({ isActive: true })
-      .sort({ createdAt: -1 })
-      .exec();
+    return await this.userModel.find({ isActive: true }).sort({ createdAt: -1 }).exec();
   }
 
   async findById(id: string): Promise<User> {
-    const user = await this.userModel
-      .findOne({ _id: id, isActive: true })
-      .exec();
+    const user = await this.userModel.findOne({ _id: id, isActive: true }).exec();
 
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
@@ -51,24 +48,16 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return await this.userModel
-      .findOne({ email, isActive: true })
-      .exec();
+    return await this.userModel.findOne({ email, isActive: true }).exec();
   }
 
   async findByGoogleId(googleId: string): Promise<User | null> {
-    return await this.userModel
-      .findOne({ googleId, isActive: true })
-      .exec();
+    return await this.userModel.findOne({ googleId, isActive: true }).exec();
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.userModel
-      .findOneAndUpdate(
-        { _id: id, isActive: true },
-        updateUserDto,
-        { new: true }
-      )
+      .findOneAndUpdate({ _id: id, isActive: true }, updateUserDto, { new: true })
       .exec();
 
     if (!user) {
@@ -79,16 +68,12 @@ export class UsersService {
   }
 
   async updateRefreshToken(id: string, refreshToken: string | null): Promise<void> {
-    await this.userModel
-      .updateOne({ _id: id }, { refreshToken })
-      .exec();
+    await this.userModel.updateOne({ _id: id }, { refreshToken }).exec();
   }
 
   async deactivate(id: string): Promise<void> {
-    const user = await this.findById(id);
-    await this.userModel
-      .updateOne({ _id: id }, { isActive: false })
-      .exec();
+    await this.findById(id);
+    await this.userModel.updateOne({ _id: id }, { isActive: false }).exec();
   }
 
   async findOrCreateByGoogle(googleProfile: {
@@ -99,7 +84,7 @@ export class UsersService {
   }): Promise<User> {
     // Try to find existing user by Google ID
     let user = await this.findByGoogleId(googleProfile.googleId);
-    
+
     if (user) {
       // Update existing user with latest profile info
       const updateData = {
@@ -107,19 +92,15 @@ export class UsersService {
         picture: googleProfile.picture || user.picture,
         email: googleProfile.email, // Update email in case it changed
       };
-      
+
       return await this.userModel
-        .findByIdAndUpdate(
-          user.id || user._id,
-          updateData,
-          { new: true }
-        )
+        .findByIdAndUpdate(user.id || user._id, updateData, { new: true })
         .exec();
     }
 
     // Try to find by email in case user exists but wasn't linked to Google
     user = await this.findByEmail(googleProfile.email);
-    
+
     if (user) {
       // Link existing user to Google account
       const updateData = {
@@ -127,17 +108,16 @@ export class UsersService {
         name: googleProfile.name || user.name,
         picture: googleProfile.picture || user.picture,
       };
-      
+
       return await this.userModel
-        .findByIdAndUpdate(
-          user.id || user._id,
-          updateData,
-          { new: true }
-        )
+        .findByIdAndUpdate(user.id || user._id, updateData, { new: true })
         .exec();
     }
 
     // Create new user
-    return await this.create(googleProfile);
+    return await this.create({
+      ...googleProfile,
+      authProvider: 'google',
+    });
   }
 }

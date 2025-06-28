@@ -11,6 +11,7 @@ import { ArrowLeft, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
+import axios from 'axios';
 
 export default function SignInForm() {
   const [mounted, setMounted] = useState(false);
@@ -48,11 +49,73 @@ export default function SignInForm() {
     }
   }, [searchParams]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(
-      'Traditional email/password authentication not implemented yet. Please use Google sign-in.',
-    );
+    setError('');
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        // Login
+        const response = await axios.post(
+          'http://localhost:3001/auth/login',
+          {
+            email,
+            password,
+          },
+          {
+            withCredentials: true,
+          },
+        );
+
+        if (response.data.success) {
+          // Redirect to feed after successful login
+          window.location.href = '/feed';
+        }
+      } else {
+        // Registration
+        if (password !== confirmPassword) {
+          setError('Passwords do not match');
+          setLoading(false);
+          return;
+        }
+
+        if (!acceptTerms) {
+          setError('Please accept the terms and conditions');
+          setLoading(false);
+          return;
+        }
+
+        const response = await axios.post(
+          'http://localhost:3001/auth/register',
+          {
+            email,
+            password,
+            name,
+          },
+          {
+            withCredentials: true,
+          },
+        );
+
+        if (response.data.success) {
+          // Redirect to onboarding after successful registration
+          window.location.href = '/onboarding';
+        }
+      }
+    } catch (error) {
+      console.error('Auth error:', error);
+
+      if (axios.isAxiosError(error) && error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else {
+        setError(
+          isLogin ? 'Login failed. Please try again.' : 'Registration failed. Please try again.',
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignIn = async () => {
@@ -245,9 +308,9 @@ export default function SignInForm() {
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-emerald-500 to-violet-500 hover:from-emerald-600 hover:to-violet-600 text-slate-900 font-medium"
-                disabled={!isLogin && !acceptTerms}
+                disabled={(!isLogin && !acceptTerms) || loading}
               >
-                {isLogin ? 'Sign In' : 'Create Account'}
+                {loading ? 'Please wait...' : isLogin ? 'Sign In' : 'Create Account'}
               </Button>
             </form>
 
