@@ -4,6 +4,9 @@ import { auth } from '@/lib/auth';
 // Define protected routes
 const protectedRoutes = ['/profile', '/settings', '/share-hand', '/feed'];
 
+// Routes that require completed onboarding
+const onboardingRequiredRoutes = ['/feed', '/share-hand', '/profile'];
+
 // Wrap the auth middleware to add custom logic
 export default auth(async (req) => {
   const pathname = req.nextUrl.pathname;
@@ -29,6 +32,16 @@ export default auth(async (req) => {
       const callbackUrl = req.nextUrl.searchParams.get('callbackUrl') || '/feed';
       return NextResponse.redirect(new URL(callbackUrl, req.url));
     }
+  }
+
+  // Check if route requires onboarding to be completed
+  const requiresOnboarding = onboardingRequiredRoutes.some((route) => pathname.startsWith(route));
+
+  // If authenticated and on a route that requires onboarding, check onboarding status
+  if (isAuthenticated && requiresOnboarding && hasBackendAuth) {
+    // For now, we'll need to check this on the client side
+    // as middleware can't make API calls to check onboarding status
+    // The AuthContext will handle the redirect
   }
 
   // Check if the route is protected

@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import { authEndpoints } from '@/services/authApi';
 
 export interface User {
   id: string;
@@ -36,6 +36,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [backendUser, setBackendUser] = useState<User | null>(null);
   const [isCheckingBackendAuth, setIsCheckingBackendAuth] = useState(true);
+  const [hasCheckedOnboarding, setHasCheckedOnboarding] = useState(false);
 
   // Check for backend authentication
   useEffect(() => {
@@ -47,9 +48,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       try {
-        const response = await axios.get('http://localhost:3001/auth/me', {
-          withCredentials: true,
-        });
+        const response = await authEndpoints.getMe();
 
         if (response.data) {
           setBackendUser({
@@ -86,6 +85,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     : backendUser;
 
+  // Check onboarding status when user is authenticated
+  useEffect(() => {
+    if (!user || hasCheckedOnboarding) {
+      return;
+    }
+
+    const currentPath = window.location.pathname;
+    const onboardingRequiredPaths = ['/feed', '/share-hand', '/profile'];
+    const isOnOnboardingRequiredPath = onboardingRequiredPaths.some((path) =>
+      currentPath.startsWith(path),
+    );
+
+    if (!user.hasCompletedOnboarding && isOnOnboardingRequiredPath) {
+      router.push('/onboarding');
+    }
+
+    setHasCheckedOnboarding(true);
+  }, [user, hasCheckedOnboarding, router]);
+
   const loading = status === 'loading' || isCheckingBackendAuth;
   const isAuthenticated = status === 'authenticated' || Boolean(backendUser);
 
@@ -99,13 +117,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       // If user is authenticated via backend, call backend logout
       if (backendUser && !session) {
-        await axios.post(
-          'http://localhost:3001/auth/logout',
-          {},
-          {
-            withCredentials: true,
-          },
-        );
+        await authEndpoints.logout();
         setBackendUser(null);
       } else {
         // Otherwise use NextAuth signOut
@@ -124,9 +136,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // For backend auth, we can re-check the auth status
     if (!session && backendUser) {
       try {
-        const response = await axios.get('http://localhost:3001/auth/me', {
-          withCredentials: true,
-        });
+        const response = await authEndpoints.getMe();
 
         if (response.data) {
           setBackendUser({

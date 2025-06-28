@@ -11,7 +11,7 @@ import { ArrowLeft, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import axios from 'axios';
+import { authEndpoints } from '@/services/authApi';
 
 export default function SignInForm() {
   const [mounted, setMounted] = useState(false);
@@ -57,16 +57,10 @@ export default function SignInForm() {
     try {
       if (isLogin) {
         // Login
-        const response = await axios.post(
-          'http://localhost:3001/auth/login',
-          {
-            email,
-            password,
-          },
-          {
-            withCredentials: true,
-          },
-        );
+        const response = await authEndpoints.login({
+          email,
+          password,
+        });
 
         if (response.data.success) {
           // Redirect to feed after successful login
@@ -86,17 +80,11 @@ export default function SignInForm() {
           return;
         }
 
-        const response = await axios.post(
-          'http://localhost:3001/auth/register',
-          {
-            email,
-            password,
-            name,
-          },
-          {
-            withCredentials: true,
-          },
-        );
+        const response = await authEndpoints.register({
+          email,
+          password,
+          name,
+        });
 
         if (response.data.success) {
           // Redirect to onboarding after successful registration
@@ -106,7 +94,7 @@ export default function SignInForm() {
     } catch (error) {
       console.error('Auth error:', error);
 
-      if (axios.isAxiosError(error) && error.response?.data?.message) {
+      if (error.response?.data?.message) {
         setError(error.response.data.message);
       } else {
         setError(

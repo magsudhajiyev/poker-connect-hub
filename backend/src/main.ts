@@ -11,9 +11,11 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   // Security middleware
-  app.use(helmet({
-    crossOriginEmbedderPolicy: false,
-  }));
+  app.use(
+    helmet({
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
 
   // Cookie parser for authentication cookies
   app.use(cookieParser());
@@ -34,19 +36,35 @@ async function bootstrap() {
 
   // Enable CORS for frontend communication
   app.enableCors({
-    origin: function (origin, callback) {
+    origin (origin, callback) {
       const allowedOrigins = [
         'http://localhost:5173',
         'http://localhost:3000',
+        'http://localhost:5174', // Vite alternative port
         configService.get<string>('FRONTEND_URL'),
       ].filter(Boolean);
-      
+
+      // In production, also allow the production domains
+      if (configService.get('NODE_ENV') === 'production') {
+        // Add any production domains here
+        const productionDomains = configService.get<string>('ALLOWED_ORIGINS')?.split(',') || [];
+        allowedOrigins.push(...productionDomains.filter(Boolean));
+      }
+
       // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
-      
+      if (!origin) {
+return callback(null, true);
+}
+
+      // Log the origin for debugging in development
+      if (configService.get('NODE_ENV') !== 'production') {
+        console.warn('CORS check - Origin:', origin, 'Allowed:', allowedOrigins);
+      }
+
       if (allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
+        console.warn('CORS blocked origin:', origin);
         callback(null, false);
       }
     },
@@ -70,13 +88,13 @@ async function bootstrap() {
 
   const port = configService.get<number>('PORT') || 3000;
   await app.listen(port);
-  
-  console.log(`🚀 Poker backend is running on: http://localhost:${port}`);
-  console.log(`🔐 Auth endpoints:`);
-  console.log(`   Google OAuth: http://localhost:${port}/auth/google`);
-  console.log(`   User Profile: http://localhost:${port}/auth/me`);
-  console.log(`   Logout: http://localhost:${port}/auth/logout`);
-  console.log(`📋 API endpoint: http://localhost:${port}/api/poker/actions`);
+
+  console.warn(`🚀 Poker backend is running on: http://localhost:${port}`);
+  console.warn('🔐 Auth endpoints:');
+  console.warn(`   Google OAuth: http://localhost:${port}/auth/google`);
+  console.warn(`   User Profile: http://localhost:${port}/auth/me`);
+  console.warn(`   Logout: http://localhost:${port}/auth/logout`);
+  console.warn(`📋 API endpoint: http://localhost:${port}/api/poker/actions`);
 }
 
 bootstrap();
