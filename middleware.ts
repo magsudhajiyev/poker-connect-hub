@@ -17,7 +17,8 @@ export default auth(async (req) => {
   }
 
   // Check for backend JWT cookie
-  const hasBackendAuth = req.cookies.has('access_token');
+  const accessTokenCookie = req.cookies.get('access_token');
+  const hasBackendAuth = Boolean(accessTokenCookie?.value);
 
   // Check for NextAuth session
   const hasNextAuthSession = Boolean(req.auth);
@@ -38,11 +39,31 @@ export default auth(async (req) => {
 
   // Handle the signin page
   if (pathname === '/auth/signin') {
-    // If user is already authenticated, redirect to feed or callback URL
-    if (isAuthenticated) {
-      const callbackUrl = req.nextUrl.searchParams.get('callbackUrl') || '/feed';
-      console.log('User already authenticated, redirecting to:', callbackUrl);
-      return NextResponse.redirect(new URL(callbackUrl, req.url));
+    // Check if this is coming from a logout or the home page
+    const referer = req.headers.get('referer');
+    const isFromLogout = referer && referer.includes(req.nextUrl.origin) && 
+      (referer.includes('/settings') || referer.includes('/') || referer === req.nextUrl.origin + '/');
+    
+    // Check for logout query parameter (we'll add this in logout flow)
+    const isLogout = req.nextUrl.searchParams.get('logout') === 'true';
+    
+    // If user is already authenticated and NOT coming from logout, redirect to feed or callback URL
+    if (isAuthenticated && !isFromLogout && !isLogout) {
+      // Verify the auth token is actually valid by checking if it's not empty
+      if (hasBackendAuth && accessTokenCookie?.value && accessTokenCookie.value.length > 10) {
+        const callbackUrl = req.nextUrl.searchParams.get('callbackUrl') || '/feed';
+        console.log('User already authenticated, redirecting to:', callbackUrl);
+        return NextResponse.redirect(new URL(callbackUrl, req.url));
+      } else if (hasNextAuthSession) {
+        const callbackUrl = req.nextUrl.searchParams.get('callbackUrl') || '/feed';
+        console.log('User already authenticated via NextAuth, redirecting to:', callbackUrl);
+        return NextResponse.redirect(new URL(callbackUrl, req.url));
+      }
+    }
+    
+    // If coming from logout, allow access to signin page
+    if (isFromLogout || isLogout) {
+      console.log('User coming from logout, allowing access to signin page');
     }
   }
 

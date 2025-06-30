@@ -59,7 +59,19 @@ export const authEndpoints = {
 
   login: (data: { email: string; password: string }) => authApi.post('/auth/login', data),
 
-  logout: () => authApi.post('/auth/logout'),
+  logout: () => {
+    // Clear any client-side auth state before making the request
+    return authApi.post('/auth/logout').then(response => {
+      // After successful logout, ensure we're not caching any auth state
+      if (typeof window !== 'undefined') {
+        // Force clear any potential cached credentials
+        document.cookie.split(";").forEach(function(c) { 
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+      }
+      return response;
+    });
+  },
 
   getMe: () => authApi.get('/auth/me'),
 

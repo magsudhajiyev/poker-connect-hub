@@ -123,9 +123,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Otherwise use NextAuth signOut
         await signOut({ redirect: false });
       }
-      router.push('/');
-    } catch {
-      console.error('Logout error');
+      
+      // Clear any local state
+      setHasCheckedOnboarding(false);
+      
+      // Wait a bit for cookies to be cleared
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Use replace instead of push to prevent back navigation issues
+      router.replace('/');
+      
+      // Force a page reload to ensure all state is cleared
+      if (typeof window !== 'undefined') {
+        setTimeout(() => {
+          // Add logout parameter to prevent middleware redirect
+          window.location.href = '/?logout=true';
+        }, 100);
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if logout fails, redirect to home
+      router.replace('/');
     } finally {
       setIsLoggingOut(false);
     }

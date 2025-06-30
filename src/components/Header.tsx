@@ -60,7 +60,7 @@ const HeaderNext = () => {
             
             {/* Auth Buttons - Desktop */}
             <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
-              <Link href="/auth">
+              <Link href="/auth/signin?logout=true">
                 <Button variant="ghost" className="text-slate-200 hover:text-slate-100 text-sm lg:text-[15px] px-3 lg:px-4">
                   Sign In
                 </Button>
@@ -95,7 +95,7 @@ const HeaderNext = () => {
                 <button onClick={() => handleNavClick('testimonials')} className="text-slate-400 hover:text-slate-200 transition-colors py-2 text-left">Testimonials</button>
                 <button onClick={() => handleNavClick('pricing')} className="text-slate-400 hover:text-slate-200 transition-colors py-2 text-left">Pricing</button>
                 <div className="flex flex-col space-y-3 pt-4">
-                  <Link href="/auth" onClick={() => setIsMenuOpen(false)}>
+                  <Link href="/auth/signin?logout=true" onClick={() => setIsMenuOpen(false)}>
                     <Button variant="ghost" className="text-slate-200 w-full justify-start">Sign In</Button>
                   </Link>
                   <Button 

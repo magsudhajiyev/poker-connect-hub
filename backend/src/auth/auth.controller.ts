@@ -63,6 +63,7 @@ export class AuthController {
         httpOnly: true,
         secure: isProduction,
         sameSite: 'lax',
+        path: '/',
         maxAge: 15 * 60 * 1000, // 15 minutes
       });
 
@@ -70,6 +71,7 @@ export class AuthController {
         httpOnly: true,
         secure: isProduction,
         sameSite: 'lax',
+        path: '/',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
@@ -81,9 +83,15 @@ export class AuthController {
     } catch (error) {
       console.error('Google auth callback error:', error);
 
-      // Clear any partial cookies
-      res.clearCookie('access_token');
-      res.clearCookie('refresh_token');
+      // Clear any partial cookies with proper options
+      const cookieOptions = {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'lax' as const,
+        path: '/',
+      };
+      res.clearCookie('access_token', cookieOptions);
+      res.clearCookie('refresh_token', cookieOptions);
 
       // Determine error type for better user feedback
       let errorParam = 'authentication_failed';
@@ -116,6 +124,7 @@ export class AuthController {
         httpOnly: true,
         secure: isProduction,
         sameSite: 'lax',
+        path: '/',
         maxAge: 15 * 60 * 1000, // 15 minutes
       });
 
@@ -124,8 +133,15 @@ export class AuthController {
         message: 'Token refreshed successfully',
       });
     } catch {
-      res.clearCookie('access_token');
-      res.clearCookie('refresh_token');
+      const isProduction = this.configService.get('NODE_ENV') === 'production';
+      const cookieOptions = {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'lax' as const,
+        path: '/',
+      };
+      res.clearCookie('access_token', cookieOptions);
+      res.clearCookie('refresh_token', cookieOptions);
 
       throw new UnauthorizedException('Token refresh failed');
     }
@@ -151,16 +167,24 @@ export class AuthController {
       // Remove refresh token from database
       await this.authService.logout(user.id);
 
-      // Clear cookies
-      res.clearCookie('access_token');
-      res.clearCookie('refresh_token');
+      // Clear cookies with the same options they were set with
+      const isProduction = this.configService.get('NODE_ENV') === 'production';
+      const cookieOptions = {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'lax' as const,
+        path: '/',
+      };
+
+      res.clearCookie('access_token', cookieOptions);
+      res.clearCookie('refresh_token', cookieOptions);
 
       res.status(HttpStatus.OK).json({
         success: true,
         message: 'Logged out successfully',
       });
-    } catch {
-      console.error('Logout error');
+    } catch (error) {
+      console.error('Logout error:', error);
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Logout failed',
@@ -203,6 +227,7 @@ export class AuthController {
         httpOnly: true,
         secure: isProduction,
         sameSite: 'lax',
+        path: '/',
         maxAge: 15 * 60 * 1000, // 15 minutes
       });
 
@@ -210,6 +235,7 @@ export class AuthController {
         httpOnly: true,
         secure: isProduction,
         sameSite: 'lax',
+        path: '/',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
@@ -250,6 +276,7 @@ export class AuthController {
         httpOnly: true,
         secure: isProduction,
         sameSite: 'lax',
+        path: '/',
         maxAge: 15 * 60 * 1000, // 15 minutes
       });
 
@@ -257,6 +284,7 @@ export class AuthController {
         httpOnly: true,
         secure: isProduction,
         sameSite: 'lax',
+        path: '/',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 

@@ -59,8 +59,11 @@ const SettingsContent = () => {
   const handleLogout = async () => {
     try {
       await logout();
+      // The logout function in AuthContext now handles navigation
     } catch (error) {
       console.error('Logout error:', error);
+      // Even on error, try to navigate away
+      router.push('/');
     }
   };
 
