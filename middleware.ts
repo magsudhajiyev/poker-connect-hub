@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 
 // Define protected routes
-const protectedRoutes = ['/profile', '/settings', '/share-hand', '/feed'];
+const protectedRoutes = ['/profile', '/settings', '/share-hand', '/feed', '/onboarding'];
 
 // Routes that require completed onboarding
 const onboardingRequiredRoutes = ['/feed', '/share-hand', '/profile'];
@@ -10,10 +10,10 @@ const onboardingRequiredRoutes = ['/feed', '/share-hand', '/profile'];
 // Wrap the auth middleware to add custom logic
 export default auth(async (req) => {
   const pathname = req.nextUrl.pathname;
-  
+
   // Check for logout parameter
   const isLogout = req.nextUrl.searchParams.get('logout') === 'true';
-  
+
   // If logout parameter is present, don't do any redirects
   if (isLogout) {
     console.log('Logout parameter detected, allowing access without redirects');
@@ -42,7 +42,7 @@ export default auth(async (req) => {
       hasBackendAuth,
       hasNextAuthSession,
       isAuthenticated,
-      cookies: req.cookies.getAll().map(c => c.name),
+      cookies: req.cookies.getAll().map((c) => c.name),
     });
   }
 
@@ -50,12 +50,16 @@ export default auth(async (req) => {
   if (pathname === '/auth/signin') {
     // Check if this is coming from a logout or the home page
     const referer = req.headers.get('referer');
-    const isFromLogout = referer && referer.includes(req.nextUrl.origin) && 
-      (referer.includes('/settings') || referer.includes('/') || referer === req.nextUrl.origin + '/');
-    
+    const isFromLogout =
+      referer &&
+      referer.includes(req.nextUrl.origin) &&
+      (referer.includes('/settings') ||
+        referer.includes('/') ||
+        referer === `${req.nextUrl.origin  }/`);
+
     // Check for logout query parameter (we'll add this in logout flow)
     const isLogout = req.nextUrl.searchParams.get('logout') === 'true';
-    
+
     // If user is already authenticated and NOT coming from logout, redirect to feed or callback URL
     if (isAuthenticated && !isFromLogout && !isLogout) {
       // Verify the auth token is actually valid by checking if it's not empty
@@ -69,7 +73,7 @@ export default auth(async (req) => {
         return NextResponse.redirect(new URL(callbackUrl, req.url));
       }
     }
-    
+
     // If coming from logout, allow access to signin page
     if (isFromLogout || isLogout) {
       console.log('User coming from logout, allowing access to signin page');
@@ -97,7 +101,7 @@ export default auth(async (req) => {
       // Allow the request to proceed once to let cookies settle
       return NextResponse.next();
     }
-    
+
     const url = new URL('/auth/signin', req.url);
     url.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(url);

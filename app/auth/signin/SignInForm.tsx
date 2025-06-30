@@ -66,20 +66,19 @@ export default function SignInForm() {
         });
 
         if (response.data.success) {
-          
           // Check cookies immediately
           checkCookies();
-          
+
           // Wait a bit longer for cookies to be set by the browser
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
+          await new Promise((resolve) => setTimeout(resolve, 500));
+
           // Check cookies after delay
           checkCookies();
-          
+
           // Verify authentication by calling /auth/me
           try {
-            const verifyResponse = await authEndpoints.getMe();
-            
+            await authEndpoints.getMe();
+
             // Check if user has completed onboarding
             if (response.data.hasCompletedOnboarding) {
               router.push('/feed');
@@ -122,27 +121,21 @@ export default function SignInForm() {
         });
 
         if (response.data.success) {
-          
           // Check cookies immediately
           checkCookies();
-          
+
           // Wait a bit longer for cookies to be set by the browser
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
+          await new Promise((resolve) => setTimeout(resolve, 500));
+
           // Check cookies after delay
           checkCookies();
-          
+
           // Verify authentication by calling /auth/me
           try {
-            const verifyResponse = await authEndpoints.getMe();
-            
+            await authEndpoints.getMe();
+
             // New registrations always need onboarding
-            // But let's check the response just to be safe
-            if (response.data.hasCompletedOnboarding) {
-              router.push('/feed');
-            } else {
-              router.push('/onboarding');
-            }
+            router.push('/onboarding');
           } catch (verifyError) {
             console.error('Authentication verification failed:', verifyError);
             // Try to get more info about the error

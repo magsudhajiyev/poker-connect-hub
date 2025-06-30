@@ -4,12 +4,12 @@ const nextConfig = {
   experimental: {
     ppr: false, // Disable partial prerendering for now
   },
-  
+
   // Environment variables that will be available to the client
   env: {
     CUSTOM_KEY: 'value',
   },
-  
+
   // Image configuration
   images: {
     domains: [
@@ -17,20 +17,20 @@ const nextConfig = {
       'lh3.googleusercontent.com', // Google profile images
     ],
   },
-  
+
   // Webpack configuration for any custom needs
   webpack: (config, { buildId, dev, isServer, defaultLoaders, nextRuntime, webpack }) => {
     // Important: return the modified config
     return config;
   },
-  
+
   // Redirect configuration if needed
   async redirects() {
     return [
       // Add any redirects here if needed
     ];
   },
-  
+
   // Headers configuration
   async headers() {
     return [
@@ -51,6 +51,16 @@ const nextConfig = {
             value: '1; mode=block',
           },
         ],
+      },
+    ];
+  },
+
+  // Rewrites configuration for API proxy
+  async rewrites() {
+    return [
+      {
+        source: '/api/backend/:path*',
+        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/:path*`,
       },
     ];
   },

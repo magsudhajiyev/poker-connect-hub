@@ -34,17 +34,45 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return false;
       }
 
-      // Add any domain restrictions here if needed
-      // Example: const allowedDomain = "@yourcompany.com";
-      // if (!user.email.endsWith(allowedDomain)) return false;
+      // Only sync with backend for Google OAuth
+      if (account?.provider === 'google') {
+        try {
+          // Sync with backend to create user and get JWT tokens
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/backend/auth/google/sync`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+              body: JSON.stringify({
+                email: user.email,
+                name: user.name || '',
+                googleId: account.providerAccountId,
+                picture: user.image || '',
+              }),
+            },
+          );
 
-      // Log sign-in attempts in development
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Sign-in attempt:', {
-          email: user.email,
-          provider: account?.provider,
-          timestamp: new Date().toISOString(),
-        });
+          if (!response.ok) {
+            console.error('Failed to sync with backend:', await response.text());
+            return false;
+          }
+
+          const data = await response.json();
+          console.log('Google user synced with backend:', data);
+
+          // Store hasCompletedOnboarding in the token for later use
+          if (user) {
+            (user as any).hasCompletedOnboarding = data.user?.hasCompletedOnboarding || false;
+          }
+
+          return true;
+        } catch (error) {
+          console.error('Error syncing with backend:', error);
+          return false;
+        }
       }
 
       return true;
@@ -58,6 +86,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: user.email,
           name: user.name,
           image: user.image,
+          hasCompletedOnboarding: (user as any).hasCompletedOnboarding || false,
         };
       }
 
@@ -70,6 +99,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.email = token.email as string;
         session.user.name = token.name as string;
         session.user.image = token.image as string;
+        (session.user as any).hasCompletedOnboarding =
+          (token as any).hasCompletedOnboarding || false;
       }
 
       return session;

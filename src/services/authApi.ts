@@ -1,11 +1,9 @@
 import axios from 'axios';
 
-// Get API URL from environment or use default
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
 // Create axios instance with default config
+// Using relative URL to go through Next.js rewrites proxy
 export const authApi = axios.create({
-  baseURL: API_URL,
+  baseURL: '/api/backend',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -47,7 +45,7 @@ authApi.interceptors.response.use(
       // Silently handle unauthorized errors
       return Promise.reject(error);
     }
-    
+
     // Only log meaningful errors, not empty objects
     if (error.response?.data && Object.keys(error.response.data).length > 0) {
       console.error('API Response Error:', error.response.data);
@@ -67,12 +65,14 @@ export const authEndpoints = {
 
   logout: () => {
     // Clear any client-side auth state before making the request
-    return authApi.post('/auth/logout').then(response => {
+    return authApi.post('/auth/logout').then((response) => {
       // After successful logout, ensure we're not caching any auth state
       if (typeof window !== 'undefined') {
         // Force clear any potential cached credentials
-        document.cookie.split(";").forEach(function(c) { 
-          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        document.cookie.split(';').forEach(function (c) {
+          document.cookie = c
+            .replace(/^ +/, '')
+            .replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`);
         });
       }
       return response;
@@ -97,9 +97,9 @@ export const onboardingEndpoints = {
     interestedFeatures: string[];
     otherInfo?: string;
   }) => authApi.post('/onboarding/submit', data),
-  
+
   getAnswers: () => authApi.get('/onboarding/answers'),
-  
+
   getStatus: () => authApi.get('/onboarding/status'),
 };
 

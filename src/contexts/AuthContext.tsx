@@ -44,18 +44,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Check if we're in a logout flow
       const urlParams = new URLSearchParams(window.location.search);
       const isLogout = urlParams.get('logout') === 'true';
-      
+
       // Skip auth check if we're logging out
       if (isLogout) {
         setIsCheckingBackendAuth(false);
         setBackendUser(null);
         return;
       }
-      
-      // Only check backend auth if there's no NextAuth session
-      if (status === 'authenticated' || status === 'loading') {
-        setIsCheckingBackendAuth(false);
-        return;
+
+      // Always check backend auth to ensure we have JWT cookies
+      // This is important for Google OAuth users
+      if (status === 'loading') {
+        return; // Wait for NextAuth to finish loading
       }
 
       try {
@@ -83,18 +83,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [status]);
 
   // Determine the current user from either auth method
-  const user = session?.user
-    ? {
-        id: session.user.id || '',
-        email: session.user.email || '',
-        name: session.user.name || '',
-        picture: session.user.image || undefined,
-        hasCompletedOnboarding:
-          (session.user as User & { hasCompletedOnboarding?: boolean }).hasCompletedOnboarding ||
-          false,
-        createdAt: new Date().toISOString(),
-      }
-    : backendUser;
+  // Prefer backend user data as it has the most up-to-date onboarding status
+  const user =
+    backendUser ||
+    (session?.user
+      ? {
+          id: session.user.id || '',
+          email: session.user.email || '',
+          name: session.user.name || '',
+          picture: session.user.image || undefined,
+          hasCompletedOnboarding:
+            (session.user as User & { hasCompletedOnboarding?: boolean }).hasCompletedOnboarding ||
+            false,
+          createdAt: new Date().toISOString(),
+        }
+      : null);
 
   // Check onboarding status when user is authenticated
   useEffect(() => {
@@ -134,22 +137,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Otherwise use NextAuth signOut
         await signOut({ redirect: false });
       }
-      
+
       // Clear any local state
       setHasCheckedOnboarding(false);
-      
+
       // Wait a bit for cookies to be cleared
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       // Use replace instead of push to prevent back navigation issues
       router.replace('/');
-      
+
       // Force a page reload to ensure all state is cleared
       if (typeof window !== 'undefined') {
         setTimeout(() => {
           // Add logout parameter to prevent middleware redirect
           // Use absolute URL to ensure we go to home page
-          window.location.href = window.location.origin + '/?logout=true';
+          window.location.href = `${window.location.origin}/?logout=true`;
         }, 100);
       }
     } catch (error) {

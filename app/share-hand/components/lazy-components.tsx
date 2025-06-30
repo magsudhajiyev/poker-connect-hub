@@ -22,42 +22,27 @@ const ShareHandFormSkeleton = () => (
 );
 
 // Lazy load heavy components
-export const LazyPokerTable = dynamic(
-  () => import('./poker-table/PokerTable'),
-  {
-    loading: () => <PokerTableSkeleton />,
-    ssr: true,
-  }
-);
+export const LazyPokerTable = dynamic(() => import('./poker-table/PokerTable'), {
+  loading: () => <PokerTableSkeleton />,
+  ssr: true,
+});
 
-export const LazyShareHandForm = dynamic(
-  () => import('./ShareHandForm'),
-  {
-    loading: () => <ShareHandFormSkeleton />,
-    ssr: true,
-  }
-);
+export const LazyShareHandForm = dynamic(() => import('./ShareHandForm'), {
+  loading: () => <ShareHandFormSkeleton />,
+  ssr: true,
+});
 
-export const LazyActionFlow = dynamic(
-  () => import('./ActionFlow'),
-  {
-    loading: () => <Skeleton className="h-96 w-full" />,
-    ssr: true,
-  }
-);
+export const LazyActionFlow = dynamic(() => import('./ActionFlow'), {
+  loading: () => <Skeleton className="h-96 w-full" />,
+  ssr: true,
+});
 
-export const LazyHandReplay = dynamic(
-  () => import('./HandReplay'),
-  {
-    loading: () => <Skeleton className="h-96 w-full" />,
-    ssr: false, // HandReplay likely has client-only features
-  }
-);
+export const LazyHandReplay = dynamic(() => import('./HandReplay'), {
+  loading: () => <Skeleton className="h-96 w-full" />,
+  ssr: false, // HandReplay likely has client-only features
+});
 
-export const LazyHandDisplay = dynamic(
-  () => import('./HandDisplay'),
-  {
-    loading: () => <Skeleton className="h-96 w-full" />,
-    ssr: true,
-  }
-);
+export const LazyHandDisplay = dynamic(() => import('./HandDisplay'), {
+  loading: () => <Skeleton className="h-96 w-full" />,
+  ssr: true,
+});

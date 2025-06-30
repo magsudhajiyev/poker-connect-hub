@@ -84,6 +84,7 @@ export class AuthController {
       console.error('Google auth callback error:', error);
 
       // Clear any partial cookies with proper options
+      const isProduction = this.configService.get('NODE_ENV') === 'production';
       const cookieOptions = {
         httpOnly: true,
         secure: isProduction,
@@ -263,11 +264,69 @@ export class AuthController {
     }
   }
 
+  @Post('google/sync')
+  @Public()
+  async googleSync(
+    @Body() body: { email: string; name: string; googleId: string; picture?: string },
+    @Res() res: Response,
+  ) {
+    try {
+      // Find or create user
+      const user = await this.authService.validateGoogleUser({
+        googleId: body.googleId,
+        email: body.email,
+        name: body.name,
+        picture: body.picture,
+      });
+
+      // Generate JWT tokens
+      const { accessToken, refreshToken } = await this.authService.login(user);
+
+      // Set secure HTTP-only cookies
+      const isProduction = this.configService.get('NODE_ENV') === 'production';
+
+      res.cookie('access_token', accessToken, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 15 * 60 * 1000, // 15 minutes
+      });
+
+      res.cookie('refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      res.status(HttpStatus.OK).json({
+        success: true,
+        message: 'Google sync successful',
+        hasCompletedOnboarding: user.hasCompletedOnboarding,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          hasCompletedOnboarding: user.hasCompletedOnboarding,
+        },
+      });
+    } catch (error) {
+      console.error('Google sync error:', error);
+      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: 'Google sync failed',
+      });
+    }
+  }
+
   @Post('login')
   @Public()
   async login(@Body() loginDto: LoginDto, @Res() res: Response) {
     try {
-      const { accessToken, refreshToken, user } = await this.authService.validateEmailPassword(loginDto);
+      const { accessToken, refreshToken, user } =
+        await this.authService.validateEmailPassword(loginDto);
 
       // Set secure HTTP-only cookies
       const isProduction = this.configService.get('NODE_ENV') === 'production';
