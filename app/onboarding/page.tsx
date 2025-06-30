@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -14,24 +13,26 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, ArrowRight, CheckCircle, User, Target, TrendingUp, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle, User, Target, TrendingUp, Calendar } from 'lucide-react';
 import { useRouter, redirect } from 'next/navigation';
-import { authEndpoints } from '@/services/authApi';
+import { onboardingEndpoints } from '@/services/authApi';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [usernameError, setUsernameError] = useState('');
-  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  
   const [formData, setFormData] = useState({
-    username: '',
-    experience: '',
-    favoriteGame: '',
-    playingGoals: [] as string[],
-    bio: '',
-    location: '',
-    preferredStakes: '',
+    playFrequency: '',
+    experienceLevel: '',
+    preferredFormat: '',
+    favoriteVariant: '',
+    learningGoals: '',
+    interestedFeatures: [] as string[],
+    otherInfo: '',
   });
+  
   const router = useRouter();
   const { user } = useAuth();
 
@@ -42,400 +43,428 @@ const Onboarding = () => {
 
   const steps = [
     {
-      title: 'Welcome to PokerConnect! 🎉',
-      subtitle: "Let's set up your profile",
+      title: 'How often do you play poker?',
+      subtitle: 'Help us understand your playing habits',
+      icon: Calendar,
+    },
+    {
+      title: 'What\'s your experience level?',
+      subtitle: 'We\'ll customize your experience',
       icon: User,
-      emoji: '🎉',
     },
     {
-      title: 'Tell us about your poker experience 🃏',
-      subtitle: 'This helps us personalize your experience',
+      title: 'Game preferences',
+      subtitle: 'Tell us what you enjoy playing',
       icon: Target,
-      emoji: '🃏',
     },
     {
-      title: 'What are your poker goals? 🚀',
-      subtitle: 'Select all that apply',
+      title: 'Your poker journey',
+      subtitle: 'What brings you here?',
       icon: TrendingUp,
-      emoji: '🚀',
-    },
-    {
-      title: 'Complete your profile ✨',
-      subtitle: 'Add some final details',
-      icon: Users,
-      emoji: '✨',
     },
   ];
+
+  const playFrequencyOptions = [
+    { value: 'daily', label: 'Daily', description: 'I play every day' },
+    { value: 'weekly', label: 'Weekly', description: 'A few times a week' },
+    { value: 'monthly', label: 'Monthly', description: 'A few times a month' },
+    { value: 'rarely', label: 'Rarely', description: 'Occasionally for fun' },
+  ];
+
   const experienceLevels = [
-    {
-      value: 'beginner',
-      label: 'Beginner 🌱',
-      description: 'Just getting started',
-    },
-    {
-      value: 'intermediate',
-      label: 'Intermediate 🎲',
-      description: 'Some experience',
-    },
-    {
-      value: 'advanced',
-      label: 'Advanced ♠️',
-      description: 'Experienced player',
-    },
-    {
-      value: 'professional',
-      label: 'Professional 👑',
-      description: 'Play for a living',
-    },
-  ];
-  const gameTypes = [
-    "Texas Hold'em 🤠",
-    'Omaha 🎯',
-    'Seven Card Stud 🎴',
-    'Mixed Games 🎪',
-    'Tournaments 🏆',
-    'Cash Games 💰',
-  ];
-  const goalOptions = [
-    'Improve my game 📚',
-    'Connect with other players 🤝',
-    'Share interesting hands 💡',
-    'Learn new strategies 🧠',
-    'Track my progress 📊',
-    'Join poker discussions 💬',
+    { value: 'beginner', label: 'Beginner', description: 'Just starting my poker journey' },
+    { value: 'intermediate', label: 'Intermediate', description: 'I know the basics and some strategy' },
+    { value: 'advanced', label: 'Advanced', description: 'I play regularly and study the game' },
+    { value: 'professional', label: 'Professional', description: 'Poker is my primary income' },
   ];
 
-  // Simulate username check
-  const checkUsername = async (username: string) => {
-    if (username.length < 3) {
-      setUsernameError('Username must be at least 3 characters');
-      return;
-    }
-    setIsCheckingUsername(true);
-    setUsernameError('');
+  const gameFormats = [
+    { value: 'cash', label: 'Cash Games' },
+    { value: 'tournament', label: 'Tournaments' },
+    { value: 'both', label: 'Both' },
+  ];
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
+  const gameVariants = [
+    { value: 'texas-holdem', label: 'Texas Hold\'em' },
+    { value: 'omaha', label: 'Omaha' },
+    { value: 'stud', label: 'Stud Games' },
+    { value: 'mixed', label: 'Mixed Games' },
+  ];
 
-    // Simulate some taken usernames
-    const takenUsernames = ['admin', 'pokerking', 'cardshark', 'bluffer'];
-    if (takenUsernames.includes(username.toLowerCase())) {
-      setUsernameError('Username is already taken');
-    }
-    setIsCheckingUsername(false);
-  };
-  const handleUsernameChange = (value: string) => {
+  const learningGoalOptions = [
+    { value: 'improve-strategy', label: 'Improve Strategy', description: 'Level up my game' },
+    { value: 'learn-basics', label: 'Learn Basics', description: 'Master fundamentals' },
+    { value: 'go-pro', label: 'Go Professional', description: 'Make poker my career' },
+    { value: 'fun', label: 'Have Fun', description: 'Enjoy and connect with others' },
+  ];
+
+  const features = [
+    { value: 'hand-analysis', label: 'Hand Analysis', description: 'Review and improve your plays' },
+    { value: 'community', label: 'Community', description: 'Connect with other players' },
+    { value: 'statistics', label: 'Statistics', description: 'Track your performance' },
+    { value: 'coaching', label: 'Coaching', description: 'Learn from the pros' },
+  ];
+
+  const toggleFeature = (feature: string) => {
     setFormData((prev) => ({
       ...prev,
-      username: value,
-    }));
-    setUsernameError('');
-    if (value.length >= 3) {
-      checkUsername(value);
-    }
-  };
-  const toggleGoal = (goal: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      playingGoals: prev.playingGoals.includes(goal)
-        ? prev.playingGoals.filter((g) => g !== goal)
-        : [...prev.playingGoals, goal],
+      interestedFeatures: prev.interestedFeatures.includes(feature)
+        ? prev.interestedFeatures.filter((f) => f !== feature)
+        : [...prev.interestedFeatures, feature],
     }));
   };
+
   const handleNext = async () => {
+    setError('');
+    
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
+      // Submit onboarding data
       try {
-        console.log('Completing onboarding...');
-        // Complete onboarding
-        const response = await authEndpoints.completeOnboarding();
-        console.log('Onboarding completed:', response.data);
+        setIsSubmitting(true);
+        
+        // Validate required fields
+        if (!formData.playFrequency || !formData.experienceLevel || 
+            !formData.preferredFormat || !formData.favoriteVariant || 
+            !formData.learningGoals || formData.interestedFeatures.length === 0) {
+          setError('Please complete all required fields');
+          return;
+        }
+        
+        // Submit onboarding answers
+        await onboardingEndpoints.submitAnswers(formData);
         
         // Navigate to feed
         router.push('/feed');
       } catch (error) {
         console.error('Failed to complete onboarding:', error);
+        setError('Failed to complete onboarding. Please try again.');
         
-        // Log more details if it's an axios error
+        // If it's a conflict error (already completed), navigate to feed
         if (error && typeof error === 'object' && 'response' in error) {
-          const axiosError = error as { response?: { status?: number; data?: unknown }; message?: string };
-          console.error('Error details:', {
-            status: axiosError.response?.status,
-            data: axiosError.response?.data,
-            message: axiosError.message,
-          });
+          const axiosError = error as { response?: { status?: number }};
+          if (axiosError.response?.status === 409) {
+            router.push('/feed');
+          }
         }
-        
-        // Navigate to feed anyway to avoid being stuck
-        router.push('/feed');
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
+
   const handleBack = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
+
+  const isStepValid = () => {
+    switch (currentStep) {
+      case 0:
+        return !!formData.playFrequency;
+      case 1:
+        return !!formData.experienceLevel;
+      case 2:
+        return !!formData.preferredFormat && !!formData.favoriteVariant;
+      case 3:
+        return !!formData.learningGoals && formData.interestedFeatures.length > 0;
+      default:
+        return false;
+    }
+  };
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
         return (
           <div className="space-y-4 lg:space-y-6">
-            <div className="text-center space-y-3 lg:space-y-4">
-              <p className="text-slate-300 text-base lg:text-lg">
-                You're just a few steps away from joining the best poker community online!
-              </p>
-            </div>
-            <div className="space-y-3 lg:space-y-4">
-              <div>
-                <Label htmlFor="username" className="text-slate-200 text-sm lg:text-base">
-                  Choose a username
-                </Label>
-                <Input
-                  id="username"
-                  placeholder="Your poker handle"
-                  value={formData.username}
-                  onChange={(e) => handleUsernameChange(e.target.value)}
-                  className={`mt-1 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500 text-sm lg:text-base ${usernameError ? 'border-red-500 focus:border-red-500' : ''}`}
-                />
-                {usernameError && <p className="text-red-400 text-xs mt-1">{usernameError}</p>}
-                {isCheckingUsername && (
-                  <p className="text-slate-400 text-xs mt-1">Checking availability...</p>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      case 1:
-        return (
-          <div className="space-y-4 lg:space-y-6">
-            <div className="text-center"></div>
-            <div className="space-y-3 lg:space-y-4">
-              <div>
-                <Label className="text-slate-200 text-sm lg:text-base">
-                  Your poker experience level
-                </Label>
-                <div className="grid gap-2 lg:gap-3 mt-2 lg:mt-3">
-                  {experienceLevels.map((level) => (
-                    <Card
-                      key={level.value}
-                      className={`cursor-pointer transition-all ${formData.experience === level.value ? 'bg-emerald-500/20 border-emerald-500/50' : 'bg-slate-800/40 border-slate-700/30 hover:bg-slate-800/60'}`}
-                      onClick={() =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          experience: level.value,
-                        }))
-                      }
-                    >
-                      <CardContent className="p-3 lg:p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="text-slate-200 font-medium text-sm lg:text-base">
-                              {level.label}
-                            </h3>
-                            <p className="text-slate-400 text-xs lg:text-sm">{level.description}</p>
-                          </div>
-                          {formData.experience === level.value && (
-                            <CheckCircle className="w-4 h-4 lg:w-5 lg:h-5 text-emerald-500" />
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-slate-200 text-sm lg:text-base">Favorite game type</Label>
-                <Select
-                  value={formData.favoriteGame}
-                  onValueChange={(value) =>
+            <div className="grid gap-2 lg:gap-3">
+              {playFrequencyOptions.map((option) => (
+                <Card
+                  key={option.value}
+                  className={`cursor-pointer transition-all ${
+                    formData.playFrequency === option.value
+                      ? 'bg-emerald-500/20 border-emerald-500/50'
+                      : 'bg-slate-800/40 border-slate-700/30 hover:bg-slate-800/60'
+                  }`}
+                  onClick={() =>
                     setFormData((prev) => ({
                       ...prev,
-                      favoriteGame: value,
+                      playFrequency: option.value,
                     }))
                   }
                 >
-                  <SelectTrigger className="mt-1 bg-slate-900/50 border-slate-600 text-slate-200 text-sm lg:text-base">
-                    <SelectValue placeholder="Select your favorite game" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-600">
-                    {gameTypes.map((game) => (
-                      <SelectItem
-                        key={game}
-                        value={game}
-                        className="text-slate-200 focus:bg-slate-700 text-sm lg:text-base"
-                      >
-                        {game}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  <CardContent className="p-3 lg:p-4 flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium text-sm lg:text-base text-slate-200">
+                        {option.label}
+                      </h4>
+                      <p className="text-xs lg:text-sm text-slate-400">
+                        {option.description}
+                      </p>
+                    </div>
+                    {formData.playFrequency === option.value && (
+                      <CheckCircle className="w-4 h-4 lg:w-5 lg:h-5 text-emerald-500" />
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         );
+
+      case 1:
+        return (
+          <div className="space-y-4 lg:space-y-6">
+            <div className="grid gap-2 lg:gap-3">
+              {experienceLevels.map((level) => (
+                <Card
+                  key={level.value}
+                  className={`cursor-pointer transition-all ${
+                    formData.experienceLevel === level.value
+                      ? 'bg-emerald-500/20 border-emerald-500/50'
+                      : 'bg-slate-800/40 border-slate-700/30 hover:bg-slate-800/60'
+                  }`}
+                  onClick={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      experienceLevel: level.value,
+                    }))
+                  }
+                >
+                  <CardContent className="p-3 lg:p-4 flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium text-sm lg:text-base text-slate-200">
+                        {level.label}
+                      </h4>
+                      <p className="text-xs lg:text-sm text-slate-400">
+                        {level.description}
+                      </p>
+                    </div>
+                    {formData.experienceLevel === level.value && (
+                      <CheckCircle className="w-4 h-4 lg:w-5 lg:h-5 text-emerald-500" />
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
+
       case 2:
         return (
           <div className="space-y-4 lg:space-y-6">
-            <div className="text-center"></div>
             <div>
               <Label className="text-slate-200 text-sm lg:text-base">
-                What do you want to achieve on PokerConnect?
+                Preferred game format
               </Label>
-              <div className="grid grid-cols-1 gap-2 lg:gap-3 mt-2 lg:mt-3">
-                {goalOptions.map((goal) => (
-                  <Badge
-                    key={goal}
-                    variant={formData.playingGoals.includes(goal) ? 'default' : 'secondary'}
-                    className={`cursor-pointer p-2 lg:p-3 text-center justify-center text-xs lg:text-sm ${formData.playingGoals.includes(goal) ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50' : 'bg-slate-800/40 text-slate-300 border-slate-700/30 hover:bg-slate-800/60'}`}
-                    onClick={() => toggleGoal(goal)}
+              <Select
+                value={formData.preferredFormat}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, preferredFormat: value }))
+                }
+              >
+                <SelectTrigger className="mt-2 bg-slate-900/50 border-slate-600 text-slate-200">
+                  <SelectValue placeholder="Select format" />
+                </SelectTrigger>
+                <SelectContent>
+                  {gameFormats.map((format) => (
+                    <SelectItem key={format.value} value={format.value}>
+                      {format.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-slate-200 text-sm lg:text-base">
+                Favorite poker variant
+              </Label>
+              <Select
+                value={formData.favoriteVariant}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, favoriteVariant: value }))
+                }
+              >
+                <SelectTrigger className="mt-2 bg-slate-900/50 border-slate-600 text-slate-200">
+                  <SelectValue placeholder="Select variant" />
+                </SelectTrigger>
+                <SelectContent>
+                  {gameVariants.map((variant) => (
+                    <SelectItem key={variant.value} value={variant.value}>
+                      {variant.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        );
+
+      case 3:
+        return (
+          <div className="space-y-4 lg:space-y-6">
+            <div>
+              <Label className="text-slate-200 text-sm lg:text-base mb-3 block">
+                What's your main goal?
+              </Label>
+              <div className="grid gap-2 lg:gap-3">
+                {learningGoalOptions.map((goal) => (
+                  <Card
+                    key={goal.value}
+                    className={`cursor-pointer transition-all ${
+                      formData.learningGoals === goal.value
+                        ? 'bg-emerald-500/20 border-emerald-500/50'
+                        : 'bg-slate-800/40 border-slate-700/30 hover:bg-slate-800/60'
+                    }`}
+                    onClick={() =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        learningGoals: goal.value,
+                      }))
+                    }
                   >
-                    {goal}
+                    <CardContent className="p-3 lg:p-4 flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium text-sm lg:text-base text-slate-200">
+                          {goal.label}
+                        </h4>
+                        <p className="text-xs lg:text-sm text-slate-400">
+                          {goal.description}
+                        </p>
+                      </div>
+                      {formData.learningGoals === goal.value && (
+                        <CheckCircle className="w-4 h-4 lg:w-5 lg:h-5 text-emerald-500" />
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-slate-200 text-sm lg:text-base mb-3 block">
+                Features you're interested in (select at least one)
+              </Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-3">
+                {features.map((feature) => (
+                  <Badge
+                    key={feature.value}
+                    variant={formData.interestedFeatures.includes(feature.value) ? 'default' : 'outline'}
+                    className={`cursor-pointer transition-all text-xs lg:text-sm py-2 lg:py-3 ${
+                      formData.interestedFeatures.includes(feature.value)
+                        ? 'bg-emerald-500 text-slate-900 hover:bg-emerald-600'
+                        : 'bg-slate-800/40 text-slate-300 hover:bg-slate-800/60'
+                    }`}
+                    onClick={() => toggleFeature(feature.value)}
+                  >
+                    <div className="text-center w-full">
+                      <div className="font-medium">{feature.label}</div>
+                      <div className="text-xs opacity-80 mt-0.5">{feature.description}</div>
+                    </div>
                   </Badge>
                 ))}
               </div>
             </div>
-          </div>
-        );
-      case 3:
-        return (
-          <div className="space-y-4 lg:space-y-6">
-            <div className="text-center"></div>
-            <div className="grid gap-3 lg:gap-4">
-              <div>
-                <Label htmlFor="bio" className="text-slate-200 text-sm lg:text-base">
-                  Bio (optional)
-                </Label>
-                <Textarea
-                  id="bio"
-                  placeholder="Tell us a bit about yourself..."
-                  value={formData.bio}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      bio: e.target.value,
-                    }))
-                  }
-                  className="mt-1 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500 text-sm lg:text-base min-h-[80px] lg:min-h-[100px]"
-                />
-              </div>
 
-              <div>
-                <Label htmlFor="location" className="text-slate-200 text-sm lg:text-base">
-                  Location (optional)
-                </Label>
-                <Input
-                  id="location"
-                  placeholder="City, Country"
-                  value={formData.location}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      location: e.target.value,
-                    }))
-                  }
-                  className="mt-1 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500 text-sm lg:text-base"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="stakes" className="text-slate-200 text-sm lg:text-base">
-                  Preferred stakes (optional)
-                </Label>
-                <Input
-                  id="stakes"
-                  placeholder="e.g., $1/$2, $0.25/$0.50"
-                  value={formData.preferredStakes}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      preferredStakes: e.target.value,
-                    }))
-                  }
-                  className="mt-1 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500 text-sm lg:text-base"
-                />
-              </div>
+            <div>
+              <Label htmlFor="otherInfo" className="text-slate-200 text-sm lg:text-base">
+                Anything else you'd like to share? (optional)
+              </Label>
+              <Textarea
+                id="otherInfo"
+                placeholder="Tell us more about your poker journey..."
+                value={formData.otherInfo}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    otherInfo: e.target.value,
+                  }))
+                }
+                className="mt-1 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500 text-sm lg:text-base min-h-[100px]"
+              />
             </div>
           </div>
         );
-      default:
-        return null;
     }
   };
-  const isStepValid = () => {
-    switch (currentStep) {
-      case 0:
-        return formData.username.trim().length > 0 && !usernameError && !isCheckingUsername;
-      case 1:
-        return formData.experience && formData.favoriteGame;
-      case 2:
-        return formData.playingGoals.length > 0;
-      case 3:
-        return true;
-      // Optional fields
-      default:
-        return false;
-    }
-  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-3 lg:p-4">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-4 lg:p-8">
       {/* Background Effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-48 h-48 lg:w-64 lg:h-64 bg-emerald-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 lg:w-64 lg:h-64 bg-violet-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-violet-500/5 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="w-full max-w-xl lg:max-w-2xl relative">
-        <Card className="bg-slate-800/40 border-slate-700/50 backdrop-blur-xl">
-          <CardHeader className="text-center space-y-3 lg:space-y-4 pb-4 lg:pb-6">
-            <div className="flex items-center justify-center space-x-1 lg:space-x-2 mb-3 lg:mb-4">
-              {steps.map((_step, index) => (
-                <div key={index} className="flex items-center">
-                  <div
-                    className={`w-6 h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center text-xs lg:text-sm font-medium ${index <= currentStep ? 'bg-emerald-500 text-slate-900' : 'bg-slate-700 text-slate-400'}`}
-                  >
-                    {index + 1}
-                  </div>
-                  {index < steps.length - 1 && (
-                    <div
-                      className={`w-8 lg:w-12 h-0.5 mx-1 lg:mx-2 ${index < currentStep ? 'bg-emerald-500' : 'bg-slate-700'}`}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
+      <div className="max-w-2xl mx-auto relative">
+        {/* Progress Bar */}
+        <div className="mb-6 lg:mb-8">
+          <div className="flex justify-between items-center mb-3 lg:mb-4">
+            <h1 className="text-xl lg:text-2xl font-bold text-slate-200">Complete Your Profile</h1>
+            <span className="text-xs lg:text-sm text-slate-400">
+              Step {currentStep + 1} of {steps.length}
+            </span>
+          </div>
+          <div className="w-full bg-slate-800/50 rounded-full h-2">
+            <div
+              className="bg-gradient-to-r from-emerald-500 to-violet-500 h-2 rounded-full transition-all"
+              style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+            />
+          </div>
+        </div>
 
+        <Card className="bg-slate-800/40 border-slate-700/50 backdrop-blur-xl">
+          <CardHeader className="text-center pb-4 lg:pb-6">
+            <div className="flex justify-center mb-3 lg:mb-4">
+              {React.createElement(steps[currentStep].icon, {
+                className: 'w-10 h-10 lg:w-12 lg:h-12 text-emerald-500',
+              })}
+            </div>
             <CardTitle className="text-xl lg:text-2xl text-slate-200">
               {steps[currentStep].title}
             </CardTitle>
-            <CardDescription className="text-slate-400 text-sm lg:text-base">
+            <CardDescription className="text-sm lg:text-base text-slate-400">
               {steps[currentStep].subtitle}
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="space-y-4 lg:space-y-6 px-4 lg:px-6">
+          <CardContent className="space-y-4 lg:space-y-6">
+            {error && (
+              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                <p className="text-red-400 text-sm">{error}</p>
+              </div>
+            )}
+            
             {renderStepContent()}
 
-            <div className="flex justify-between pt-4 lg:pt-6">
+            {/* Navigation */}
+            <div className="flex justify-between gap-3 pt-4 lg:pt-6">
               <Button
                 variant="outline"
                 onClick={handleBack}
                 disabled={currentStep === 0}
-                className="border-slate-600 text-slate-300 hover:bg-slate-700/50 text-sm lg:text-base px-3 lg:px-4 py-2"
+                className="border-slate-600 text-slate-300 hover:bg-slate-800/60 text-sm lg:text-base disabled:opacity-50"
               >
                 <ArrowLeft className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
                 Back
               </Button>
-
               <Button
                 onClick={handleNext}
-                disabled={!isStepValid()}
-                className="bg-gradient-to-r from-emerald-500 to-violet-500 hover:from-emerald-600 hover:to-violet-600 text-slate-900 font-medium text-sm lg:text-base px-3 lg:px-4 py-2"
+                disabled={!isStepValid() || isSubmitting}
+                className="bg-gradient-to-r from-emerald-500 to-violet-500 hover:from-emerald-600 hover:to-violet-600 text-slate-900 font-medium text-sm lg:text-base disabled:opacity-50"
               >
-                {currentStep === steps.length - 1 ? 'Complete Setup' : 'Next'}
-                <ArrowRight className="w-3 h-3 lg:w-4 lg:h-4 ml-1 lg:ml-2" />
+                {currentStep === steps.length - 1 ? (
+                  isSubmitting ? 'Completing...' : 'Complete Setup'
+                ) : (
+                  'Next'
+                )}
+                {currentStep < steps.length - 1 && (
+                  <ArrowRight className="w-3 h-3 lg:w-4 lg:h-4 ml-1 lg:ml-2" />
+                )}
               </Button>
             </div>
           </CardContent>
@@ -443,5 +472,6 @@ const Onboarding = () => {
       </div>
     </div>
   );
-};
+}
+
 export default Onboarding;

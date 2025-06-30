@@ -47,6 +47,10 @@ export class UsersService {
     return user;
   }
 
+  async findOne(id: string): Promise<User> {
+    return this.findById(id);
+  }
+
   async findByEmail(email: string): Promise<User | null> {
     return await this.userModel.findOne({ email, isActive: true }).exec();
   }
@@ -119,5 +123,21 @@ export class UsersService {
       ...googleProfile,
       authProvider: 'google',
     });
+  }
+
+  async updateOnboardingStatus(id: string, hasCompletedOnboarding: boolean): Promise<User> {
+    const user = await this.userModel
+      .findOneAndUpdate(
+        { _id: id, isActive: true },
+        { hasCompletedOnboarding },
+        { new: true },
+      )
+      .exec();
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    return user;
   }
 }

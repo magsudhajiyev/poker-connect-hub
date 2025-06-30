@@ -68,4 +68,21 @@ export const authEndpoints = {
   completeOnboarding: () => authApi.post('/auth/complete-onboarding'),
 };
 
+// Onboarding endpoints
+export const onboardingEndpoints = {
+  submitAnswers: (data: {
+    playFrequency: string;
+    experienceLevel: string;
+    preferredFormat: string;
+    favoriteVariant: string;
+    learningGoals: string;
+    interestedFeatures: string[];
+    otherInfo?: string;
+  }) => authApi.post('/onboarding/submit', data),
+  
+  getAnswers: () => authApi.get('/onboarding/answers'),
+  
+  getStatus: () => authApi.get('/onboarding/status'),
+};
+
 export default authApi;
