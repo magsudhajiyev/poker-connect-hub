@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SessionProvider } from 'next-auth/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -8,6 +8,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { validateEnvironmentVariables } from '@/utils/validateEnv';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,13 +30,15 @@ const queryClient = new QueryClient({
 });
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  // Debug environment variables in production
-  if (process.env.NODE_ENV === 'production') {
-    console.log('Production environment check:', {
-      apiUrl: process.env.NEXT_PUBLIC_API_URL || 'Not set',
-      appUrl: process.env.NEXT_PUBLIC_APP_URL || 'Not set',
-    });
-  }
+  useEffect(() => {
+    // Validate environment variables on mount
+    const { errors } = validateEnvironmentVariables();
+
+    // Show critical errors in production
+    if (errors.length > 0 && process.env.NODE_ENV === 'production') {
+      console.error('🚨 Critical Configuration Error:', errors[0]);
+    }
+  }, []);
 
   const handleAppError = (error: Error, errorInfo: React.ErrorInfo) => {
     // Log global application errors

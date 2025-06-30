@@ -2,10 +2,18 @@
 
 This guide covers deploying both the frontend (Next.js) and backend (NestJS) applications.
 
+## ⚠️ IMPORTANT: Backend Deployment Required
+
+**The application will NOT work properly without a deployed backend.** Currently experiencing issues because:
+
+- `NEXT_PUBLIC_API_URL` is incorrectly set to the frontend URL
+- No backend service is running to handle authentication
+- Google OAuth will fail without backend endpoints
+
 ## Overview
 
 - **Frontend**: Deployed on Vercel (already done at www.pokerconnect.me)
-- **Backend**: Needs to be deployed to a Node.js hosting service
+- **Backend**: MUST be deployed to a Node.js hosting service
 - **Database**: MongoDB Atlas or similar cloud MongoDB service
 
 ## Frontend Deployment (Vercel) ✅
@@ -24,8 +32,9 @@ NEXTAUTH_URL=https://www.pokerconnect.me
 NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
 AUTH_SECRET=same-as-nextauth-secret
 
-# API Configuration (UPDATE after backend deployment)
-NEXT_PUBLIC_API_URL=https://your-backend-url.com
+# API Configuration (⚠️  CRITICAL - UPDATE after backend deployment)
+# This MUST point to your deployed backend URL, NOT the frontend URL!
+NEXT_PUBLIC_API_URL=https://your-backend-url.com  # e.g., https://poker-backend.railway.app
 NEXT_PUBLIC_APP_URL=https://www.pokerconnect.me
 
 # MongoDB (for NextAuth sessions if using database adapter)
