@@ -42,7 +42,12 @@ authApi.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error('API Response Error:', error.response?.data || error.message);
+    // Only log meaningful errors, not empty objects
+    if (error.response?.data && Object.keys(error.response.data).length > 0) {
+      console.error('API Response Error:', error.response.data);
+    } else if (error.message) {
+      console.error('API Error:', error.message);
+    }
     return Promise.reject(error);
   },
 );

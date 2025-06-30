@@ -3,7 +3,7 @@
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import CardInput from '@/components/CardInput';
-import { PokerTable } from './poker-table';
+import { LazyPokerTable as PokerTable } from './lazy-components';
 import { useShareHandContext } from './ShareHandProvider';
 import SelectedCardsDisplay from './SelectedCardsDisplay';
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';

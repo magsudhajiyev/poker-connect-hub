@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import ClickablePlayerSeat from './ClickablePlayerSeat';
-import CommunityCards from './CommunityCards';
-import PotDisplay from '../PotDisplay';
+import { CommunityCardsOptimized } from './CommunityCardsOptimized';
+import { PotDisplayOptimized } from './PotDisplayOptimized';
 import { Player } from '@/types/shareHand';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -193,18 +193,16 @@ const PokerTable = React.memo(
               {displayPot > 0 && (
                 <div className="bg-emerald-900/30 border border-emerald-500/30 rounded-lg px-3 py-2 shadow-lg">
                   <span className="text-emerald-400 font-bold text-sm sm:text-base">
-                    <PotDisplay
-                      potSize={displayPot}
-                      formData={formData}
+                    <PotDisplayOptimized
+                      pot={displayPot}
                       getCurrencySymbol={getCurrencySymbol}
-                      pokerActions={pokerActions}
                     />
                   </span>
                 </div>
               )}
 
               {/* Community Cards */}
-              <CommunityCards cards={communityCards} />
+              <CommunityCardsOptimized cards={communityCards} />
             </div>
           </div>
 

@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 import { SessionProvider } from 'next-auth/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/contexts/AuthContext';
@@ -30,16 +29,9 @@ const queryClient = new QueryClient({
 });
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-
-  if (!googleClientId) {
-    console.error('NEXT_PUBLIC_GOOGLE_CLIENT_ID is not set in environment variables');
-  }
-
   // Debug environment variables in production
   if (process.env.NODE_ENV === 'production') {
     console.log('Production environment check:', {
-      googleClientId: googleClientId ? 'Set' : 'Not set',
       apiUrl: process.env.NEXT_PUBLIC_API_URL || 'Not set',
       appUrl: process.env.NEXT_PUBLIC_APP_URL || 'Not set',
     });
@@ -73,17 +65,15 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       showReportBug={process.env.NODE_ENV === 'production'}
     >
       <SessionProvider>
-        <GoogleOAuthProvider clientId={googleClientId || ''}>
-          <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                {children}
-              </TooltipProvider>
-            </AuthProvider>
-          </QueryClientProvider>
-        </GoogleOAuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              {children}
+            </TooltipProvider>
+          </AuthProvider>
+        </QueryClientProvider>
       </SessionProvider>
     </ErrorBoundary>
   );

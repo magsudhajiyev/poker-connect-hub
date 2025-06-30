@@ -3,8 +3,8 @@
 
 import React, { useState } from 'react';
 import { Player } from '@/types/shareHand';
-import EmptySeatDisplay from './EmptySeatDisplay';
-import PlayerSeatDisplay from './PlayerSeatDisplay';
+import { EmptySeatDisplayOptimized } from './EmptySeatDisplayOptimized';
+import { PlayerSeatDisplayOptimized } from './PlayerSeatDisplayOptimized';
 import PlayerEditDialog from './PlayerEditDialog';
 import PlayerActionDialog from './PlayerActionDialog';
 
@@ -146,9 +146,9 @@ return 'cursor-pointer';
         }}
       >
         {isEmpty ? (
-          <EmptySeatDisplay position={position} />
+          <EmptySeatDisplayOptimized position={position} />
         ) : (
-          <PlayerSeatDisplay 
+          <PlayerSeatDisplayOptimized 
             player={player} 
             position={position} 
             gameFormat={gameFormat}

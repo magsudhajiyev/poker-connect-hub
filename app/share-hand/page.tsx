@@ -2,7 +2,7 @@
 
 import { ShareHandProvider } from './components/ShareHandProvider';
 import ShareHandHeader from './components/ShareHandHeader';
-import ShareHandForm from './components/ShareHandForm';
+import { LazyShareHandForm as ShareHandForm } from './components/lazy-components';
 import { ShareHandErrorBoundary } from '@/components/error-boundary';
 import { ProfileTopBar } from '../profile/components/ProfileTopBar';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';

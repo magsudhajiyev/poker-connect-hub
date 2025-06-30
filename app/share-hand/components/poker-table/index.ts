@@ -2,11 +2,12 @@
 export { default as PokerTable } from './PokerTable';
 export { default as PlayerSeat } from './PlayerSeat';
 export { default as ClickablePlayerSeat } from './ClickablePlayerSeat';
-export { default as EmptySeatDisplay } from './EmptySeatDisplay';
-export { default as PlayerSeatDisplay } from './PlayerSeatDisplay';
+export { EmptySeatDisplayOptimized } from './EmptySeatDisplayOptimized';
+export { PlayerSeatDisplayOptimized } from './PlayerSeatDisplayOptimized';
 export { default as PlayerEditDialog } from './PlayerEditDialog';
 export { default as PlayerActionDialog } from './PlayerActionDialog';
-export { default as CommunityCards } from './CommunityCards';
+export { CommunityCardsOptimized } from './CommunityCardsOptimized';
+export { PotDisplayOptimized } from './PotDisplayOptimized';
 export { default as TableActionButtons } from './TableActionButtons';
 export { usePlayerActionDialog } from './hooks/usePlayerActionDialog';
 export { default as ActionSelectionButtons } from './components/ActionSelectionButtons';

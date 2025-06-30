@@ -3,7 +3,7 @@
 import React from 'react';
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';
 import { getAvailablePositions } from '@/utils/positionUtils';
-import { PokerTable } from './poker-table';
+import { LazyPokerTable as PokerTable } from './lazy-components';
 import { Player, ShareHandFormData } from '@/types/shareHand';
 
 interface PositionsStepProps {

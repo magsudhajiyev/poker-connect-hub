@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Bookmark, Share2, ThumbsUp, MessageCircle } from 'lucide-react';
 import { ShareHandFormData } from '@/types/shareHand';
 import HandReplay from './HandReplay';
-import PotDisplay from './PotDisplay';
+import { PotDisplayOptimized } from './poker-table/PotDisplayOptimized';
 
 interface HandDisplayProps {
   formData: ShareHandFormData;
@@ -116,7 +116,7 @@ return `${Math.floor(diffMins / 60)}h ago`;
               </div>
             </div>
             <div className="text-left md:text-right mt-3 md:mt-0">
-              <PotDisplay potSize={potSize} getCurrencySymbol={getCurrencySymbol} isFinal />
+              <PotDisplayOptimized pot={potSize} getCurrencySymbol={getCurrencySymbol} />
             </div>
           </div>
           

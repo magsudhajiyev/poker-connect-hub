@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { PokerGameEngine } from '../PokerGameEngine';
-import { PokerPlayer } from '@/types/poker';
 
 describe('PokerGameEngine', () => {
   let engine: PokerGameEngine;

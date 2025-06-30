@@ -66,7 +66,6 @@ export default function SignInForm() {
         });
 
         if (response.data.success) {
-          console.log('Login successful, verifying authentication...');
           
           // Check cookies immediately
           checkCookies();
@@ -80,14 +79,11 @@ export default function SignInForm() {
           // Verify authentication by calling /auth/me
           try {
             const verifyResponse = await authEndpoints.getMe();
-            console.log('Authentication verified:', verifyResponse.data);
             
             // Check if user has completed onboarding
             if (response.data.hasCompletedOnboarding) {
-              console.log('User has completed onboarding, redirecting to /feed');
               router.push('/feed');
             } else {
-              console.log('User has not completed onboarding, redirecting to /onboarding');
               router.push('/onboarding');
             }
           } catch (verifyError) {
@@ -126,7 +122,6 @@ export default function SignInForm() {
         });
 
         if (response.data.success) {
-          console.log('Registration successful, verifying authentication...');
           
           // Check cookies immediately
           checkCookies();
@@ -140,15 +135,12 @@ export default function SignInForm() {
           // Verify authentication by calling /auth/me
           try {
             const verifyResponse = await authEndpoints.getMe();
-            console.log('Authentication verified:', verifyResponse.data);
             
             // New registrations always need onboarding
             // But let's check the response just to be safe
             if (response.data.hasCompletedOnboarding) {
-              console.log('User has completed onboarding, redirecting to /feed');
               router.push('/feed');
             } else {
-              console.log('User has not completed onboarding, redirecting to /onboarding');
               router.push('/onboarding');
             }
           } catch (verifyError) {

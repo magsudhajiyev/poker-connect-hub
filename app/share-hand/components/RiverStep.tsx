@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Plus, X } from 'lucide-react';
 import CardInput from '@/components/CardInput';
-import { PokerTable } from './poker-table';
+import { LazyPokerTable as PokerTable } from './lazy-components';
 import { useShareHandContext } from './ShareHandProvider';
 import SelectedCardsDisplay from './SelectedCardsDisplay';
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';
