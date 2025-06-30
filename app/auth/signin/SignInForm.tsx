@@ -9,10 +9,11 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { authEndpoints } from '@/services/authApi';
 import { AxiosError } from 'axios';
+import { checkCookies } from '@/utils/cookieUtils';
 
 export default function SignInForm() {
   const [mounted, setMounted] = useState(false);
@@ -28,6 +29,7 @@ export default function SignInForm() {
   const [loading, setLoading] = useState(false);
 
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -64,8 +66,44 @@ export default function SignInForm() {
         });
 
         if (response.data.success) {
-          // Redirect to feed after successful login
-          window.location.href = '/feed';
+          console.log('Login successful, verifying authentication...');
+          
+          // Check cookies immediately
+          checkCookies();
+          
+          // Wait a bit longer for cookies to be set by the browser
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Check cookies after delay
+          checkCookies();
+          
+          // Verify authentication by calling /auth/me
+          try {
+            const verifyResponse = await authEndpoints.getMe();
+            console.log('Authentication verified:', verifyResponse.data);
+            
+            // Check if user has completed onboarding
+            if (response.data.hasCompletedOnboarding) {
+              console.log('User has completed onboarding, redirecting to /feed');
+              router.push('/feed');
+            } else {
+              console.log('User has not completed onboarding, redirecting to /onboarding');
+              router.push('/onboarding');
+            }
+          } catch (verifyError) {
+            console.error('Authentication verification failed:', verifyError);
+            // Try to get more info about the error
+            if (verifyError instanceof AxiosError) {
+              console.error('Error details:', {
+                status: verifyError.response?.status,
+                data: verifyError.response?.data,
+                headers: verifyError.response?.headers,
+              });
+            }
+            setError('Authentication failed. Please try again.');
+            setLoading(false);
+            return;
+          }
         }
       } else {
         // Registration
@@ -88,19 +126,62 @@ export default function SignInForm() {
         });
 
         if (response.data.success) {
-          // Redirect to onboarding after successful registration
-          window.location.href = '/onboarding';
+          console.log('Registration successful, verifying authentication...');
+          
+          // Check cookies immediately
+          checkCookies();
+          
+          // Wait a bit longer for cookies to be set by the browser
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Check cookies after delay
+          checkCookies();
+          
+          // Verify authentication by calling /auth/me
+          try {
+            const verifyResponse = await authEndpoints.getMe();
+            console.log('Authentication verified:', verifyResponse.data);
+            
+            // New registrations always need onboarding
+            // But let's check the response just to be safe
+            if (response.data.hasCompletedOnboarding) {
+              console.log('User has completed onboarding, redirecting to /feed');
+              router.push('/feed');
+            } else {
+              console.log('User has not completed onboarding, redirecting to /onboarding');
+              router.push('/onboarding');
+            }
+          } catch (verifyError) {
+            console.error('Authentication verification failed:', verifyError);
+            // Try to get more info about the error
+            if (verifyError instanceof AxiosError) {
+              console.error('Error details:', {
+                status: verifyError.response?.status,
+                data: verifyError.response?.data,
+                headers: verifyError.response?.headers,
+              });
+            }
+            setError('Registration succeeded but authentication failed. Please try logging in.');
+            setLoading(false);
+            return;
+          }
         }
       }
     } catch (error) {
       console.error('Auth error:', error);
 
-      if (error instanceof AxiosError && error.response?.data?.message) {
-        setError(error.response.data.message);
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 0 || error.code === 'ERR_NETWORK') {
+          setError('Network error. Please check your connection and ensure cookies are enabled.');
+        } else if (error.response?.data?.message) {
+          setError(error.response.data.message);
+        } else {
+          setError(
+            isLogin ? 'Login failed. Please try again.' : 'Registration failed. Please try again.',
+          );
+        }
       } else {
-        setError(
-          isLogin ? 'Login failed. Please try again.' : 'Registration failed. Please try again.',
-        );
+        setError('An unexpected error occurred. Please try again.');
       }
     } finally {
       setLoading(false);

@@ -17,6 +17,15 @@ export interface AuthTokens {
   refreshToken: string;
 }
 
+export interface AuthResponse extends AuthTokens {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    hasCompletedOnboarding: boolean;
+  };
+}
+
 export interface GoogleUserProfile {
   googleId: string;
   email: string;
@@ -116,7 +125,7 @@ export class AuthService {
     await this.usersService.update(userId, { hasCompletedOnboarding: true });
   }
 
-  async register(registerDto: RegisterDto): Promise<AuthTokens> {
+  async register(registerDto: RegisterDto): Promise<AuthResponse> {
     // Check if user already exists
     const existingUser = await this.usersService.findByEmail(registerDto.email);
     if (existingUser) {
@@ -136,14 +145,24 @@ export class AuthService {
       });
 
       // Generate tokens
-      return this.login(user);
+      const tokens = await this.login(user);
+      
+      return {
+        ...tokens,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          hasCompletedOnboarding: user.hasCompletedOnboarding,
+        },
+      };
     } catch (error) {
       console.error('User creation error:', error);
       throw error;
     }
   }
 
-  async validateEmailPassword(loginDto: LoginDto): Promise<AuthTokens> {
+  async validateEmailPassword(loginDto: LoginDto): Promise<AuthResponse> {
     // Find user by email
     const user = await this.usersService.findByEmail(loginDto.email);
 
@@ -164,6 +183,16 @@ export class AuthService {
     }
 
     // Generate tokens
-    return this.login(user);
+    const tokens = await this.login(user);
+    
+    return {
+      ...tokens,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        hasCompletedOnboarding: user.hasCompletedOnboarding,
+      },
+    };
   }
 }

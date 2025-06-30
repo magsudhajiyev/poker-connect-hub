@@ -16,7 +16,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, ArrowRight, CheckCircle, User, Target, TrendingUp, Users } from 'lucide-react';
 import { useRouter, redirect } from 'next/navigation';
-import axios from 'axios';
+import { authEndpoints } from '@/services/authApi';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Onboarding = () => {
@@ -147,12 +147,27 @@ const Onboarding = () => {
       setCurrentStep(currentStep + 1);
     } else {
       try {
+        console.log('Completing onboarding...');
         // Complete onboarding
-        await axios.post('/auth/complete-onboarding');
+        const response = await authEndpoints.completeOnboarding();
+        console.log('Onboarding completed:', response.data);
+        
+        // Navigate to feed
         router.push('/feed');
       } catch (error) {
         console.error('Failed to complete onboarding:', error);
-        // Navigate anyway to avoid being stuck
+        
+        // Log more details if it's an axios error
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response?: { status?: number; data?: unknown }; message?: string };
+          console.error('Error details:', {
+            status: axiosError.response?.status,
+            data: axiosError.response?.data,
+            message: axiosError.message,
+          });
+        }
+        
+        // Navigate to feed anyway to avoid being stuck
         router.push('/feed');
       }
     }

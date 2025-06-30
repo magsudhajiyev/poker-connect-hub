@@ -194,7 +194,7 @@ export class AuthController {
   @Public()
   async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
     try {
-      const { accessToken, refreshToken } = await this.authService.register(registerDto);
+      const { accessToken, refreshToken, user } = await this.authService.register(registerDto);
 
       // Set secure HTTP-only cookies
       const isProduction = this.configService.get('NODE_ENV') === 'production';
@@ -216,7 +216,8 @@ export class AuthController {
       res.status(HttpStatus.CREATED).json({
         success: true,
         message: 'Registration successful',
-        hasCompletedOnboarding: false,
+        hasCompletedOnboarding: user.hasCompletedOnboarding,
+        user,
       });
     } catch (error) {
       console.error('Registration error:', error);
@@ -240,7 +241,7 @@ export class AuthController {
   @Public()
   async login(@Body() loginDto: LoginDto, @Res() res: Response) {
     try {
-      const { accessToken, refreshToken } = await this.authService.validateEmailPassword(loginDto);
+      const { accessToken, refreshToken, user } = await this.authService.validateEmailPassword(loginDto);
 
       // Set secure HTTP-only cookies
       const isProduction = this.configService.get('NODE_ENV') === 'production';
@@ -262,6 +263,8 @@ export class AuthController {
       res.status(HttpStatus.OK).json({
         success: true,
         message: 'Login successful',
+        hasCompletedOnboarding: user.hasCompletedOnboarding,
+        user,
       });
     } catch (error) {
       console.error('Login error:', error);

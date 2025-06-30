@@ -17,7 +17,13 @@ authApi.interceptors.request.use(
   (config) => {
     if (process.env.NODE_ENV === 'development') {
       console.warn('API Request:', config.method?.toUpperCase(), config.url);
+      console.warn('Request config:', {
+        withCredentials: config.withCredentials,
+        headers: config.headers,
+      });
     }
+    // Ensure withCredentials is always true
+    config.withCredentials = true;
     return config;
   },
   (error) => {
@@ -29,6 +35,10 @@ authApi.interceptors.request.use(
 // Response interceptor for error handling
 authApi.interceptors.response.use(
   (response) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('API Response:', response.config.method?.toUpperCase(), response.config.url);
+      console.warn('Response headers:', response.headers);
+    }
     return response;
   },
   (error) => {
