@@ -10,6 +10,15 @@ const onboardingRequiredRoutes = ['/feed', '/share-hand', '/profile'];
 // Wrap the auth middleware to add custom logic
 export default auth(async (req) => {
   const pathname = req.nextUrl.pathname;
+  
+  // Check for logout parameter
+  const isLogout = req.nextUrl.searchParams.get('logout') === 'true';
+  
+  // If logout parameter is present, don't do any redirects
+  if (isLogout) {
+    console.log('Logout parameter detected, allowing access without redirects');
+    return NextResponse.next();
+  }
 
   // Skip middleware for auth-related API routes
   if (pathname.includes('/api/auth')) {

@@ -41,6 +41,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Check for backend authentication
   useEffect(() => {
     const checkBackendAuth = async () => {
+      // Check if we're in a logout flow
+      const urlParams = new URLSearchParams(window.location.search);
+      const isLogout = urlParams.get('logout') === 'true';
+      
+      // Skip auth check if we're logging out
+      if (isLogout) {
+        setIsCheckingBackendAuth(false);
+        setBackendUser(null);
+        return;
+      }
+      
       // Only check backend auth if there's no NextAuth session
       if (status === 'authenticated' || status === 'loading') {
         setIsCheckingBackendAuth(false);
@@ -137,7 +148,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (typeof window !== 'undefined') {
         setTimeout(() => {
           // Add logout parameter to prevent middleware redirect
-          window.location.href = '/?logout=true';
+          // Use absolute URL to ensure we go to home page
+          window.location.href = window.location.origin + '/?logout=true';
         }, 100);
       }
     } catch (error) {
