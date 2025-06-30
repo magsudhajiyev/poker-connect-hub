@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { authEndpoints } from '@/services/authApi';
+import { AxiosError } from 'axios';
 
 export default function SignInForm() {
   const [mounted, setMounted] = useState(false);
@@ -94,7 +95,7 @@ export default function SignInForm() {
     } catch (error) {
       console.error('Auth error:', error);
 
-      if (error.response?.data?.message) {
+      if (error instanceof AxiosError && error.response?.data?.message) {
         setError(error.response.data.message);
       } else {
         setError(
