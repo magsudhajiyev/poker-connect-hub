@@ -47,7 +47,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           try {
             // Sync with backend to create user and get JWT tokens
             const response = await fetch(
-              `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/backend/auth/google/sync`,
+              `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/google/sync`,
               {
                 method: 'POST',
                 headers: {

@@ -55,14 +55,9 @@ const nextConfig = {
     ];
   },
 
-  // Rewrites configuration for API proxy
+  // Rewrites configuration (removed backend proxy as we're using Next.js API routes)
   async rewrites() {
-    return [
-      {
-        source: '/api/backend/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/:path*`,
-      },
-    ];
+    return [];
   },
 };
 

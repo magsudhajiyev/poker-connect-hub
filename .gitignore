@@ -24,7 +24,7 @@ dist-ssr
 *.sw?
 .history
 .env
-.env.example
+.env.local
 
 # Next.js build output
 .next/

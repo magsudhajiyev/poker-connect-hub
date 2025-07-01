@@ -1,6 +1,6 @@
 # Poker Connect Hub
 
-A poker hand analysis and sharing platform built with React, TypeScript, and NestJS.
+A poker hand analysis and sharing platform built with Next.js, React, and TypeScript.
 
 ## Features
 
@@ -12,20 +12,16 @@ A poker hand analysis and sharing platform built with React, TypeScript, and Nes
 
 ## Technologies Used
 
-### Frontend
+### Tech Stack
+- Next.js 15
 - React 18
 - TypeScript
-- Vite
 - Tailwind CSS
 - shadcn/ui components
-- React Router
-- Axios
-
-### Backend
-- NestJS
+- NextAuth.js (Google OAuth)
 - MongoDB
-- Passport.js (Google OAuth)
 - JWT Authentication
+- Axios
 
 ## Getting Started
 
@@ -45,7 +41,6 @@ cd poker-connect-hub
 
 2. Install dependencies:
 ```bash
-# Install frontend dependencies
 npm install
 
 # Install backend dependencies
@@ -56,48 +51,50 @@ cd ..
 
 3. Set up environment variables:
 
-Create `.env` in the root directory:
-```env
-VITE_GOOGLE_CLIENT_ID=your-google-client-id
-VITE_API_URL=http://localhost:3000
-VITE_APP_URL=http://localhost:5173
+Copy the example file and update with your values:
+```bash
+cp .env.example .env.local
 ```
 
-Create `backend/.env`:
+Required environment variables:
 ```env
-NODE_ENV=development
-PORT=3000
-FRONTEND_URL=http://localhost:5173
+# Google OAuth
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id
+
+# NextAuth
+NEXTAUTH_SECRET=your-nextauth-secret
+NEXTAUTH_URL=http://localhost:3000
+
+# Database
+MONGODB_URI=mongodb://localhost:27017/poker-connect-hub
+
+# JWT for API authentication
 JWT_SECRET=your-jwt-secret
-DATABASE_URL=mongodb://localhost:27017/poker_connect_hub
-# ... other variables
+
+# App URL
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-4. Run the development servers:
+4. Run the development server:
 ```bash
-# Run both frontend and backend
-npm run dev:all
-
-# Or run separately:
-# Frontend only
 npm run dev
-
-# Backend only
-npm run backend:dev
 ```
+
+The app will be available at http://localhost:3000
 
 ## Deployment
 
-### Frontend (Netlify)
+### Vercel (Recommended)
 1. Push your code to GitHub
-2. Connect your GitHub repo to Netlify
-3. Set environment variables in Netlify dashboard
+2. Import your GitHub repo to Vercel
+3. Add environment variables in Vercel dashboard:
+   - All variables from `.env.example`
+   - Update URLs to your production domain
 4. Deploy
 
-### Backend
-Deploy to any Node.js hosting service (Heroku, Railway, Render, etc.)
+The app will automatically deploy on every push to main branch.
 
 ## Contributing
 

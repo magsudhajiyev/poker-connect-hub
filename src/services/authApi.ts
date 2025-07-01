@@ -1,9 +1,9 @@
 import axios from 'axios';
 
 // Create axios instance with default config
-// Using relative URL to go through Next.js rewrites proxy
+// Using Next.js API routes directly
 export const authApi = axios.create({
-  baseURL: '/api/backend',
+  baseURL: '/api',
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
