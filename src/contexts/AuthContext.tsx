@@ -36,16 +36,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [backendUser, setBackendUser] = useState<User | null>(null);
   const [isCheckingBackendAuth, setIsCheckingBackendAuth] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Check for backend authentication
   useEffect(() => {
     const checkBackendAuth = async () => {
+      console.log('🔄 AuthContext: checkBackendAuth started', {
+        status,
+        hasSession: Boolean(session),
+        sessionEmail: session?.user?.email,
+      });
+
       // Check if we're in a logout flow
       const urlParams = new URLSearchParams(window.location.search);
       const isLogout = urlParams.get('logout') === 'true';
 
       // Skip auth check if we're logging out
       if (isLogout) {
+        console.log('🚪 AuthContext: Logout detected, skipping auth check');
         setIsCheckingBackendAuth(false);
         setBackendUser(null);
         return;
@@ -54,13 +62,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Always check backend auth to ensure we have JWT cookies
       // This is important for Google OAuth users
       if (status === 'loading') {
+        console.log('⏳ AuthContext: NextAuth still loading, waiting...');
         return; // Wait for NextAuth to finish loading
       }
 
+      console.log('🔍 AuthContext: Checking backend auth via /api/auth/me');
       try {
         const response = await authEndpoints.getMe();
 
         if (response.data) {
+          console.log('✅ AuthContext: Backend auth successful:', {
+            id: response.data.id,
+            email: response.data.email,
+            hasCompletedOnboarding: response.data.hasCompletedOnboarding,
+            hasCompletedOnboardingType: typeof response.data.hasCompletedOnboarding,
+          });
+
           setBackendUser({
             id: response.data.id,
             email: response.data.email,
@@ -70,39 +87,80 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             createdAt: response.data.createdAt,
           });
         }
-      } catch {
+      } catch (error) {
+        console.log('❌ AuthContext: Backend auth failed:', error);
+
         // If we have a NextAuth session but no backend auth, sync with backend
         if (session?.user?.email && status === 'authenticated') {
+          console.log(
+            '🔄 AuthContext: Have NextAuth session but no backend auth, starting sync...',
+            {
+              sessionEmail: session.user.email,
+              sessionHasCompletedOnboarding: (session.user as any).hasCompletedOnboarding,
+            },
+          );
+          setIsSyncing(true);
           try {
+            const syncPayload = {
+              email: session.user.email,
+              name: session.user.name || '',
+              googleId: (session as any).user?.googleId || (session.user as any).id || '',
+              picture: session.user.image || '',
+            };
+
+            console.log('📤 AuthContext: Sending sync request:', syncPayload);
+
             const syncResponse = await fetch('/api/auth/google/sync', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
               credentials: 'include',
-              body: JSON.stringify({
-                email: session.user.email,
-                name: session.user.name || '',
-                googleId: (session as any).user?.id || '',
-                picture: session.user.image || '',
-              }),
+              body: JSON.stringify(syncPayload),
             });
+
+            console.log('📥 AuthContext: Sync response status:', syncResponse.status);
 
             if (syncResponse.ok) {
               const syncData = await syncResponse.json();
+              console.log('📥 AuthContext: Sync response data:', {
+                success: syncData.success,
+                hasUser: Boolean(syncData.data?.user),
+                userEmail: syncData.data?.user?.email,
+                hasCompletedOnboarding: syncData.data?.user?.hasCompletedOnboarding,
+                hasCompletedOnboardingType: typeof syncData.data?.user?.hasCompletedOnboarding,
+              });
+
               if (syncData.data?.user) {
-                setBackendUser({
+                const syncedUser = {
                   id: syncData.data.user.id,
                   email: syncData.data.user.email,
                   name: syncData.data.user.name,
                   picture: syncData.data.user.picture,
                   hasCompletedOnboarding: syncData.data.user.hasCompletedOnboarding,
                   createdAt: syncData.data.user.createdAt,
+                };
+                setBackendUser(syncedUser);
+                console.log('✅ AuthContext: Backend user set after sync:', {
+                  email: syncedUser.email,
+                  hasCompletedOnboarding: syncedUser.hasCompletedOnboarding,
+                  hasCompletedOnboardingType: typeof syncedUser.hasCompletedOnboarding,
                 });
+                // User is now synced and authenticated
+                return;
+              } else {
+                console.error('❌ AuthContext: Sync response missing user data');
               }
+            } else {
+              console.error(
+                '❌ AuthContext: Sync request failed with status:',
+                syncResponse.status,
+              );
             }
           } catch (syncError) {
             console.error('Failed to sync with backend:', syncError);
+          } finally {
+            setIsSyncing(false);
           }
         }
 
@@ -117,28 +175,51 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [status, session]);
 
   // Determine the current user from either auth method
-  // Prefer backend user data as it has the most up-to-date onboarding status
-  const user =
-    backendUser ||
-    (session?.user
+  // ALWAYS prefer backend user data as it has the most up-to-date onboarding status
+  const user = backendUser || null;
+
+  // Only fall back to session data if we have no backend user AND we're not currently syncing
+  const fallbackUser =
+    !user && !isSyncing && session?.user
       ? {
           id: session.user.id || '',
           email: session.user.email || '',
           name: session.user.name || '',
           picture: session.user.image || undefined,
           hasCompletedOnboarding:
-            (session.user as User & { hasCompletedOnboarding?: boolean }).hasCompletedOnboarding ||
+            (session.user as User & { hasCompletedOnboarding?: boolean }).hasCompletedOnboarding ??
             false,
           createdAt: new Date().toISOString(),
         }
-      : null);
+      : null;
 
-  const loading = status === 'loading' || isCheckingBackendAuth;
+  const effectiveUser = user || fallbackUser;
+
+  console.log('👤 AuthContext: User state determined:', {
+    hasBackendUser: Boolean(user),
+    hasFallbackUser: Boolean(fallbackUser),
+    effectiveUserEmail: effectiveUser?.email,
+    effectiveUserHasCompletedOnboarding: effectiveUser?.hasCompletedOnboarding,
+    isCheckingBackendAuth,
+    isSyncing,
+    status,
+  });
+
+  const loading = status === 'loading' || isCheckingBackendAuth || isSyncing;
   const isAuthenticated = status === 'authenticated' || Boolean(backendUser);
 
   // Redirect to onboarding if needed (simplified logic)
   useEffect(() => {
-    if (!user || loading) {
+    console.log('🚦 AuthContext: Redirect logic triggered:', {
+      hasEffectiveUser: Boolean(effectiveUser),
+      loading,
+      effectiveUserEmail: effectiveUser?.email,
+      hasCompletedOnboarding: effectiveUser?.hasCompletedOnboarding,
+      currentPath: window.location.pathname,
+    });
+
+    if (!effectiveUser || loading) {
+      console.log('⏸️ AuthContext: Skipping redirect (no user or still loading)');
       return;
     }
 
@@ -148,16 +229,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       currentPath.startsWith(path),
     );
 
+    console.log('🚦 AuthContext: Evaluating redirect:', {
+      currentPath,
+      isOnOnboardingRequiredPath,
+      hasCompletedOnboarding: effectiveUser.hasCompletedOnboarding,
+    });
+
     // Only redirect if user is on a protected path but hasn't completed onboarding
-    if (!user.hasCompletedOnboarding && isOnOnboardingRequiredPath) {
-      console.log('🔄 AuthContext: Redirecting to onboarding (user incomplete)');
+    if (!effectiveUser.hasCompletedOnboarding && isOnOnboardingRequiredPath) {
+      console.log('🔄 AuthContext: Redirecting to onboarding (user has not completed onboarding)');
       router.push('/onboarding');
-    } else if (user.hasCompletedOnboarding && currentPath === '/onboarding') {
+    } else if (effectiveUser.hasCompletedOnboarding && currentPath === '/onboarding') {
       // If user completed onboarding but is on onboarding page, redirect to feed
-      console.log('✅ AuthContext: Redirecting to feed (onboarding complete)');
+      console.log('✅ AuthContext: Redirecting to feed (onboarding already complete)');
       router.push('/feed');
+    } else {
+      console.log('🚦 AuthContext: No redirect needed');
     }
-  }, [user, loading, router]);
+  }, [effectiveUser, loading, router]);
 
   const login = () => {
     // Navigate to sign in page
@@ -228,7 +317,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   return (
     <AuthContext.Provider
       value={{
-        user,
+        user: effectiveUser,
         loading,
         isAuthenticated,
         isLoggingOut,

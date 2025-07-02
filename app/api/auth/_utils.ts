@@ -28,7 +28,15 @@ export interface AuthResponse {
  * Format user data consistently across all auth endpoints
  */
 export function formatUserData(user: User): AuthUserResponse {
-  return {
+  console.log('🎨 formatUserData called with user:', {
+    _id: user._id?.toString(),
+    email: user.email,
+    hasCompletedOnboarding: user.hasCompletedOnboarding,
+    hasCompletedOnboardingType: typeof user.hasCompletedOnboarding,
+    authProvider: user.authProvider,
+  });
+
+  const formatted = {
     id: user._id!.toString(),
     email: user.email,
     name: user.name,
@@ -39,6 +47,15 @@ export function formatUserData(user: User): AuthUserResponse {
     createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
     updatedAt: user.updatedAt?.toISOString() || new Date().toISOString(),
   };
+
+  console.log('🎨 formatUserData result:', {
+    id: formatted.id,
+    email: formatted.email,
+    hasCompletedOnboarding: formatted.hasCompletedOnboarding,
+    hasCompletedOnboardingType: typeof formatted.hasCompletedOnboarding,
+  });
+
+  return formatted;
 }
 
 /**
@@ -50,8 +67,21 @@ export async function createAuthResponse(
   usersCollection?: any,
   message: string = 'Authentication successful',
 ): Promise<NextResponse> {
+  console.log('🔐 createAuthResponse called with user:', {
+    _id: user._id?.toString(),
+    email: user.email,
+    hasCompletedOnboarding: user.hasCompletedOnboarding,
+    hasCompletedOnboardingType: typeof user.hasCompletedOnboarding,
+  });
+
   const userData = formatUserData(user);
   const userId = userData.id;
+
+  console.log('🎫 Generating tokens for user:', {
+    userId,
+    email: user.email,
+    hasCompletedOnboarding: user.hasCompletedOnboarding,
+  });
 
   // Generate tokens
   const tokens = generateTokens({
@@ -61,8 +91,15 @@ export async function createAuthResponse(
     hasCompletedOnboarding: user.hasCompletedOnboarding,
   });
 
+  console.log('🎫 Tokens generated:', {
+    hasAccessToken: Boolean(tokens.accessToken),
+    hasRefreshToken: Boolean(tokens.refreshToken),
+    accessTokenLength: tokens.accessToken.length,
+  });
+
   // Update refresh token in database if collection is provided
   if (usersCollection) {
+    console.log('💾 Updating refresh token in database');
     await usersCollection.updateOne(
       { _id: user._id },
       {
@@ -75,16 +112,26 @@ export async function createAuthResponse(
   }
 
   // Create response
-  const response = NextResponse.json({
+  const responseData = {
     success: true,
     message,
     data: {
       user: userData,
       tokens,
     },
+  };
+
+  console.log('📤 Creating auth response:', {
+    success: responseData.success,
+    userEmail: responseData.data.user.email,
+    hasCompletedOnboarding: responseData.data.user.hasCompletedOnboarding,
+    hasTokens: Boolean(responseData.data.tokens),
   });
 
+  const response = NextResponse.json(responseData);
+
   // Set auth cookies
+  console.log('🍪 Setting auth cookies');
   return setAuthCookies(response, tokens);
 }
 

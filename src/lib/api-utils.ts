@@ -43,12 +43,24 @@ export function successResponse(data?: any, message?: string) {
 
 // Generate JWT Tokens
 export function generateTokens(payload: JwtPayload) {
+  console.log('🔑 generateTokens called with payload:', {
+    userId: payload.userId,
+    email: payload.email,
+    hasCompletedOnboarding: payload.hasCompletedOnboarding,
+    hasCompletedOnboardingType: typeof payload.hasCompletedOnboarding,
+  });
+
   const accessToken = jwt.sign(payload, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN,
   });
 
   const refreshToken = jwt.sign(payload, JWT_SECRET, {
     expiresIn: JWT_REFRESH_EXPIRES_IN,
+  });
+
+  console.log('🔑 Tokens generated successfully:', {
+    accessTokenLength: accessToken.length,
+    refreshTokenLength: refreshToken.length,
   });
 
   return { accessToken, refreshToken };
@@ -105,14 +117,31 @@ export async function verifyToken(token: string): Promise<JwtPayload | null> {
 
 // Get current user from request
 export async function getCurrentUser(_request: NextRequest): Promise<JwtPayload | null> {
+  console.log('🔍 getCurrentUser called');
+
   const cookieStore = await cookies();
   const token = cookieStore.get('access_token')?.value;
 
   if (!token) {
+    console.log('❌ getCurrentUser: No access_token cookie found');
     return null;
   }
 
-  return verifyToken(token);
+  console.log('🔍 getCurrentUser: Found access_token, verifying...');
+  const decoded = await verifyToken(token);
+
+  if (decoded) {
+    console.log('✅ getCurrentUser: Token verified:', {
+      userId: decoded.userId,
+      email: decoded.email,
+      hasCompletedOnboarding: decoded.hasCompletedOnboarding,
+      hasCompletedOnboardingType: typeof decoded.hasCompletedOnboarding,
+    });
+  } else {
+    console.log('❌ getCurrentUser: Token verification failed');
+  }
+
+  return decoded;
 }
 
 // Auth middleware for protected routes
