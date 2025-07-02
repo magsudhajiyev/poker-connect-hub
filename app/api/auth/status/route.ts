@@ -1,16 +1,16 @@
 import { NextRequest } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { getCurrentUser, errorResponse } from '@/lib/api-utils';
-import { createUserResponse, validateUserActive } from '../_utils';
+import { createUserResponse, validateUserActive } from './_utils';
 import { User } from '@/models/user.model';
 import { ObjectId } from 'mongodb';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get current user from JWT
+    // Check authentication
     const currentUser = await getCurrentUser(request);
     if (!currentUser) {
-      return errorResponse('Unauthorized', 401);
+      return errorResponse('Not authenticated', 401);
     }
 
     const db = await getDatabase();
@@ -32,10 +32,11 @@ export async function GET(request: NextRequest) {
       return errorResponse((error as Error).message, 403);
     }
 
-    // Return standardized user data
-    return createUserResponse(user);
+    // Return user status data
+    return createUserResponse(user, 'Auth status retrieved successfully');
+    
   } catch (error) {
-    console.error('Get current user error:', error);
+    console.error('Auth status error:', error);
     return errorResponse('Internal server error', 500);
   }
 }

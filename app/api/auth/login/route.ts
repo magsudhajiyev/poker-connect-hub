@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
-import { comparePassword, generateTokens, setAuthCookies, errorResponse, successResponse } from '@/lib/api-utils';
+import { comparePassword, errorResponse } from '@/lib/api-utils';
+import { createAuthResponse, validateUserActive, getAuthUpdateFields } from './_utils';
 import { User } from '@/models/user.model';
 
 export async function POST(request: NextRequest) {
@@ -33,48 +34,16 @@ export async function POST(request: NextRequest) {
       return errorResponse('Invalid email or password', 401);
     }
 
-    // Check if user is active
-    if (!user.isActive) {
-      return errorResponse('Account is deactivated', 403);
+    // Validate user is active
+    try {
+      validateUserActive(user);
+    } catch (error) {
+      return errorResponse((error as Error).message, 403);
     }
 
-    const userId = user._id!.toString();
-
-    // Generate tokens
-    const tokens = generateTokens({
-      userId,
-      email: user.email,
-      name: user.name,
-    });
-
-    // Update refresh token in database
-    await usersCollection.updateOne(
-      { _id: user._id },
-      { 
-        $set: { 
-          refreshToken: tokens.refreshToken,
-          updatedAt: new Date()
-        } 
-      }
-    );
-
-    // Create response with user data
-    const userData = {
-      id: userId,
-      email: user.email,
-      name: user.name,
-      picture: user.picture,
-      authProvider: user.authProvider,
-      hasCompletedOnboarding: user.hasCompletedOnboarding,
-    };
-
-    // Set auth cookies and return response
-    const response = successResponse(
-      { user: userData, tokens },
-      'Login successful'
-    );
-
-    return setAuthCookies(response, tokens);
+    // Create standardized auth response with tokens and cookies
+    // This will also update the refresh token in the database
+    return await createAuthResponse(user, usersCollection, 'Login successful');
   } catch (error) {
     console.error('Login error:', error);
     return errorResponse('Internal server error', 500);

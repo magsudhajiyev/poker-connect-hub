@@ -80,7 +80,7 @@ export default function SignInForm() {
             await authEndpoints.getMe();
 
             // Check if user has completed onboarding
-            if (response.data.hasCompletedOnboarding) {
+            if (response.data.data?.user?.hasCompletedOnboarding) {
               router.push('/feed');
             } else {
               router.push('/onboarding');
@@ -178,8 +178,9 @@ export default function SignInForm() {
       setLoading(true);
       setError('');
 
-      // Get callback URL from search params or default to /feed
-      const callbackUrl = searchParams?.get('callbackUrl') || '/feed';
+      // Get callback URL from search params or default to home page
+      // Home page will handle proper onboarding redirect based on user status
+      const callbackUrl = searchParams?.get('callbackUrl') || '/';
 
       // Sign in with Google and redirect to the callback URL
       await signIn('google', { redirectTo: callbackUrl });

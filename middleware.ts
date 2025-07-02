@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
+import { verifyToken } from '@/lib/api-utils';
+import type { JwtPayload } from '@/lib/api-utils';
 
 // Define protected routes
 const protectedRoutes = ['/profile', '/settings', '/share-hand', '/feed', '/onboarding'];
@@ -25,23 +27,30 @@ export default auth(async (req) => {
     return NextResponse.next();
   }
 
-  // Check for backend JWT cookie
+  // Check for backend JWT cookie and validate it
   const accessTokenCookie = req.cookies.get('access_token');
-  const hasBackendAuth = Boolean(accessTokenCookie?.value);
+  let jwtPayload: JwtPayload | null = null;
+  let hasValidBackendAuth = false;
+
+  if (accessTokenCookie?.value) {
+    jwtPayload = await verifyToken(accessTokenCookie.value);
+    hasValidBackendAuth = Boolean(jwtPayload);
+  }
 
   // Check for NextAuth session
   const hasNextAuthSession = Boolean(req.auth);
 
-  // User is authenticated if they have either auth method
-  const isAuthenticated = hasNextAuthSession || hasBackendAuth;
+  // User is authenticated if they have either valid auth method
+  const isAuthenticated = hasNextAuthSession || hasValidBackendAuth;
 
   // Log authentication state for debugging
   if (process.env.NODE_ENV === 'development') {
     console.log('Middleware check:', {
       path: pathname,
-      hasBackendAuth,
+      hasValidBackendAuth,
       hasNextAuthSession,
       isAuthenticated,
+      hasCompletedOnboarding: jwtPayload?.hasCompletedOnboarding,
       cookies: req.cookies.getAll().map((c) => c.name),
     });
   }
@@ -62,8 +71,8 @@ export default auth(async (req) => {
 
     // If user is already authenticated and NOT coming from logout, redirect to feed or callback URL
     if (isAuthenticated && !isFromLogout && !isLogout) {
-      // Verify the auth token is actually valid by checking if it's not empty
-      if (hasBackendAuth && accessTokenCookie?.value && accessTokenCookie.value.length > 10) {
+      // Verify the auth token is actually valid
+      if (hasValidBackendAuth && jwtPayload) {
         const callbackUrl = req.nextUrl.searchParams.get('callbackUrl') || '/feed';
         console.log('User already authenticated, redirecting to:', callbackUrl);
         return NextResponse.redirect(new URL(callbackUrl, req.url));
@@ -84,10 +93,12 @@ export default auth(async (req) => {
   const requiresOnboarding = onboardingRequiredRoutes.some((route) => pathname.startsWith(route));
 
   // If authenticated and on a route that requires onboarding, check onboarding status
-  if (isAuthenticated && requiresOnboarding && hasBackendAuth) {
-    // For now, we'll need to check this on the client side
-    // as middleware can't make API calls to check onboarding status
-    // The AuthContext will handle the redirect
+  if (isAuthenticated && requiresOnboarding && hasValidBackendAuth && jwtPayload) {
+    // Check if user has completed onboarding from JWT payload
+    if (jwtPayload.hasCompletedOnboarding === false) {
+      console.log('Middleware: Redirecting to onboarding (user incomplete)');
+      return NextResponse.redirect(new URL('/onboarding', req.url));
+    }
   }
 
   // Check if the route is protected

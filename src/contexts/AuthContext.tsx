@@ -36,7 +36,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [backendUser, setBackendUser] = useState<User | null>(null);
   const [isCheckingBackendAuth, setIsCheckingBackendAuth] = useState(true);
-  const [hasCheckedOnboarding, setHasCheckedOnboarding] = useState(false);
 
   // Check for backend authentication
   useEffect(() => {
@@ -99,9 +98,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       : null);
 
-  // Check onboarding status when user is authenticated
+  const loading = status === 'loading' || isCheckingBackendAuth;
+  const isAuthenticated = status === 'authenticated' || Boolean(backendUser);
+
+  // Redirect to onboarding if needed (simplified logic)
   useEffect(() => {
-    if (!user || hasCheckedOnboarding) {
+    if (!user || loading) {
       return;
     }
 
@@ -111,15 +113,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       currentPath.startsWith(path),
     );
 
+    // Only redirect if user is on a protected path but hasn't completed onboarding
     if (!user.hasCompletedOnboarding && isOnOnboardingRequiredPath) {
+      console.log('🔄 AuthContext: Redirecting to onboarding (user incomplete)');
       router.push('/onboarding');
+    } else if (user.hasCompletedOnboarding && currentPath === '/onboarding') {
+      // If user completed onboarding but is on onboarding page, redirect to feed
+      console.log('✅ AuthContext: Redirecting to feed (onboarding complete)');
+      router.push('/feed');
     }
-
-    setHasCheckedOnboarding(true);
-  }, [user, hasCheckedOnboarding, router]);
-
-  const loading = status === 'loading' || isCheckingBackendAuth;
-  const isAuthenticated = status === 'authenticated' || Boolean(backendUser);
+  }, [user, loading, router]);
 
   const login = () => {
     // Navigate to sign in page
@@ -139,7 +142,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       // Clear any local state
-      setHasCheckedOnboarding(false);
+      // (removed hasCheckedOnboarding state)
 
       // Wait a bit for cookies to be cleared
       await new Promise((resolve) => setTimeout(resolve, 100));

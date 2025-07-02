@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
-import { hashPassword, generateTokens, setAuthCookies, errorResponse, successResponse } from '@/lib/api-utils';
+import { hashPassword, errorResponse } from '@/lib/api-utils';
+import { createAuthResponse } from './_utils';
 import { User } from '@/models/user.model';
 
 export async function POST(request: NextRequest) {
@@ -49,31 +50,12 @@ export async function POST(request: NextRequest) {
     };
 
     const result = await usersCollection.insertOne(newUser as any);
-    const userId = result.insertedId.toString();
+    
+    // Get the created user with _id
+    const createdUser = { ...newUser, _id: result.insertedId } as User;
 
-    // Generate tokens
-    const tokens = generateTokens({
-      userId,
-      email: newUser.email,
-      name: newUser.name,
-    });
-
-    // Create response with user data
-    const userData = {
-      id: userId,
-      email: newUser.email,
-      name: newUser.name,
-      authProvider: newUser.authProvider,
-      hasCompletedOnboarding: newUser.hasCompletedOnboarding,
-    };
-
-    // Set auth cookies and return response
-    const response = successResponse(
-      { user: userData, tokens },
-      'Registration successful'
-    );
-
-    return setAuthCookies(response, tokens);
+    // Create standardized auth response with tokens and cookies
+    return await createAuthResponse(createdUser, usersCollection, 'Registration successful');
   } catch (error) {
     console.error('Registration error:', error);
     return errorResponse('Internal server error', 500);

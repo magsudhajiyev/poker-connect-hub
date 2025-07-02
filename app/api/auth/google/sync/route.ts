@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
-import { generateTokens, setAuthCookies, errorResponse, successResponse } from '@/lib/api-utils';
+import { errorResponse } from '@/lib/api-utils';
+import { createAuthResponse } from '../_utils';
 import { User } from '@/models/user.model';
 
 export async function POST(request: NextRequest) {
@@ -67,43 +68,8 @@ export async function POST(request: NextRequest) {
       user = { ...newUser, _id: result.insertedId } as User;
     }
 
-    const userId = user._id!.toString();
-
-    // Generate tokens
-    const tokens = generateTokens({
-      userId,
-      email: user.email,
-      name: user.name,
-    });
-
-    // Update refresh token
-    await usersCollection.updateOne(
-      { _id: user._id },
-      { 
-        $set: { 
-          refreshToken: tokens.refreshToken,
-          updatedAt: new Date()
-        } 
-      }
-    );
-
-    // Create response with user data
-    const userData = {
-      id: userId,
-      email: user.email,
-      name: user.name,
-      picture: user.picture,
-      authProvider: user.authProvider,
-      hasCompletedOnboarding: user.hasCompletedOnboarding,
-    };
-
-    // Set auth cookies and return response
-    const response = successResponse(
-      { user: userData, tokens },
-      'Google sync successful'
-    );
-
-    return setAuthCookies(response, tokens);
+    // Create standardized auth response with tokens and cookies
+    return await createAuthResponse(user, usersCollection, 'Google sync successful');
   } catch (error) {
     console.error('Google sync error:', error);
     return errorResponse('Internal server error', 500);
