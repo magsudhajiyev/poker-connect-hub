@@ -25,7 +25,13 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validate required fields
-    if (!playFrequency || !experienceLevel || !preferredFormat || !favoriteVariant || !learningGoals) {
+    if (
+      !playFrequency ||
+      !experienceLevel ||
+      !preferredFormat ||
+      !favoriteVariant ||
+      !learningGoals
+    ) {
       return errorResponse('All required fields must be provided');
     }
 
@@ -64,8 +70,8 @@ export async function POST(request: NextRequest) {
     const usersCollection = db.collection('users');
 
     // Check if user already completed onboarding
-    const existingAnswer = await onboardingCollection.findOne({ 
-      userId: currentUser.userId 
+    const existingAnswer = await onboardingCollection.findOne({
+      userId: currentUser.userId,
     });
 
     if (existingAnswer) {
@@ -92,18 +98,15 @@ export async function POST(request: NextRequest) {
     // Update user's onboarding status
     await usersCollection.updateOne(
       { _id: new ObjectId(currentUser.userId) },
-      { 
-        $set: { 
+      {
+        $set: {
           hasCompletedOnboarding: true,
-          updatedAt: new Date()
-        } 
-      }
+          updatedAt: new Date(),
+        },
+      },
     );
 
-    return successResponse(
-      { onboardingAnswer },
-      'Onboarding completed successfully'
-    );
+    return successResponse({ onboardingAnswer }, 'Onboarding completed successfully');
   } catch (error) {
     console.error('Onboarding submission error:', error);
     return errorResponse('Internal server error', 500);

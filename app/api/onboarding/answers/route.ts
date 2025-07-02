@@ -16,8 +16,8 @@ export async function GET(request: NextRequest) {
     const onboardingCollection = db.collection<OnboardingAnswer>('onboardinganswers');
 
     // Find user's onboarding answers
-    const onboardingAnswer = await onboardingCollection.findOne({ 
-      userId: currentUser.userId 
+    const onboardingAnswer = await onboardingCollection.findOne({
+      userId: currentUser.userId,
     });
 
     if (!onboardingAnswer) {
@@ -39,9 +39,8 @@ export async function GET(request: NextRequest) {
 
     return successResponse(
       { onboardingAnswer: responseData },
-      'Onboarding answers retrieved successfully'
+      'Onboarding answers retrieved successfully',
     );
-    
   } catch (error) {
     console.error('Get onboarding answers error:', error);
     return errorResponse('Internal server error', 500);

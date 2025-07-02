@@ -1,6 +1,12 @@
 import { NextRequest } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
-import { verifyToken, generateTokens, setAuthCookies, errorResponse, successResponse } from '@/lib/api-utils';
+import {
+  verifyToken,
+  generateTokens,
+  setAuthCookies,
+  errorResponse,
+  successResponse,
+} from '@/lib/api-utils';
 import { User } from '@/models/user.model';
 import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
@@ -24,9 +30,9 @@ export async function POST(_request: NextRequest) {
     const usersCollection = db.collection<User>('users');
 
     // Find user and verify refresh token matches
-    const user = await usersCollection.findOne({ 
+    const user = await usersCollection.findOne({
       _id: new ObjectId(decoded.userId),
-      refreshToken 
+      refreshToken,
     });
 
     if (!user) {
@@ -49,19 +55,16 @@ export async function POST(_request: NextRequest) {
     // Update refresh token in database
     await usersCollection.updateOne(
       { _id: user._id },
-      { 
-        $set: { 
+      {
+        $set: {
           refreshToken: tokens.refreshToken,
-          updatedAt: new Date()
-        } 
-      }
+          updatedAt: new Date(),
+        },
+      },
     );
 
     // Set auth cookies and return response
-    const response = successResponse(
-      { tokens },
-      'Token refreshed successfully'
-    );
+    const response = successResponse({ tokens }, 'Token refreshed successfully');
 
     return setAuthCookies(response, tokens);
   } catch (error) {

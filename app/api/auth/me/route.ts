@@ -17,8 +17,8 @@ export async function GET(request: NextRequest) {
     const usersCollection = db.collection<User>('users');
 
     // Find user in database
-    const user = await usersCollection.findOne({ 
-      _id: new ObjectId(currentUser.userId) 
+    const user = await usersCollection.findOne({
+      _id: new ObjectId(currentUser.userId),
     });
 
     if (!user) {

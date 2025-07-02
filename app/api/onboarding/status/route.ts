@@ -16,15 +16,12 @@ export async function GET(request: NextRequest) {
     const onboardingCollection = db.collection<OnboardingAnswer>('onboardinganswers');
 
     // Find onboarding answer for current user
-    const onboardingAnswer = await onboardingCollection.findOne({ 
-      userId: currentUser.userId 
+    const onboardingAnswer = await onboardingCollection.findOne({
+      userId: currentUser.userId,
     });
 
     if (!onboardingAnswer) {
-      return successResponse(
-        { hasCompleted: false },
-        'Onboarding not completed'
-      );
+      return successResponse({ hasCompleted: false }, 'Onboarding not completed');
     }
 
     return successResponse({
@@ -38,7 +35,7 @@ export async function GET(request: NextRequest) {
         interestedFeatures: onboardingAnswer.interestedFeatures,
         otherInfo: onboardingAnswer.otherInfo,
         createdAt: onboardingAnswer.createdAt,
-      }
+      },
     });
   } catch (error) {
     console.error('Onboarding status error:', error);
