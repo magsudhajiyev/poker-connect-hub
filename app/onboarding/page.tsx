@@ -228,12 +228,15 @@ const Onboarding = () => {
 
         // Map the original form data to backend structure
         const onboardingData = {
+          username: formData.username, // Add username
           playFrequency: 'weekly', // Default since original doesn't have this
           experienceLevel: formData.experience || 'intermediate',
           preferredFormat: mapPreferredFormat(),
           favoriteVariant: mapGameType(formData.favoriteGame),
           learningGoals: mapLearningGoal(formData.playingGoals),
           interestedFeatures: mapInterestedFeatures(formData.playingGoals),
+          location: formData.location || undefined, // Add location if provided
+          preferredStakes: formData.preferredStakes || undefined, // Add stakes if provided
           otherInfo: formData.bio || '',
         };
 

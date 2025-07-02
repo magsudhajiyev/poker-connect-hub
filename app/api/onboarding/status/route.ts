@@ -27,12 +27,15 @@ export async function GET(request: NextRequest) {
     return successResponse({
       hasCompleted: true,
       onboardingData: {
+        username: onboardingAnswer.username,
         playFrequency: onboardingAnswer.playFrequency,
         experienceLevel: onboardingAnswer.experienceLevel,
         preferredFormat: onboardingAnswer.preferredFormat,
         favoriteVariant: onboardingAnswer.favoriteVariant,
         learningGoals: onboardingAnswer.learningGoals,
         interestedFeatures: onboardingAnswer.interestedFeatures,
+        location: onboardingAnswer.location,
+        preferredStakes: onboardingAnswer.preferredStakes,
         otherInfo: onboardingAnswer.otherInfo,
         createdAt: onboardingAnswer.createdAt,
       },

@@ -15,17 +15,21 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
+      username,
       playFrequency,
       experienceLevel,
       preferredFormat,
       favoriteVariant,
       learningGoals,
       interestedFeatures,
+      location,
+      preferredStakes,
       otherInfo,
     } = body;
 
     // Validate required fields
     if (
+      !username ||
       !playFrequency ||
       !experienceLevel ||
       !preferredFormat ||
@@ -81,12 +85,15 @@ export async function POST(request: NextRequest) {
     // Create onboarding answer
     const onboardingAnswer: Omit<OnboardingAnswer, '_id'> = {
       userId: currentUser.userId,
+      username,
       playFrequency,
       experienceLevel,
       preferredFormat,
       favoriteVariant,
       learningGoals,
       interestedFeatures: interestedFeatures || [],
+      location,
+      preferredStakes,
       otherInfo,
       createdAt: new Date(),
       updatedAt: new Date(),

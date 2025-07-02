@@ -71,12 +71,15 @@ export const authEndpoints = {
 // Onboarding endpoints
 export const onboardingEndpoints = {
   submitAnswers: (data: {
+    username: string;
     playFrequency: string;
     experienceLevel: string;
     preferredFormat: string;
     favoriteVariant: string;
     learningGoals: string;
     interestedFeatures: string[];
+    location?: string;
+    preferredStakes?: string;
     otherInfo?: string;
   }) => authApi.post('/onboarding/submit', data),
 
