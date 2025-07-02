@@ -71,6 +71,41 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           });
         }
       } catch {
+        // If we have a NextAuth session but no backend auth, sync with backend
+        if (session?.user?.email && status === 'authenticated') {
+          try {
+            const syncResponse = await fetch('/api/auth/google/sync', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+              body: JSON.stringify({
+                email: session.user.email,
+                name: session.user.name || '',
+                googleId: (session as any).user?.id || '',
+                picture: session.user.image || '',
+              }),
+            });
+
+            if (syncResponse.ok) {
+              const syncData = await syncResponse.json();
+              if (syncData.data?.user) {
+                setBackendUser({
+                  id: syncData.data.user.id,
+                  email: syncData.data.user.email,
+                  name: syncData.data.user.name,
+                  picture: syncData.data.user.picture,
+                  hasCompletedOnboarding: syncData.data.user.hasCompletedOnboarding,
+                  createdAt: syncData.data.user.createdAt,
+                });
+              }
+            }
+          } catch (syncError) {
+            console.error('Failed to sync with backend:', syncError);
+          }
+        }
+
         // Not authenticated via backend
         setBackendUser(null);
       } finally {
@@ -79,7 +114,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     checkBackendAuth();
-  }, [status]);
+  }, [status, session]);
 
   // Determine the current user from either auth method
   // Prefer backend user data as it has the most up-to-date onboarding status
