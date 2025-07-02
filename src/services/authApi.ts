@@ -79,7 +79,28 @@ export const authEndpoints = {
     });
   },
 
-  getMe: () => authApi.get('/auth/me'),
+  getMe: () => {
+    console.log('📡 authEndpoints.getMe: Making request to /api/auth/me');
+    return authApi
+      .get('/auth/me')
+      .then((response) => {
+        console.log('📡 authEndpoints.getMe: Response received:', {
+          status: response.status,
+          hasData: Boolean(response.data),
+          dataKeys: response.data ? Object.keys(response.data) : [],
+          userData: response.data?.data?.user,
+        });
+        return response;
+      })
+      .catch((error) => {
+        console.error(
+          '📡 authEndpoints.getMe: Error:',
+          error.response?.status,
+          error.response?.data,
+        );
+        throw error;
+      });
+  },
 
   refreshToken: () => authApi.post('/auth/refresh'),
 

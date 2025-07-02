@@ -72,28 +72,47 @@ export function setAuthCookies(
   tokens: { accessToken: string; refreshToken: string },
 ) {
   const isProduction = process.env.NODE_ENV === 'production';
+  const isSecureContext = process.env.NEXT_PUBLIC_APP_URL?.startsWith('https://') || false;
+
+  console.log('🍪 setAuthCookies called:', {
+    isProduction,
+    isSecureContext,
+    appUrl: process.env.NEXT_PUBLIC_APP_URL,
+    hasAccessToken: Boolean(tokens.accessToken),
+    hasRefreshToken: Boolean(tokens.refreshToken),
+    accessTokenLength: tokens.accessToken.length,
+    refreshTokenLength: tokens.refreshToken.length,
+  });
+
+  // For production, we need to be careful with sameSite and secure flags
+  // If the site is served over HTTPS, use 'none' for cross-site requests
+  // Otherwise, use 'lax' to avoid cookie issues
+  const cookieOptions = {
+    httpOnly: true,
+    secure: isProduction && isSecureContext,
+    sameSite: (isProduction && isSecureContext ? 'none' : 'lax') as 'none' | 'lax' | 'strict',
+    path: '/',
+  };
 
   // Access token cookie
   response.cookies.set({
     name: 'access_token',
     value: tokens.accessToken,
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
-    path: '/',
+    ...cookieOptions,
     maxAge: 60 * 59, // 59 minutes
   });
+
+  console.log('🍪 Access token cookie set with options:', cookieOptions);
 
   // Refresh token cookie
   response.cookies.set({
     name: 'refresh_token',
     value: tokens.refreshToken,
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
-    path: '/',
+    ...cookieOptions,
     maxAge: 60 * 60 * 24 * 7, // 7 days
   });
+
+  console.log('🍪 Refresh token cookie set with options:', cookieOptions);
 
   return response;
 }
@@ -120,6 +139,18 @@ export async function getCurrentUser(_request: NextRequest): Promise<JwtPayload 
   console.log('🔍 getCurrentUser called');
 
   const cookieStore = await cookies();
+
+  // Log all cookies for debugging
+  const allCookies = cookieStore.getAll();
+  console.log(
+    '🍪 getCurrentUser: All cookies:',
+    allCookies.map((c) => ({
+      name: c.name,
+      hasValue: Boolean(c.value),
+      valueLength: c.value?.length || 0,
+    })),
+  );
+
   const token = cookieStore.get('access_token')?.value;
 
   if (!token) {
@@ -127,7 +158,11 @@ export async function getCurrentUser(_request: NextRequest): Promise<JwtPayload 
     return null;
   }
 
-  console.log('🔍 getCurrentUser: Found access_token, verifying...');
+  console.log('🔍 getCurrentUser: Found access_token, verifying...', {
+    tokenLength: token.length,
+    tokenPrefix: `${token.substring(0, 20)}...`,
+  });
+
   const decoded = await verifyToken(token);
 
   if (decoded) {

@@ -5,16 +5,19 @@ Ready to test your Google authentication? Follow these steps:
 ## 1. Set Up Google Cloud Console (5 minutes)
 
 ### Create Project & Enable APIs
+
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create new project: `poker-connect-hub`
 3. Enable APIs: `Google+ API` and `Identity Toolkit API`
 
 ### Configure OAuth Consent Screen
+
 1. Go to "OAuth consent screen"
 2. Choose "External", App name: `Poker Connect Hub`
 3. Add your email as developer contact
 
 ### Create OAuth Credentials
+
 1. Go to "Credentials" > "Create Credentials" > "OAuth client ID"
 2. Application type: "Web application"
 3. **Authorized JavaScript origins:**
@@ -30,12 +33,15 @@ Ready to test your Google authentication? Follow these steps:
 ## 2. Configure Environment Variables
 
 ### Backend (.env)
+
 Copy `backend/.env.example` to `backend/.env` and update:
+
 ```bash
 cp backend/.env.example backend/.env
 ```
 
 Update with your Google credentials:
+
 ```bash
 GOOGLE_CLIENT_ID=your-client-id-from-google-cloud
 GOOGLE_CLIENT_SECRET=your-client-secret-from-google-cloud
@@ -46,12 +52,15 @@ SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(16).toString
 ```
 
 ### Frontend (.env)
+
 Copy `.env.example` to `.env` and update:
+
 ```bash
 cp .env.example .env
 ```
 
 Update with your Google Client ID:
+
 ```bash
 VITE_GOOGLE_CLIENT_ID=your-client-id-from-google-cloud
 ```
@@ -59,6 +68,7 @@ VITE_GOOGLE_CLIENT_ID=your-client-id-from-google-cloud
 ## 3. Set Up Database
 
 ### Install MongoDB
+
 ```bash
 # macOS
 brew install mongodb/brew/mongodb-community
@@ -75,6 +85,7 @@ sudo systemctl enable mongod
 ```
 
 ### Verify MongoDB is Running
+
 ```bash
 # Check if MongoDB is running
 mongosh --eval "db.runCommand({ connectionStatus: 1 })"
@@ -83,6 +94,7 @@ mongosh --eval "db.runCommand({ connectionStatus: 1 })"
 ## 4. Start the Application
 
 ### Install Dependencies & Start Backend
+
 ```bash
 cd backend
 npm install
@@ -90,6 +102,7 @@ npm run start:dev
 ```
 
 ### Start Frontend (in new terminal)
+
 ```bash
 npm run dev
 ```

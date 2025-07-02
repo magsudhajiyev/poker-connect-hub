@@ -70,22 +70,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         const response = await authEndpoints.getMe();
 
-        if (response.data) {
+        console.log('🔍 AuthContext: Raw getMe response:', {
+          hasResponse: Boolean(response),
+          hasData: Boolean(response.data),
+          dataKeys: response.data ? Object.keys(response.data) : [],
+          fullData: response.data,
+        });
+
+        // The response structure is { success: true, data: { user: {...} } }
+        const userData = response.data?.data?.user || response.data?.user || response.data;
+
+        if (userData && userData.id) {
           console.log('✅ AuthContext: Backend auth successful:', {
-            id: response.data.id,
-            email: response.data.email,
-            hasCompletedOnboarding: response.data.hasCompletedOnboarding,
-            hasCompletedOnboardingType: typeof response.data.hasCompletedOnboarding,
+            id: userData.id,
+            email: userData.email,
+            hasCompletedOnboarding: userData.hasCompletedOnboarding,
+            hasCompletedOnboardingType: typeof userData.hasCompletedOnboarding,
           });
 
           setBackendUser({
-            id: response.data.id,
-            email: response.data.email,
-            name: response.data.name,
-            picture: response.data.picture,
-            hasCompletedOnboarding: response.data.hasCompletedOnboarding,
-            createdAt: response.data.createdAt,
+            id: userData.id,
+            email: userData.email,
+            name: userData.name,
+            picture: userData.picture,
+            hasCompletedOnboarding: userData.hasCompletedOnboarding,
+            createdAt: userData.createdAt,
           });
+        } else {
+          console.error('❌ AuthContext: No valid user data in response:', response.data);
         }
       } catch (error) {
         console.log('❌ AuthContext: Backend auth failed:', error);
@@ -146,6 +158,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                   hasCompletedOnboarding: syncedUser.hasCompletedOnboarding,
                   hasCompletedOnboardingType: typeof syncedUser.hasCompletedOnboarding,
                 });
+
+                // After sync, try to verify auth cookies were set by calling /api/auth/me
+                console.log('🔄 AuthContext: Verifying auth cookies after sync...');
+                try {
+                  const verifyResponse = await authEndpoints.getMe();
+                  const verifyUserData =
+                    verifyResponse.data?.data?.user ||
+                    verifyResponse.data?.user ||
+                    verifyResponse.data;
+
+                  if (verifyUserData && verifyUserData.id) {
+                    console.log('✅ AuthContext: Auth cookies verified after sync:', {
+                      email: verifyUserData.email,
+                      hasCompletedOnboarding: verifyUserData.hasCompletedOnboarding,
+                    });
+                  } else {
+                    console.error(
+                      '❌ AuthContext: Auth cookies not properly set after sync, response:',
+                      verifyResponse.data,
+                    );
+                  }
+                } catch (verifyError) {
+                  console.error('❌ AuthContext: Failed to verify auth cookies:', verifyError);
+                }
+
                 // User is now synced and authenticated
                 return;
               } else {
