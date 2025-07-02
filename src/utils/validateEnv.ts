@@ -4,6 +4,7 @@
 export function validateEnvironmentVariables() {
   const warnings: string[] = [];
   const errors: string[] = [];
+  const isClient = typeof window !== 'undefined';
 
   // Check NEXT_PUBLIC_API_URL
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -16,22 +17,25 @@ export function validateEnvironmentVariables() {
     );
   }
 
-  // Check NextAuth configuration
-  if (!process.env.NEXTAUTH_SECRET && process.env.NODE_ENV === 'production') {
-    errors.push('NEXTAUTH_SECRET is required in production.');
-  }
+  // Only check server-side variables on the server
+  if (!isClient) {
+    // Check NextAuth configuration
+    if (!process.env.NEXTAUTH_SECRET && process.env.NODE_ENV === 'production') {
+      errors.push('NEXTAUTH_SECRET is required in production.');
+    }
 
-  if (!process.env.NEXTAUTH_URL && process.env.NODE_ENV === 'production') {
-    warnings.push('NEXTAUTH_URL should be set in production.');
-  }
+    if (!process.env.NEXTAUTH_URL && process.env.NODE_ENV === 'production') {
+      warnings.push('NEXTAUTH_URL should be set in production.');
+    }
 
-  // Check Google OAuth
-  if (!process.env.GOOGLE_CLIENT_ID) {
-    warnings.push('GOOGLE_CLIENT_ID is not set. Google OAuth will not work.');
-  }
+    // Check Google OAuth
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      warnings.push('GOOGLE_CLIENT_ID is not set. Google OAuth will not work.');
+    }
 
-  if (!process.env.GOOGLE_CLIENT_SECRET) {
-    warnings.push('GOOGLE_CLIENT_SECRET is not set. Google OAuth will not work.');
+    if (!process.env.GOOGLE_CLIENT_SECRET) {
+      warnings.push('GOOGLE_CLIENT_SECRET is not set. Google OAuth will not work.');
+    }
   }
 
   // Log results
