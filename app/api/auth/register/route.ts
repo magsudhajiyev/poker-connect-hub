@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { hashPassword, errorResponse } from '@/lib/api-utils';
-import { createAuthResponse } from './_utils';
+import { createAuthResponse } from '../_utils';
 import { User } from '@/models/user.model';
 
 export async function POST(request: NextRequest) {
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     };
 
     const result = await usersCollection.insertOne(newUser as any);
-    
+
     // Get the created user with _id
     const createdUser = { ...newUser, _id: result.insertedId } as User;
 
