@@ -1,31 +1,42 @@
+'use client';
 
-import { 
-  Rss, Flame, Share2, User, Users, HelpCircle, X,
-} from 'lucide-react';
+import { Rss, Flame, Share2, User, Users, HelpCircle, X, LogOut, Settings } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
 
-export const MobileSidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
+interface MobileSidebarContentProps {
+  onNavigate?: () => void;
+  showSettings?: boolean;
+}
+
+export const MobileSidebarContent = ({
+  onNavigate,
+  showSettings = false,
+}: MobileSidebarContentProps) => {
   const pathname = usePathname();
   const router = useRouter();
+  const { logout, isLoggingOut } = useAuth();
 
-  const isActive = (path: string) => {
-    if (path === '/feed' && pathname === '/feed') {
-return true;
-}
-    if (path === '/profile' && pathname === '/profile') {
-return true;
-}
-    if (path === '/share-hand' && pathname === '/share-hand') {
-return true;
-}
-    return false;
-  };
+  const isActive = (path: string) => pathname === path;
 
   const handleNavigation = (path: string) => {
     router.push(path);
     onNavigate?.();
   };
+
+  const navigationItems = [
+    { path: '/feed', icon: Rss, label: 'Feed' },
+    { path: '/trending', icon: Flame, label: 'Trending' },
+    { path: '/share-hand', icon: Share2, label: 'Share Hand' },
+  ];
+
+  const secondaryItems = [
+    { path: '/profile', icon: User, label: 'Profile' },
+    ...(showSettings ? [{ path: '/settings', icon: Settings, label: 'Settings' }] : []),
+    { path: '/community', icon: Users, label: 'Community' },
+    { path: '/help', icon: HelpCircle, label: 'Help' },
+  ];
 
   return (
     <div className="h-full bg-slate-950 text-slate-200">
@@ -39,64 +50,76 @@ return true;
           <X className="h-5 w-5 text-white" />
         </Button>
       </div>
-      
+
       <nav className="px-3 space-y-1 pt-4">
-        <div 
-          onClick={() => handleNavigation('/feed')}
-          className={`flex items-center px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-300 ${
-            isActive('/feed') 
-              ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
-              : 'text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800/40'
-          }`}
+        {/* Primary Navigation */}
+        {navigationItems.map((item) => {
+          const Icon = item.icon;
+          const active = isActive(item.path);
+
+          return (
+            <div
+              key={item.path}
+              onClick={() => handleNavigation(item.path)}
+              className={`flex items-center px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-300 ${
+                active
+                  ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30'
+                  : 'text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800/40'
+              }`}
+            >
+              <Icon
+                className={`w-5 h-5 mr-3 flex-shrink-0 transition-colors duration-300 ${
+                  active ? 'text-emerald-500' : ''
+                }`}
+              />
+              <span className="text-sm font-medium">{item.label}</span>
+            </div>
+          );
+        })}
+
+        {/* Divider */}
+        <div className="my-4 border-t border-zinc-800/50"></div>
+
+        {/* Secondary Navigation */}
+        {secondaryItems.map((item) => {
+          const Icon = item.icon;
+          const active = isActive(item.path);
+
+          return (
+            <div
+              key={item.path}
+              onClick={() => handleNavigation(item.path)}
+              className={`flex items-center px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-300 ${
+                active
+                  ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30'
+                  : 'text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800/40'
+              }`}
+            >
+              <Icon
+                className={`w-5 h-5 mr-3 flex-shrink-0 transition-colors duration-300 ${
+                  active ? 'text-emerald-500' : ''
+                }`}
+              />
+              <span className="text-sm font-medium">{item.label}</span>
+            </div>
+          );
+        })}
+
+        {/* Divider */}
+        <div className="my-4 border-t border-zinc-800/50"></div>
+
+        {/* Logout Button */}
+        <button
+          onClick={async () => {
+            await logout();
+            onNavigate?.();
+          }}
+          disabled={isLoggingOut}
+          className="w-full flex items-center px-3 py-2.5 rounded-xl transition-all duration-300 text-red-400 hover:text-red-300 hover:bg-red-950/30 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Rss className={`w-5 h-5 mr-3 transition-colors duration-300 ${
-            isActive('/feed') ? 'text-emerald-500' : 'hover:text-zinc-300'
-          }`} />
-          <span className="text-sm">Feed</span>
-        </div>
-        
-        <div className="flex items-center px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-300 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800/40">
-          <Flame className="w-5 h-5 mr-3 transition-colors duration-300 hover:text-zinc-300" />
-          <span className="text-sm">Trending Hands</span>
-        </div>
-        
-        <div 
-          onClick={() => handleNavigation('/share-hand')}
-          className={`flex items-center px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-300 ${
-            isActive('/share-hand') 
-              ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
-              : 'text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800/40'
-          }`}
-        >
-          <Share2 className={`w-5 h-5 mr-3 transition-colors duration-300 ${
-            isActive('/share-hand') ? 'text-emerald-500' : 'hover:text-zinc-300'
-          }`} />
-          <span className="text-sm">Share Hand</span>
-        </div>
-        
-        <div 
-          onClick={() => handleNavigation('/profile')}
-          className={`flex items-center px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-300 ${
-            isActive('/profile') 
-              ? 'text-zinc-200 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border border-zinc-700/30' 
-              : 'text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800/40'
-          }`}
-        >
-          <User className={`w-5 h-5 mr-3 transition-colors duration-300 ${
-            isActive('/profile') ? 'text-emerald-500' : 'hover:text-zinc-300'
-          }`} />
-          <span className="text-sm">My Profile</span>
-        </div>
-        
-        <div className="flex items-center px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-300 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800/40">
-          <Users className="w-5 h-5 mr-3 transition-colors duration-300 hover:text-zinc-300" />
-          <span className="text-sm">Following</span>
-        </div>
-        
-        <div className="flex items-center px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-300 text-zinc-400 hover:text-zinc-300 hover:bg-zinc-800/40">
-          <HelpCircle className="w-5 h-5 mr-3 transition-colors duration-300 hover:text-zinc-300" />
-          <span className="text-sm">Help & Support</span>
-        </div>
+          <LogOut className="w-5 h-5 mr-3 flex-shrink-0" />
+          <span className="text-sm font-medium">{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
+        </button>
       </nav>
     </div>
   );

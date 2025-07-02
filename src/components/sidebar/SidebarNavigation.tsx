@@ -1,13 +1,24 @@
 'use client';
 
-import { Home, Activity, TrendingUp, Settings, Share2, User, HelpCircle } from 'lucide-react';
+import {
+  Home,
+  Activity,
+  TrendingUp,
+  Settings,
+  Share2,
+  User,
+  HelpCircle,
+  LogOut,
+} from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useSidebar } from './SidebarContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const SidebarNavigation = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { isCollapsed } = useSidebar();
+  const { logout, isLoggingOut } = useAuth();
 
   const navigationItems = [
     { name: 'Feed', icon: Home, path: '/feed' },
@@ -24,6 +35,10 @@ export const SidebarNavigation = () => {
 
   const handleNavigation = (path: string) => {
     router.push(path);
+  };
+
+  const handleLogout = async () => {
+    await logout();
   };
 
   return (
@@ -90,6 +105,23 @@ export const SidebarNavigation = () => {
             </button>
           );
         })}
+
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          className={`
+            w-full flex items-center ${isCollapsed ? 'justify-center' : 'space-x-3'} px-3 py-2.5 rounded-lg transition-all duration-200
+            text-red-400 hover:text-red-300 hover:bg-red-950/30 disabled:opacity-50 disabled:cursor-not-allowed
+          `}
+        >
+          <LogOut className="w-5 h-5 flex-shrink-0" />
+          {!isCollapsed && (
+            <span className="text-sm font-medium">
+              {isLoggingOut ? 'Logging out...' : 'Logout'}
+            </span>
+          )}
+        </button>
       </div>
     </div>
   );

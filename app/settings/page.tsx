@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
-import { MobileSidebarContent } from './components/MobileSidebarContent';
+import { MobileSidebarContent } from '@/components/MobileSidebarContent';
 import { ArrowLeft, Menu, Bell, Shield, User, Palette, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -37,7 +37,7 @@ const MobileSidebar = () => {
           Main navigation menu for the application
         </SheetDescription>
         <div className="h-full">
-          <MobileSidebarContent onNavigate={() => setIsOpen(false)} />
+          <MobileSidebarContent onNavigate={() => setIsOpen(false)} showSettings={true} />
         </div>
       </SheetContent>
     </Sheet>

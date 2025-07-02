@@ -28,9 +28,7 @@ const MobileSidebar = () => {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="p-0 w-64">
-        <div className="h-full bg-slate-900">
-          <GlobalSidebar />
-        </div>
+        <GlobalSidebar isMobile={true} />
       </SheetContent>
     </Sheet>
   );
