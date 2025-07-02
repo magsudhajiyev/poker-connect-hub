@@ -7,14 +7,9 @@ export function validateEnvironmentVariables() {
 
   // Check NEXT_PUBLIC_API_URL
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
 
   if (!apiUrl) {
     errors.push('NEXT_PUBLIC_API_URL is not set. Backend communication will fail.');
-  } else if (apiUrl === appUrl || apiUrl.includes('pokerconnect.me')) {
-    errors.push(
-      `NEXT_PUBLIC_API_URL is set to frontend URL (${apiUrl}). It must point to your backend service URL.`,
-    );
   } else if (apiUrl.includes('localhost') && process.env.NODE_ENV === 'production') {
     warnings.push(
       'NEXT_PUBLIC_API_URL contains localhost in production. Make sure backend is deployed.',
@@ -60,12 +55,8 @@ export function validateEnvironmentVariables() {
 // Helper to check if backend is properly configured
 export function isBackendConfigured(): boolean {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
 
   return Boolean(
-    apiUrl &&
-      apiUrl !== appUrl &&
-      !apiUrl.includes('pokerconnect.me') &&
-      (process.env.NODE_ENV === 'development' || !apiUrl.includes('localhost')),
+    apiUrl && (process.env.NODE_ENV === 'development' || !apiUrl.includes('localhost')),
   );
 }
