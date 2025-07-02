@@ -70,7 +70,9 @@ export const useProfileData = (): ProfileData => {
   // Get user data with fallbacks
   const userData = {
     name: user?.name || 'Anonymous User',
-    username: username ? `@${username}` : generateUsername(user?.email || 'user@example.com'),
+    username: username
+      ? `@${username.toLowerCase()}`
+      : generateUsername(user?.email || 'user@example.com'),
     email: user?.email || '',
     picture: user?.picture || '',
     bio: bio || 'Passionate poker player. Sharing hands and learning from the community.',

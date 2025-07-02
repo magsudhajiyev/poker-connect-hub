@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, ArrowRight, CheckCircle, User, Target, TrendingUp, Users } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle,
+  User,
+  Target,
+  TrendingUp,
+  Users,
+  AlertCircle,
+  Loader2,
+} from 'lucide-react';
 import { useRouter, redirect } from 'next/navigation';
 import { onboardingEndpoints } from '@/services/authApi';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,6 +44,7 @@ const Onboarding = () => {
   });
   const router = useRouter();
   const { user } = useAuth();
+  const checkUsernameTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Redirect if not authenticated
   if (!user) {
@@ -105,24 +116,40 @@ const Onboarding = () => {
     'Join poker discussions 💬',
   ];
 
-  // Simulate username check
+  // Check username availability
   const checkUsername = async (username: string) => {
     if (username.length < 3) {
       setUsernameError('Username must be at least 3 characters');
       return;
     }
+
+    if (username.length > 20) {
+      setUsernameError('Username must be less than 20 characters');
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+      setUsernameError('Username can only contain letters, numbers, underscores, and dashes');
+      return;
+    }
+
     setIsCheckingUsername(true);
     setUsernameError('');
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      const response = await onboardingEndpoints.checkUsername(username);
 
-    // Simulate some taken usernames
-    const takenUsernames = ['admin', 'pokerking', 'cardshark', 'bluffer'];
-    if (takenUsernames.includes(username.toLowerCase())) {
-      setUsernameError('Username is already taken');
+      if (response.data?.success) {
+        if (!response.data.data.available) {
+          setUsernameError('Username is already taken');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to check username:', error);
+      // Don't set error, allow user to continue
+    } finally {
+      setIsCheckingUsername(false);
     }
-    setIsCheckingUsername(false);
   };
   const handleUsernameChange = (value: string) => {
     setFormData((prev) => ({
@@ -130,8 +157,36 @@ const Onboarding = () => {
       username: value,
     }));
     setUsernameError('');
+
+    // Clear any existing timeout
+    if (checkUsernameTimeoutRef.current) {
+      clearTimeout(checkUsernameTimeoutRef.current);
+    }
+
+    // Set validation error immediately for invalid format
+    if (value.length > 0) {
+      if (value.length < 3) {
+        setUsernameError('Username must be at least 3 characters');
+        return;
+      }
+
+      if (value.length > 20) {
+        setUsernameError('Username must be less than 20 characters');
+        return;
+      }
+
+      if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
+        setUsernameError('Username can only contain letters, numbers, underscores, and dashes');
+        return;
+      }
+    }
+
+    // Debounce the API call
     if (value.length >= 3) {
-      checkUsername(value);
+      setIsCheckingUsername(true);
+      checkUsernameTimeoutRef.current = setTimeout(() => {
+        checkUsername(value);
+      }, 500);
     }
   };
   const toggleGoal = (goal: string) => {
@@ -293,16 +348,50 @@ const Onboarding = () => {
                 <Label htmlFor="username" className="text-slate-200 text-sm lg:text-base">
                   Choose a username
                 </Label>
-                <Input
-                  id="username"
-                  placeholder="Your poker handle"
-                  value={formData.username}
-                  onChange={(e) => handleUsernameChange(e.target.value)}
-                  className={`mt-1 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500 text-sm lg:text-base ${usernameError ? 'border-red-500 focus:border-red-500' : ''}`}
-                />
-                {usernameError && <p className="text-red-400 text-xs mt-1">{usernameError}</p>}
+                <div className="relative">
+                  <Input
+                    id="username"
+                    placeholder="Your poker handle"
+                    value={formData.username}
+                    onChange={(e) => handleUsernameChange(e.target.value)}
+                    className={`mt-1 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500 text-sm lg:text-base pr-10 ${
+                      usernameError
+                        ? 'border-red-500 focus:border-red-500'
+                        : formData.username.length >= 3 && !isCheckingUsername && !usernameError
+                          ? 'border-emerald-500'
+                          : ''
+                    }`}
+                  />
+                  {/* Status icon */}
+                  <div className="absolute right-3 top-3.5">
+                    {isCheckingUsername && (
+                      <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />
+                    )}
+                    {!isCheckingUsername && formData.username.length >= 3 && !usernameError && (
+                      <CheckCircle className="w-4 h-4 text-emerald-500" />
+                    )}
+                    {!isCheckingUsername && usernameError && (
+                      <AlertCircle className="w-4 h-4 text-red-500" />
+                    )}
+                  </div>
+                </div>
+                {usernameError && (
+                  <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {usernameError}
+                  </p>
+                )}
                 {isCheckingUsername && (
-                  <p className="text-slate-400 text-xs mt-1">Checking availability...</p>
+                  <p className="text-slate-400 text-xs mt-1 flex items-center gap-1">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Checking availability...
+                  </p>
+                )}
+                {!isCheckingUsername && formData.username.length >= 3 && !usernameError && (
+                  <p className="text-emerald-400 text-xs mt-1 flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" />
+                    Username is available
+                  </p>
                 )}
               </div>
             </div>

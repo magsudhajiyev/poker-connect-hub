@@ -86,6 +86,8 @@ export const onboardingEndpoints = {
   getAnswers: () => authApi.get('/onboarding/answers'),
 
   getStatus: () => authApi.get('/onboarding/status'),
+
+  checkUsername: (username: string) => authApi.post('/onboarding/check-username', { username }),
 };
 
 export default authApi;
