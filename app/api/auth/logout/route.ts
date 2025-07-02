@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { getCurrentUser, clearAuthCookies, successResponse } from '@/lib/api-utils';
-import { User } from '@/models/user.model';
 import { ObjectId } from 'mongodb';
 
 export async function POST(request: NextRequest) {
@@ -13,7 +12,7 @@ export async function POST(request: NextRequest) {
     if (currentUser) {
       try {
         const db = await getDatabase();
-        const usersCollection = db.collection<User>('users');
+        const usersCollection = db.collection('users');
 
         // Clear refresh token in database
         await usersCollection.updateOne(

@@ -7,13 +7,13 @@ import {
   errorResponse,
   successResponse,
 } from '@/lib/api-utils';
-import { User } from '@/models/user.model';
 import { ObjectId } from 'mongodb';
 import { cookies } from 'next/headers';
+import { User } from '@/models/user.model';
 
 export async function POST(_request: NextRequest) {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const refreshToken = cookieStore.get('refresh_token')?.value;
 
     if (!refreshToken) {
@@ -27,7 +27,7 @@ export async function POST(_request: NextRequest) {
     }
 
     const db = await getDatabase();
-    const usersCollection = db.collection<User>('users');
+    const usersCollection = db.collection('users');
 
     // Find user and verify refresh token matches
     const user = await usersCollection.findOne({
@@ -39,22 +39,24 @@ export async function POST(_request: NextRequest) {
       return errorResponse('Invalid refresh token', 401);
     }
 
-    if (!user.isActive) {
+    const typedUser = user as unknown as User;
+    if (!typedUser.isActive) {
       return errorResponse('Account is deactivated', 403);
     }
 
-    const userId = user._id!.toString();
+    const userId = typedUser._id!.toString();
 
     // Generate new tokens
     const tokens = generateTokens({
       userId,
-      email: user.email,
-      name: user.name,
+      email: typedUser.email,
+      name: typedUser.name,
+      hasCompletedOnboarding: typedUser.hasCompletedOnboarding,
     });
 
     // Update refresh token in database
     await usersCollection.updateOne(
-      { _id: user._id },
+      { _id: new ObjectId(userId) },
       {
         $set: {
           refreshToken: tokens.refreshToken,

@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     const usersCollection = db.collection<User>('users');
 
     // Check if user exists by googleId or email
-    let user = await usersCollection.findOne({
+    let user: User | null = await usersCollection.findOne({
       $or: [{ googleId }, { email: email.toLowerCase() }],
     });
 
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       };
 
       const result = await usersCollection.insertOne(newUser as any);
-      user = { ...newUser, _id: result.insertedId } as User;
+      user = { ...newUser, _id: result.insertedId.toString() };
     }
 
     // Create standardized auth response with tokens and cookies
