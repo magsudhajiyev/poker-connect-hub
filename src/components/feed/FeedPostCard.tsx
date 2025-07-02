@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Heart, MessageCircle, Share2, Bookmark, TrendingUp, Send } from 'lucide-react';
 import { SharedHand } from '@/stores/sharedHandsStore';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface FeedPostCardProps {
   hand: SharedHand;
@@ -16,6 +17,7 @@ interface FeedPostCardProps {
 }
 
 export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardProps) => {
+  const { user } = useAuth();
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(hand.likes);
   const [showComments, setShowComments] = useState(false);
@@ -38,10 +40,10 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
     if (newComment.trim()) {
       const comment = {
         id: Date.now().toString(),
-        author: 'You',
+        author: user?.name || 'You',
         content: newComment.trim(),
         createdAt: new Date(),
-        avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg',
+        avatar: user?.picture || '',
       };
       setComments([...comments, comment]);
       setNewComment('');
@@ -58,10 +60,12 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
         className="flex flex-row items-center space-y-0 pb-3 cursor-pointer"
         onClick={handleCardClick}
       >
-        <Avatar className="w-8 h-8 sm:w-10 sm:h-10 mr-2 sm:mr-3 flex-shrink-0">
-          <AvatarImage src={hand.authorAvatar} />
-          <AvatarFallback>{hand.authorName[0]}</AvatarFallback>
-        </Avatar>
+        <UserAvatar
+          src={hand.authorAvatar}
+          name={hand.authorName}
+          size="md"
+          className="mr-2 sm:mr-3 flex-shrink-0"
+        />
         <div className="flex-1 min-w-0">
           <h3 className="text-slate-200 font-medium text-sm sm:text-base truncate">
             {hand.authorName}
@@ -156,10 +160,12 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
             {/* Existing Comments */}
             {comments.map((comment) => (
               <div key={comment.id} className="flex space-x-3">
-                <Avatar className="w-6 h-6 flex-shrink-0">
-                  <AvatarImage src={comment.avatar} />
-                  <AvatarFallback>{comment.author[0]}</AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  src={comment.avatar}
+                  name={comment.author}
+                  size="xs"
+                  className="flex-shrink-0"
+                />
                 <div className="flex-1 min-w-0">
                   <div className="bg-slate-700/30 rounded-lg px-3 py-2">
                     <p className="text-slate-300 text-sm font-medium">{comment.author}</p>
@@ -172,10 +178,12 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
 
             {/* Comment Input */}
             <div className="flex space-x-3">
-              <Avatar className="w-6 h-6 flex-shrink-0">
-                <AvatarImage src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg" />
-                <AvatarFallback>Y</AvatarFallback>
-              </Avatar>
+              <UserAvatar
+                src={user?.picture}
+                name={user?.name}
+                size="xs"
+                className="flex-shrink-0"
+              />
               <div className="flex-1 flex space-x-2">
                 <Textarea
                   value={newComment}

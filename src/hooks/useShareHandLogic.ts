@@ -12,9 +12,11 @@ import {
 } from '@/utils/shareHandCalculations';
 import { sharedHandsStore } from '@/stores/sharedHandsStore';
 import { useActionManagement } from './useActionManagement';
+import { useProfileData } from './useProfileData';
 
 export const useShareHandLogic = () => {
   const router = useRouter();
+  const { userData } = useProfileData();
   const [currentStep, setCurrentStep] = useState(0);
   const [tags, setTags] = useState<string[]>(['bluff', 'tournament']);
   const [isLoading, setIsLoading] = useState(false);
@@ -130,7 +132,12 @@ export const useShareHandLogic = () => {
       }
 
       // Add hand to store and navigate to feed
-      sharedHandsStore.addHand(formData, tags);
+      const userInfo = {
+        name: userData.name,
+        username: userData.username,
+        picture: userData.picture,
+      };
+      sharedHandsStore.addHand(formData, tags, userInfo);
 
       toast({
         title: 'Success',

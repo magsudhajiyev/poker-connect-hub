@@ -1,4 +1,3 @@
-
 import { ShareHandFormData } from '@/types/shareHand';
 
 interface Comment {
@@ -28,7 +27,8 @@ class SharedHandsStore {
       id: 'dummy-hand-1',
       formData: {
         title: 'Tricky River Decision with Top Pair',
-        description: 'Had top pair on the river facing a large bet. Villain had been playing tight all session. What would you do in this spot?',
+        description:
+          'Had top pair on the river facing a large bet. Villain had been playing tight all session. What would you do in this spot?',
         gameType: 'nlhe',
         gameFormat: 'cash',
         smallBlind: '$1',
@@ -63,21 +63,24 @@ class SharedHandsStore {
         {
           id: '1',
           author: 'Mike Johnson',
-          content: 'I think this is a clear fold. The sizing screams value and tight players don\'t usually bluff river.',
+          content:
+            "I think this is a clear fold. The sizing screams value and tight players don't usually bluff river.",
           createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
           avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg',
         },
         {
           id: '2',
           author: 'Emma Davis',
-          content: 'What was the bet sizing exactly? If it\'s pot or overbet I agree with folding, but if it\'s like 40-60% pot I might call.',
+          content:
+            "What was the bet sizing exactly? If it's pot or overbet I agree with folding, but if it's like 40-60% pot I might call.",
           createdAt: new Date(Date.now() - 45 * 60 * 1000),
           avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg',
         },
         {
           id: '3',
           author: 'Alex Rivera',
-          content: 'Tough spot! I\'d need more info about villain\'s tendencies. Has he shown any bluffs before?',
+          content:
+            "Tough spot! I'd need more info about villain's tendencies. Has he shown any bluffs before?",
           createdAt: new Date(Date.now() - 30 * 60 * 1000),
           avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg',
         },
@@ -86,21 +89,25 @@ class SharedHandsStore {
   ];
   private listeners: (() => void)[] = [];
 
-  addHand(formData: ShareHandFormData, tags: string[]): string {
+  addHand(
+    formData: ShareHandFormData,
+    tags: string[],
+    userData?: { name?: string; username?: string; picture?: string },
+  ): string {
     const id = Date.now().toString();
     const newHand: SharedHand = {
       id,
       formData,
       tags,
-      authorName: 'You',
-      authorUsername: '@hero',
-      authorAvatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg',
+      authorName: userData?.name || 'Anonymous',
+      authorUsername: userData?.username || '@anonymous',
+      authorAvatar: userData?.picture || '',
       createdAt: new Date(),
       likes: 0,
       comments: 0,
       dummyComments: [],
     };
-    
+
     this.hands.unshift(newHand); // Add to beginning
     this.notifyListeners();
     return id;
@@ -111,22 +118,22 @@ class SharedHandsStore {
   }
 
   getHand(id: string): SharedHand | null {
-    return this.hands.find(hand => hand.id === id) || null;
+    return this.hands.find((hand) => hand.id === id) || null;
   }
 
   getHandById(id: string): SharedHand | undefined {
-    return this.hands.find(hand => hand.id === id);
+    return this.hands.find((hand) => hand.id === id);
   }
 
   subscribe(listener: () => void) {
     this.listeners.push(listener);
     return () => {
-      this.listeners = this.listeners.filter(l => l !== listener);
+      this.listeners = this.listeners.filter((l) => l !== listener);
     };
   }
 
   private notifyListeners() {
-    this.listeners.forEach(listener => listener());
+    this.listeners.forEach((listener) => listener());
   }
 }
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Heart, MessageCircle, Share2, Bookmark, TrendingUp } from 'lucide-react';
@@ -14,12 +14,12 @@ export const SamplePostCard = ({ item }: SamplePostCardProps) => {
   return (
     <Card className="bg-slate-800/40 border-slate-700/30">
       <CardHeader className="flex flex-row items-center space-y-0 pb-3">
-        <Avatar className="w-8 h-8 sm:w-10 sm:h-10 mr-2 sm:mr-3 flex-shrink-0">
-          <AvatarImage
-            src={`https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-${item + 1}.jpg`}
-          />
-          <AvatarFallback>P{item}</AvatarFallback>
-        </Avatar>
+        <UserAvatar
+          src={`https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-${item + 1}.jpg`}
+          name={`Player ${item}`}
+          size="md"
+          className="mr-2 sm:mr-3 flex-shrink-0"
+        />
         <div className="flex-1 min-w-0">
           <h3 className="text-slate-200 font-medium text-sm sm:text-base truncate">
             Player {item}

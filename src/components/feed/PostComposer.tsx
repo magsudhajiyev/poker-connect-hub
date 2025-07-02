@@ -3,14 +3,16 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Share2, Image, Smile } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const PostComposer = () => {
   const [content, setContent] = useState('');
   const router = useRouter();
+  const { user } = useAuth();
 
   const handleShareHand = () => {
     router.push('/share-hand');
@@ -20,10 +22,7 @@ export const PostComposer = () => {
     <Card className="bg-slate-800/40 border-slate-700/30 mb-4 sm:mb-6">
       <CardContent className="p-3 sm:p-4">
         <div className="flex gap-2 sm:gap-3">
-          <Avatar className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0">
-            <AvatarImage src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg" />
-            <AvatarFallback>MJ</AvatarFallback>
-          </Avatar>
+          <UserAvatar src={user?.picture} name={user?.name} size="md" className="flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <Textarea
               placeholder="What's on your mind?"
