@@ -13,19 +13,11 @@ export const authApi = axios.create({
 // Request interceptor for debugging
 authApi.interceptors.request.use(
   (config) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('API Request:', config.method?.toUpperCase(), config.url);
-      console.warn('Request config:', {
-        withCredentials: config.withCredentials,
-        headers: config.headers,
-      });
-    }
     // Ensure withCredentials is always true
     config.withCredentials = true;
     return config;
   },
   (error) => {
-    console.error('API Request Error:', error);
     return Promise.reject(error);
   },
 );
@@ -33,10 +25,6 @@ authApi.interceptors.request.use(
 // Response interceptor for error handling
 authApi.interceptors.response.use(
   (response) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('API Response:', response.config.method?.toUpperCase(), response.config.url);
-      console.warn('Response headers:', response.headers);
-    }
     return response;
   },
   (error) => {
@@ -46,12 +34,6 @@ authApi.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Only log meaningful errors, not empty objects
-    if (error.response?.data && Object.keys(error.response.data).length > 0) {
-      console.error('API Response Error:', error.response.data);
-    } else if (error.message && error.response?.status !== 401) {
-      console.error('API Error:', error.message);
-    }
     return Promise.reject(error);
   },
 );
@@ -79,28 +61,7 @@ export const authEndpoints = {
     });
   },
 
-  getMe: () => {
-    console.log('📡 authEndpoints.getMe: Making request to /api/auth/me');
-    return authApi
-      .get('/auth/me')
-      .then((response) => {
-        console.log('📡 authEndpoints.getMe: Response received:', {
-          status: response.status,
-          hasData: Boolean(response.data),
-          dataKeys: response.data ? Object.keys(response.data) : [],
-          userData: response.data?.data?.user,
-        });
-        return response;
-      })
-      .catch((error) => {
-        console.error(
-          '📡 authEndpoints.getMe: Error:',
-          error.response?.status,
-          error.response?.data,
-        );
-        throw error;
-      });
-  },
+  getMe: () => authApi.get('/auth/me'),
 
   refreshToken: () => authApi.post('/auth/refresh'),
 

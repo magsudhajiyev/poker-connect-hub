@@ -69,55 +69,20 @@ export default function HomePage() {
   const { user, loading, isAuthenticated } = useAuth();
   const router = useRouter();
 
-  console.log('🏠 HomePage rendered:', {
-    hasUser: Boolean(user),
-    userEmail: user?.email,
-    loading,
-    isAuthenticated,
-    hasCompletedOnboarding: user?.hasCompletedOnboarding,
-    hasCompletedOnboardingType: typeof user?.hasCompletedOnboarding,
-  });
-
   // Redirect authenticated users based on onboarding status
   useEffect(() => {
-    console.log('🏠 HomePage useEffect triggered:', {
-      loading,
-      isAuthenticated,
-      hasUser: Boolean(user),
-      userEmail: user?.email,
-      hasCompletedOnboarding: user?.hasCompletedOnboarding,
-    });
-
     // Don't redirect while still loading auth state
     if (loading) {
-      console.log('⏳ HomePage: Still loading, skipping redirect');
       return;
     }
 
     // If user is authenticated, redirect based on onboarding status
     if (isAuthenticated && user) {
-      console.log('🏠 HomePage: Authenticated user detected:', {
-        email: user.email,
-        hasCompletedOnboarding: user.hasCompletedOnboarding,
-        hasCompletedOnboardingType: typeof user.hasCompletedOnboarding,
-        isAuthenticated,
-      });
-
       if (user.hasCompletedOnboarding === true) {
-        console.log('📍 HomePage: Redirecting authenticated user to feed (onboarding complete)');
         router.push('/feed');
       } else {
-        console.log(
-          '📍 HomePage: Redirecting authenticated user to onboarding (onboarding not complete)',
-          {
-            hasCompletedOnboarding: user.hasCompletedOnboarding,
-            hasCompletedOnboardingType: typeof user.hasCompletedOnboarding,
-          },
-        );
         router.push('/onboarding');
       }
-    } else {
-      console.log('🏠 HomePage: User not authenticated or no user data');
     }
   }, [user, loading, isAuthenticated, router]);
 
