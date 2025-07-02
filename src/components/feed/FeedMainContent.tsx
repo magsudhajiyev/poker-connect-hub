@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ProfileTopBar } from '@/components/profile/ProfileTopBar';
+import { ProfileTopBar } from '@/components/shared/ProfileTopBar';
 import { useSidebar } from '@/components/sidebar/SidebarContext';
 import { PostComposer } from '@/components/feed/PostComposer';
 import { FeedPostCard } from '@/components/feed/FeedPostCard';
