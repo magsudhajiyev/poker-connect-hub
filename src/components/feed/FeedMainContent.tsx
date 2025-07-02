@@ -1,7 +1,9 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProfileTopBar } from '@/components/profile/ProfileTopBar';
-import { useSidebar } from '@/components/GlobalSidebar';
+import { useSidebar } from '@/components/sidebar/SidebarContext';
 import { PostComposer } from '@/components/feed/PostComposer';
 import { FeedPostCard } from '@/components/feed/FeedPostCard';
 import { SamplePostCard } from '@/components/feed/SamplePostCard';
@@ -46,7 +48,7 @@ export const FeedMainContent = () => {
 
   return (
     <div
-      className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'lg:ml-12' : 'lg:ml-64'}`}
+      className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}
     >
       {/* Mobile Header */}
       <FeedHeader />

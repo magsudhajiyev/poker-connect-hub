@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useRouter } from 'next/navigation';
-import { useSidebar } from '@/components/GlobalSidebar';
+import { useSidebar } from '@/components/sidebar/SidebarContext';
 import { useAuth } from '@/contexts/AuthContext';
 export const ProfileTopBar = () => {
   const [searchValue, setSearchValue] = useState('');

@@ -2,7 +2,7 @@
 
 import { GlobalSidebar } from '@/components/GlobalSidebar';
 import { SidebarProvider } from '@/components/sidebar/SidebarContext';
-import { FeedMainContent } from './components/FeedMainContent';
+import { FeedMainContent } from '@/components/feed/FeedMainContent';
 
 const FeedContent = () => {
   return (
