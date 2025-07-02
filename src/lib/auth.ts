@@ -34,60 +34,47 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return false;
       }
 
-      // Only sync with backend for Google OAuth if backend is available
+      // Sync with backend for Google OAuth
       if (account?.provider === 'google') {
-        // Check if backend is properly configured
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL;
-        const isBackendConfigured =
-          backendUrl &&
-          !backendUrl.includes('localhost') &&
-          !backendUrl.includes('pokerconnect.me');
-
-        if (isBackendConfigured) {
-          try {
-            // Sync with backend to create user and get JWT tokens
-            const response = await fetch(
-              `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/google/sync`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                  email: user.email,
-                  name: user.name || '',
-                  googleId: account.providerAccountId,
-                  picture: user.image || '',
-                }),
+        try {
+          // Sync with backend to create user and get JWT tokens
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/auth/google/sync`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
               },
-            );
+              credentials: 'include',
+              body: JSON.stringify({
+                email: user.email,
+                name: user.name || '',
+                googleId: account.providerAccountId,
+                picture: user.image || '',
+              }),
+            },
+          );
 
-            if (!response.ok) {
-              console.error('Failed to sync with backend:', await response.text());
-              // Continue with NextAuth-only authentication
-              console.warn('Backend sync failed, continuing with NextAuth session only');
-              return true;
-            }
-
-            const data = await response.json();
-            // Successfully synced with backend
-
-            // Store hasCompletedOnboarding in the token for later use
-            if (user) {
-              (user as any).hasCompletedOnboarding = data.user?.hasCompletedOnboarding || false;
-            }
-
-            return true;
-          } catch (error) {
-            console.error('Error syncing with backend:', error);
+          if (!response.ok) {
+            console.error('Failed to sync with backend:', await response.text());
             // Continue with NextAuth-only authentication
-            console.warn('Backend not available, continuing with NextAuth session only');
+            console.warn('Backend sync failed, continuing with NextAuth session only');
             return true;
           }
-        } else {
-          // Backend not configured, use NextAuth session only
-          console.warn('Backend not configured, using NextAuth session only');
+
+          const data = await response.json();
+          console.log('Successfully synced with backend:', data);
+
+          // Store hasCompletedOnboarding in the token for later use
+          if (user && data.data?.user) {
+            (user as any).hasCompletedOnboarding = data.data.user.hasCompletedOnboarding || false;
+          }
+
+          return true;
+        } catch (error) {
+          console.error('Error syncing with backend:', error);
+          // Continue with NextAuth-only authentication
+          console.warn('Backend not available, continuing with NextAuth session only');
           return true;
         }
       }

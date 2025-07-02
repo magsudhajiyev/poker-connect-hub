@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import Header from '@/components/Header';
@@ -11,6 +13,7 @@ import PricingSection from '@/components/PricingSection';
 import Footer from '@/components/Footer';
 import { GlobalSidebar, SidebarProvider } from '@/components/GlobalSidebar';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useAuth } from '@/contexts/AuthContext';
 
 const MobileSidebar = () => {
   return (
@@ -63,6 +66,32 @@ const IndexContent = () => {
 };
 
 export default function HomePage() {
+  const { user, loading, isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  // Redirect authenticated users with completed onboarding to feed
+  useEffect(() => {
+    // Don't redirect while still loading auth state
+    if (loading) {
+return;
+}
+
+    // If user is authenticated and has completed onboarding, redirect to feed
+    if (isAuthenticated && user?.hasCompletedOnboarding) {
+      console.log('📍 Redirecting authenticated user to feed');
+      router.push('/feed');
+    }
+  }, [user, loading, isAuthenticated, router]);
+
+  // Show loading or landing page
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <SidebarProvider>
       <IndexContent />

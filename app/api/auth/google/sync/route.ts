@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { errorResponse } from '@/lib/api-utils';
-import { createAuthResponse } from '../_utils';
+import { createAuthResponse } from '../../_utils';
 import { User } from '@/models/user.model';
 
 export async function POST(request: NextRequest) {
@@ -19,10 +19,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user exists by googleId or email
     let user = await usersCollection.findOne({
-      $or: [
-        { googleId },
-        { email: email.toLowerCase() }
-      ]
+      $or: [{ googleId }, { email: email.toLowerCase() }],
     });
 
     if (user) {
@@ -43,10 +40,7 @@ export async function POST(request: NextRequest) {
         updateData.authProvider = 'google';
       }
 
-      await usersCollection.updateOne(
-        { _id: user._id },
-        { $set: updateData }
-      );
+      await usersCollection.updateOne({ _id: user._id }, { $set: updateData });
 
       // Merge the updates for the response
       user = { ...user, ...updateData };

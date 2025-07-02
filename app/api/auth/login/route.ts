@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { comparePassword, errorResponse } from '@/lib/api-utils';
-import { createAuthResponse, validateUserActive, getAuthUpdateFields } from './_utils';
+import { createAuthResponse, validateUserActive } from '../_utils';
 import { User } from '@/models/user.model';
 
 export async function POST(request: NextRequest) {

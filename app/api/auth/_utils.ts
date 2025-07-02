@@ -48,7 +48,7 @@ export function formatUserData(user: User): AuthUserResponse {
 export async function createAuthResponse(
   user: User,
   usersCollection?: any,
-  message: string = 'Authentication successful'
+  message: string = 'Authentication successful',
 ): Promise<NextResponse> {
   const userData = formatUserData(user);
   const userId = userData.id;
@@ -65,12 +65,12 @@ export async function createAuthResponse(
   if (usersCollection) {
     await usersCollection.updateOne(
       { _id: user._id },
-      { 
-        $set: { 
+      {
+        $set: {
           refreshToken: tokens.refreshToken,
-          updatedAt: new Date()
-        } 
-      }
+          updatedAt: new Date(),
+        },
+      },
     );
   }
 
@@ -93,7 +93,7 @@ export async function createAuthResponse(
  */
 export function createUserResponse(
   user: User,
-  message: string = 'User data retrieved successfully'
+  message: string = 'User data retrieved successfully',
 ): NextResponse {
   const userData = formatUserData(user);
 

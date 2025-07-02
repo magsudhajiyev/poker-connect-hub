@@ -24,14 +24,11 @@ const JWT_REFRESH_EXPIRES_IN = '7d';
 // Error Response Helper
 export function errorResponse(error: ApiError | string, statusCode = 400) {
   if (typeof error === 'string') {
-    return NextResponse.json(
-      { success: false, message: error },
-      { status: statusCode }
-    );
+    return NextResponse.json({ success: false, message: error }, { status: statusCode });
   }
   return NextResponse.json(
     { success: false, message: error.message, code: error.code },
-    { status: error.statusCode || statusCode }
+    { status: error.statusCode || statusCode },
   );
 }
 
@@ -58,9 +55,12 @@ export function generateTokens(payload: JwtPayload) {
 }
 
 // Set Auth Cookies
-export function setAuthCookies(response: NextResponse, tokens: { accessToken: string; refreshToken: string }) {
+export function setAuthCookies(
+  response: NextResponse,
+  tokens: { accessToken: string; refreshToken: string },
+) {
   const isProduction = process.env.NODE_ENV === 'production';
-  
+
   // Access token cookie
   response.cookies.set({
     name: 'access_token',
@@ -105,7 +105,7 @@ export async function verifyToken(token: string): Promise<JwtPayload | null> {
 
 // Get current user from request
 export async function getCurrentUser(_request: NextRequest): Promise<JwtPayload | null> {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get('access_token')?.value;
 
   if (!token) {
@@ -118,7 +118,7 @@ export async function getCurrentUser(_request: NextRequest): Promise<JwtPayload 
 // Auth middleware for protected routes
 export async function requireAuth(request: NextRequest): Promise<JwtPayload | NextResponse> {
   const user = await getCurrentUser(request);
-  
+
   if (!user) {
     return errorResponse('Unauthorized', 401);
   }

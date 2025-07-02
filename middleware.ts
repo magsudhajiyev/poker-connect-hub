@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { verifyToken } from '@/lib/api-utils';
-import type { JwtPayload } from '@/lib/api-utils';
+import { verifyToken, type JwtPayload } from '@/lib/api-utils';
 
 // Define protected routes
 const protectedRoutes = ['/profile', '/settings', '/share-hand', '/feed', '/onboarding'];
@@ -64,7 +63,7 @@ export default auth(async (req) => {
       referer.includes(req.nextUrl.origin) &&
       (referer.includes('/settings') ||
         referer.includes('/') ||
-        referer === `${req.nextUrl.origin  }/`);
+        referer === `${req.nextUrl.origin}/`);
 
     // Check for logout query parameter (we'll add this in logout flow)
     const isLogout = req.nextUrl.searchParams.get('logout') === 'true';

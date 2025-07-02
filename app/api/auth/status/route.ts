@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { getCurrentUser, errorResponse } from '@/lib/api-utils';
-import { createUserResponse, validateUserActive } from './_utils';
+import { createUserResponse, validateUserActive } from '../_utils';
 import { User } from '@/models/user.model';
 import { ObjectId } from 'mongodb';
 
@@ -17,8 +17,8 @@ export async function GET(request: NextRequest) {
     const usersCollection = db.collection<User>('users');
 
     // Find user in database
-    const user = await usersCollection.findOne({ 
-      _id: new ObjectId(currentUser.userId) 
+    const user = await usersCollection.findOne({
+      _id: new ObjectId(currentUser.userId),
     });
 
     if (!user) {
@@ -34,7 +34,6 @@ export async function GET(request: NextRequest) {
 
     // Return user status data
     return createUserResponse(user, 'Auth status retrieved successfully');
-    
   } catch (error) {
     console.error('Auth status error:', error);
     return errorResponse('Internal server error', 500);
