@@ -10,6 +10,7 @@ import { Heart, MessageCircle, Share2, Bookmark, TrendingUp, Send } from 'lucide
 import { SharedHand, sharedHandsApi } from '@/services/sharedHandsApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 interface FeedPostCardProps {
   hand: SharedHand;
@@ -19,6 +20,7 @@ interface FeedPostCardProps {
 
 export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardProps) => {
   const { user } = useAuth();
+  const router = useRouter();
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(hand.likeCount || 0);
   const [showComments, setShowComments] = useState(false);
@@ -122,6 +124,14 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
     onHandClick(hand._id);
   };
 
+  const handleUserClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const userId = typeof hand.userId === 'object' ? hand.userId._id : hand.userId;
+    if (userId) {
+      router.push(`/profile/${userId}`);
+    }
+  };
+
   // Extract user info from populated or string userId
   const authorInfo = typeof hand.userId === 'object' ? hand.userId : null;
   const authorName = authorInfo?.name || 'Anonymous';
@@ -140,7 +150,12 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
           className="mr-2 sm:mr-3 flex-shrink-0"
         />
         <div className="flex-1 min-w-0">
-          <h3 className="text-slate-200 font-medium text-sm sm:text-base truncate">{authorName}</h3>
+          <h3
+            className="text-slate-200 font-medium text-sm sm:text-base truncate hover:text-emerald-400 cursor-pointer transition-colors"
+            onClick={handleUserClick}
+          >
+            {authorName}
+          </h3>
           <p className="text-slate-400 text-xs sm:text-sm">{formatTimeAgo(hand.createdAt)}</p>
         </div>
         <Badge
@@ -228,25 +243,43 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
         {showComments && (
           <div className="mt-4 space-y-3 border-t border-slate-700/30 pt-4">
             {/* Existing Comments */}
-            {comments.map((comment, index) => (
-              <div key={index} className="flex space-x-3">
-                <UserAvatar
-                  src={typeof comment.userId === 'object' ? comment.userId.picture : ''}
-                  name={typeof comment.userId === 'object' ? comment.userId.name : 'Anonymous'}
-                  size="xs"
-                  className="flex-shrink-0"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="bg-slate-700/30 rounded-lg px-3 py-2">
-                    <p className="text-slate-300 text-sm font-medium">
-                      {typeof comment.userId === 'object' ? comment.userId.name : 'Anonymous'}
+            {comments.map((comment, index) => {
+              const commentUser = typeof comment.userId === 'object' ? comment.userId : null;
+              const commentUserName = commentUser?.name || 'Anonymous';
+              const commentUserId = commentUser?._id;
+
+              const handleCommentUserClick = (e: React.MouseEvent) => {
+                e.stopPropagation();
+                if (commentUserId) {
+                  router.push(`/profile/${commentUserId}`);
+                }
+              };
+
+              return (
+                <div key={index} className="flex space-x-3">
+                  <UserAvatar
+                    src={commentUser?.picture || ''}
+                    name={commentUserName}
+                    size="xs"
+                    className="flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="bg-slate-700/30 rounded-lg px-3 py-2">
+                      <p
+                        className="text-slate-300 text-sm font-medium hover:text-emerald-400 cursor-pointer transition-colors"
+                        onClick={handleCommentUserClick}
+                      >
+                        {commentUserName}
+                      </p>
+                      <p className="text-slate-200 text-sm mt-1 break-words">{comment.content}</p>
+                    </div>
+                    <p className="text-slate-400 text-xs mt-1">
+                      {formatTimeAgo(comment.createdAt)}
                     </p>
-                    <p className="text-slate-200 text-sm mt-1 break-words">{comment.content}</p>
                   </div>
-                  <p className="text-slate-400 text-xs mt-1">{formatTimeAgo(comment.createdAt)}</p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* Comment Input */}
             <div className="flex space-x-3">

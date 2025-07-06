@@ -9,6 +9,7 @@ import { Send, Trash2 } from 'lucide-react';
 import { SharedHand, sharedHandsApi } from '@/services/sharedHandsApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 interface HandViewCommentsProps {
   hand?: SharedHand;
@@ -16,6 +17,7 @@ interface HandViewCommentsProps {
 
 export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
   const { user } = useAuth();
+  const router = useRouter();
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState(hand?.comments || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -146,11 +148,18 @@ export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
                 typeof commentItem.userId === 'object' ? commentItem.userId : null;
               const userName = commentUser?.name || 'Anonymous';
               const userPicture = commentUser?.picture || '';
+              const commentUserId = commentUser?._id;
               const isOwnComment =
                 user &&
                 commentUser &&
                 (commentUser._id === user.id || commentUser.email === user.email);
               const commentId = (commentItem as any)._id;
+
+              const handleUserClick = () => {
+                if (commentUserId) {
+                  router.push(`/profile/${commentUserId}`);
+                }
+              };
 
               return (
                 <div key={index} className="flex space-x-3 group">
@@ -161,7 +170,12 @@ export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
                   <div className="flex-1 min-w-0">
                     <div className="bg-slate-700/30 rounded-lg px-4 py-3">
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-slate-300 text-sm font-medium">{userName}</p>
+                        <p
+                          className="text-slate-300 text-sm font-medium hover:text-emerald-400 cursor-pointer transition-colors"
+                          onClick={handleUserClick}
+                        >
+                          {userName}
+                        </p>
                         <div className="flex items-center gap-2">
                           <p className="text-slate-400 text-xs">
                             {formatTimeAgo(commentItem.createdAt)}
