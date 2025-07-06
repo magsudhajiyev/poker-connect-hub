@@ -20,11 +20,11 @@ export class ApiErrorHandler {
 
     if (error instanceof Error) {
       apiError.message = error.message;
-      
+
       // Handle fetch/network errors
       if ('status' in error && typeof error.status === 'number') {
         apiError.status = error.status;
-        
+
         switch (error.status) {
           case 400:
             apiError.message = 'Invalid request. Please check your input and try again.';
@@ -33,7 +33,7 @@ export class ApiErrorHandler {
             apiError.message = 'Authentication required. Please log in and try again.';
             break;
           case 403:
-            apiError.message = 'Access denied. You don\'t have permission to perform this action.';
+            apiError.message = "Access denied. You don't have permission to perform this action.";
             break;
           case 404:
             apiError.message = 'The requested resource was not found.';
@@ -60,16 +60,16 @@ export class ApiErrorHandler {
             }
         }
       }
-      
+
       // Handle specific error types
       if (error.name === 'NetworkError' || error.message.includes('fetch')) {
         apiError.message = 'Network error. Please check your internet connection and try again.';
       }
-      
+
       if (error.name === 'TimeoutError') {
         apiError.message = 'Request timeout. Please try again.';
       }
-      
+
       if (error.name === 'AbortError') {
         apiError.message = 'Request was cancelled.';
       }
@@ -122,31 +122,31 @@ export class ApiErrorHandler {
   ) {
     return async (): Promise<boolean> => {
       let lastError: ApiError | null = null;
-      
+
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
           await operation();
           return true;
         } catch (error) {
           lastError = this.handleError(error, context);
-          
+
           if (attempt === maxRetries) {
             this.showErrorToast(lastError, `Failed after ${maxRetries} attempts`);
             return false;
           }
-          
+
           // Don't retry on client errors (4xx)
           if (lastError.status && lastError.status >= 400 && lastError.status < 500) {
             this.showErrorToast(lastError);
             return false;
           }
-          
+
           // Wait before retry (exponential backoff)
           const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
-      
+
       return false;
     };
   }
@@ -157,7 +157,7 @@ export class ApiErrorHandler {
   static async validateResponse(response: Response): Promise<Response> {
     if (!response.ok) {
       let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-      
+
       try {
         const errorData = await response.json();
         if (errorData.message) {
@@ -168,12 +168,12 @@ export class ApiErrorHandler {
       } catch {
         // If we can't parse the response, use the default message
       }
-      
+
       const error = new Error(errorMessage);
       (error as any).status = response.status;
       throw error;
     }
-    
+
     return response;
   }
 
@@ -187,24 +187,42 @@ export class ApiErrorHandler {
   ): Promise<Response> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
-    
+
     try {
       const response = await fetch(url, {
         ...options,
         signal: controller.signal,
       });
-      
+
       clearTimeout(timeoutId);
       return await this.validateResponse(response);
     } catch (error) {
       clearTimeout(timeoutId);
-      
+
       if (error instanceof DOMException && error.name === 'AbortError') {
         throw new Error('Request timeout');
       }
-      
+
       throw error;
     }
+  }
+
+  /**
+   * Handle error and return ApiResponse format
+   */
+  static handle(error: unknown): {
+    success: false;
+    error: { message: string; code?: string; details?: unknown };
+  } {
+    const apiError = this.handleError(error);
+    return {
+      success: false,
+      error: {
+        message: apiError.message,
+        code: apiError.code,
+        details: apiError.details,
+      },
+    };
   }
 }
 
@@ -214,3 +232,4 @@ export const showErrorToast = ApiErrorHandler.showErrorToast;
 export const handleAndShowError = ApiErrorHandler.handleAndShow;
 export const createRetryableHandler = ApiErrorHandler.createRetryableHandler;
 export const fetchWithErrorHandling = ApiErrorHandler.fetchWithErrorHandling;
+export const handle = ApiErrorHandler.handle;

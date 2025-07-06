@@ -4,57 +4,58 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a poker hand analysis and sharing platform called "Poker Connect Hub" built with React/TypeScript frontend and NestJS backend. The application allows users to recreate poker hands, analyze them, and share with the community.
+This is a poker hand analysis and sharing platform called "Poker Connect Hub" built with Next.js (React/TypeScript). The application allows users to recreate poker hands, analyze them, and share with the community.
+
+**IMPORTANT ARCHITECTURAL DECISION**: This project uses Next.js for both frontend and backend functionality. Do NOT use the separate NestJS backend - all API functionality should be implemented using Next.js API routes in the `src/app/api/` directory. This keeps everything in one source, simplifies deployment, and avoids CORS issues.
 
 ## Development Commands
 
-### Frontend (React/Vite)
-- `npm run dev` - Start development server
+### Next.js Commands
+
+- `npm run dev` - Start Next.js development server (includes API routes)
 - `npm run build` - Build for production
+- `npm run start` - Start production server
 - `npm run lint` - Run ESLint
-- `npm run preview` - Preview production build
 
-### Backend (NestJS)
-- `npm run backend:dev` - Start backend in development mode
-- `npm run backend:build` - Build backend
-- `npm run backend:start` - Start backend in production mode
-- `npm run backend:install` - Install backend dependencies
+### Legacy Commands (DO NOT USE)
 
-### Full Stack
-- `npm run dev:all` - Run both frontend and backend concurrently
-
-### Testing
-- Backend: `cd backend && npm run test` - Run Jest tests
-- Backend: `cd backend && npm run test:watch` - Run tests in watch mode
-- Backend: `cd backend && npm run test:e2e` - Run end-to-end tests
+- The following commands are for the NestJS backend which we no longer use:
+  - `npm run backend:dev`
+  - `npm run backend:build`
+  - `npm run backend:start`
+  - `npm run dev:all`
 
 ## Architecture
 
 ### Frontend Structure
+
 - **Components**: React components organized by feature areas (share-hand, poker-table, etc.)
 - **Hooks**: Custom React hooks for business logic (usePokerGameEngine, useShareHandLogic, etc.)
 - **Utils**: Core poker game logic and utilities
 - **Stores**: Zustand state management
 - **Services**: API communication layer
 
-### Backend Structure
-- **NestJS Modules**: Organized by domain (poker module)
-- **Services**: Business logic layer
-- **Controllers**: HTTP endpoint handlers
-- **DTOs**: Data transfer objects for API contracts
-- **Interfaces**: TypeScript interfaces for type safety
+### Backend Structure (Next.js API Routes)
+
+- **API Routes**: Located in `src/app/api/` directory
+- **Route Handlers**: Next.js 13+ App Router API routes
+- **Database**: MongoDB with Mongoose
+- **Authentication**: NextAuth.js for unified authentication
 
 ### Key Game Engine Components
+
 - `PokerGameEngine` (src/utils/PokerGameEngine.ts): Core poker game logic for hand recreation
 - `ShareHandProvider` (src/components/share-hand/ShareHandProvider.tsx): Context provider for hand sharing workflow
-- `PokerService` (backend/src/poker/poker.service.ts): Backend service for poker action validation
+- API Routes in `src/app/api/poker/` for poker action validation
 
 ### State Management
+
 - Frontend uses React Context API with custom hooks
-- Backend uses NestJS dependency injection
+- API routes use Next.js route handlers
 - Game state flows through ShareHandProvider context
 
 ### UI Framework
+
 - Tailwind CSS for styling
 - shadcn/ui components for consistent design system
 - Radix UI primitives for accessibility
@@ -62,7 +63,9 @@ This is a poker hand analysis and sharing platform called "Poker Connect Hub" bu
 ## Development Notes
 
 ### Hand Sharing Workflow
+
 The hand sharing feature is the core functionality, following a multi-step process:
+
 1. Game setup (players, blinds, positions)
 2. Preflop actions
 3. Flop cards and actions
@@ -70,12 +73,16 @@ The hand sharing feature is the core functionality, following a multi-step proce
 5. River card and actions
 
 ### Poker Logic
+
 - Game engine supports standard poker rules and betting actions
 - Position-based action ordering (UTG, MP, etc.)
 - Blind posting and betting round management
 - All-in and side pot calculations
 
 ### API Integration
-- Backend provides poker action validation endpoints
+
+- Next.js API routes provide poker action validation endpoints
+- All API routes are under `/api/` path
 - OpenAI integration for hand analysis (in development)
 - RESTful API design with proper error handling
+- No CORS configuration needed as frontend and API are on the same origin

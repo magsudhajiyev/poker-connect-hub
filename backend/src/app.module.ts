@@ -5,6 +5,7 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { OnboardingModule } from './onboarding/onboarding.module';
+import { SharedHandsModule } from './shared-hands/shared-hands.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { OnboardingModule } from './onboarding/onboarding.module';
     UsersModule,
     OnboardingModule,
     PokerModule,
+    SharedHandsModule,
   ],
   controllers: [],
   providers: [],

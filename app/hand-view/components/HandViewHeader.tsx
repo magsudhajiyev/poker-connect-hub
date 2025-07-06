@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, TrendingUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { SharedHand } from '@/stores/sharedHandsStore';
+import { SharedHand } from '@/services/sharedHandsApi';
 import { MobileSidebar } from './MobileSidebar';
 
 interface HandViewHeaderProps {
@@ -28,18 +28,18 @@ export const HandViewHeader = ({ hand }: HandViewHeaderProps) => {
 
       {/* Desktop Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           onClick={() => router.push('/feed')}
           className="border-slate-700/50 text-slate-300 w-fit"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Feed
         </Button>
-        
+
         <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-400 w-fit">
           <TrendingUp className="w-3 h-3 mr-1" />
-          {hand.formData.gameFormat === 'mtt' ? 'Tournament' : 'Cash Game'}
+          {hand.gameFormat === 'mtt' ? 'Tournament' : 'Cash Game'}
         </Badge>
       </div>
     </>

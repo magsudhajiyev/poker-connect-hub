@@ -10,13 +10,15 @@ import {
   getCurrencySymbol,
   getAllSelectedCards,
 } from '@/utils/shareHandCalculations';
-import { sharedHandsStore } from '@/stores/sharedHandsStore';
+import { sharedHandsApi } from '@/services/sharedHandsApi';
 import { useActionManagement } from './useActionManagement';
 import { useProfileData } from './useProfileData';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useShareHandLogic = () => {
   const router = useRouter();
   const { userData } = useProfileData();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [tags, setTags] = useState<string[]>(['bluff', 'tournament']);
   const [isLoading, setIsLoading] = useState(false);
@@ -131,20 +133,58 @@ export const useShareHandLogic = () => {
         return;
       }
 
-      // Add hand to store and navigate to feed
-      const userInfo = {
-        name: userData.name,
-        username: userData.username,
-        picture: userData.picture,
+      // Prepare data for backend
+      const sharedHandData = {
+        title: formData.title || 'Untitled Hand',
+        description: formData.description || '',
+        gameType: formData.gameType,
+        gameFormat: formData.gameFormat,
+        tableSize: formData.players?.length || 2,
+        positions: {
+          heroPosition: formData.heroPosition,
+          villainPosition: formData.villainPosition,
+          players:
+            formData.players?.map((player) => ({
+              ...player,
+              stackSize: Array.isArray(player.stackSize) ? player.stackSize[0] : player.stackSize,
+            })) || [],
+        },
+        preflopCards: {
+          holeCards: formData.holeCards,
+        },
+        preflopActions: formData.preflopActions,
+        flopCards: formData.flopCards,
+        flopActions: formData.flopActions,
+        turnCard: formData.turnCard?.[0] || '',
+        turnActions: formData.turnActions,
+        riverCard: formData.riverCard?.[0] || '',
+        riverActions: formData.riverActions,
+        analysis: {
+          preflopDescription: formData.preflopDescription,
+          flopDescription: formData.flopDescription,
+          turnDescription: formData.turnDescription,
+          riverDescription: formData.riverDescription,
+        },
+        tags,
+        isPublic: true,
       };
-      sharedHandsStore.addHand(formData, tags, userInfo);
+
+      console.log('Sending shared hand data:', sharedHandData);
+
+      // Save to backend
+      const response = await sharedHandsApi.createSharedHand(sharedHandData);
+
+      if (!response.success) {
+        throw new Error(response.error?.message || 'Failed to share hand');
+      }
 
       toast({
         title: 'Success',
         description: 'Hand shared successfully!',
       });
 
-      router.push('/feed');
+      // Navigate to the hand view page
+      router.push(`/hand-view/${response.data._id}`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to submit hand';
       setError(errorMessage);
@@ -156,7 +196,7 @@ export const useShareHandLogic = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentStep, formData, tags, router]);
+  }, [currentStep, formData, tags, router, userData, user]);
 
   // Updated getAvailableActions to accept all parameters
   const getAvailableActionsWithParams = useCallback(

@@ -1,33 +1,77 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Heart, MessageCircle, Share2, Bookmark, TrendingUp, Send } from 'lucide-react';
-import { SharedHand } from '@/stores/sharedHandsStore';
+import { SharedHand, sharedHandsApi } from '@/services/sharedHandsApi';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 
 interface FeedPostCardProps {
   hand: SharedHand;
   onHandClick: (handId: string) => void;
-  formatTimeAgo: (date: Date) => string;
+  formatTimeAgo: (dateString: string) => string;
 }
 
 export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardProps) => {
   const { user } = useAuth();
   const [isLiked, setIsLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(hand.likes);
+  const [likesCount, setLikesCount] = useState(hand.likeCount || 0);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
-  const [comments, setComments] = useState(hand.dummyComments || []);
+  const [comments, setComments] = useState(hand.comments || []);
+  const [isLiking, setIsLiking] = useState(false);
 
-  const handleLike = (e: React.MouseEvent) => {
+  // Check if user has liked this hand
+  useEffect(() => {
+    if (user && hand.likes) {
+      setIsLiked(hand.likes.includes(user.id || ''));
+    }
+  }, [user, hand.likes]);
+
+  const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsLiked(!isLiked);
-    setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
+
+    if (!user) {
+      toast({
+        title: 'Authentication required',
+        description: 'Please sign in to like hands',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (isLiking) {
+      return;
+    }
+
+    try {
+      setIsLiking(true);
+      const response = await sharedHandsApi.toggleLike(hand._id, user?.email);
+
+      if (response.success && response.data) {
+        setIsLiked(response.data.liked);
+        setLikesCount(response.data.likeCount);
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to update like',
+          variant: 'destructive',
+        });
+      }
+    } catch (_error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update like',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLiking(false);
+    }
   };
 
   const handleCommentClick = (e: React.MouseEvent) => {
@@ -51,8 +95,13 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
   };
 
   const handleCardClick = () => {
-    onHandClick(hand.id);
+    onHandClick(hand._id);
   };
+
+  // Extract user info from populated or string userId
+  const authorInfo = typeof hand.userId === 'object' ? hand.userId : null;
+  const authorName = authorInfo?.name || 'Anonymous';
+  const authorPicture = authorInfo?.picture || '';
 
   return (
     <Card className="bg-slate-800/40 border-slate-700/30 hover:bg-slate-800/60 transition-colors">
@@ -61,15 +110,13 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
         onClick={handleCardClick}
       >
         <UserAvatar
-          src={hand.authorAvatar}
-          name={hand.authorName}
+          src={authorPicture}
+          name={authorName}
           size="md"
           className="mr-2 sm:mr-3 flex-shrink-0"
         />
         <div className="flex-1 min-w-0">
-          <h3 className="text-slate-200 font-medium text-sm sm:text-base truncate">
-            {hand.authorName}
-          </h3>
+          <h3 className="text-slate-200 font-medium text-sm sm:text-base truncate">{authorName}</h3>
           <p className="text-slate-400 text-xs sm:text-sm">{formatTimeAgo(hand.createdAt)}</p>
         </div>
         <Badge
@@ -78,22 +125,21 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
         >
           <TrendingUp className="w-3 h-3 mr-1" />
           <span className="hidden sm:inline">
-            {hand.formData.gameFormat === 'mtt' ? 'Tournament' : 'Cash Game'}
+            {hand.gameFormat === 'mtt' ? 'Tournament' : 'Cash Game'}
           </span>
-          <span className="sm:hidden">{hand.formData.gameFormat === 'mtt' ? 'MTT' : 'Cash'}</span>
+          <span className="sm:hidden">{hand.gameFormat === 'mtt' ? 'MTT' : 'Cash'}</span>
         </Badge>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="mb-3 cursor-pointer" onClick={handleCardClick}>
           <h4 className="text-slate-200 font-medium mb-2 text-sm sm:text-base break-words">
-            {hand.formData.title || 'Poker Hand Analysis'}
+            {hand.title || 'Poker Hand Analysis'}
           </h4>
           <p className="text-slate-300 mb-3 text-sm sm:text-base line-clamp-2 break-words">
-            {hand.formData.description ||
-              `${hand.formData.gameType} hand from ${hand.formData.heroPosition} vs ${hand.formData.villainPosition}`}
+            {hand.description || `${hand.gameType} hand analysis`}
           </p>
           <div className="flex flex-wrap gap-1 sm:gap-2 mb-3">
-            {hand.tags.slice(0, 2).map((tag) => (
+            {(hand.tags || []).slice(0, 2).map((tag) => (
               <Badge
                 key={tag}
                 variant="secondary"
@@ -102,9 +148,9 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
                 {tag}
               </Badge>
             ))}
-            {hand.tags.length > 2 && (
+            {(hand.tags || []).length > 2 && (
               <Badge variant="secondary" className="bg-slate-500/20 text-slate-400 text-xs">
-                +{hand.tags.length - 2}
+                +{(hand.tags || []).length - 2}
               </Badge>
             )}
           </div>
@@ -158,17 +204,19 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
         {showComments && (
           <div className="mt-4 space-y-3 border-t border-slate-700/30 pt-4">
             {/* Existing Comments */}
-            {comments.map((comment) => (
-              <div key={comment.id} className="flex space-x-3">
+            {comments.map((comment, index) => (
+              <div key={index} className="flex space-x-3">
                 <UserAvatar
-                  src={comment.avatar}
-                  name={comment.author}
+                  src={typeof comment.userId === 'object' ? comment.userId.picture : ''}
+                  name={typeof comment.userId === 'object' ? comment.userId.name : 'Anonymous'}
                   size="xs"
                   className="flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
                   <div className="bg-slate-700/30 rounded-lg px-3 py-2">
-                    <p className="text-slate-300 text-sm font-medium">{comment.author}</p>
+                    <p className="text-slate-300 text-sm font-medium">
+                      {typeof comment.userId === 'object' ? comment.userId.name : 'Anonymous'}
+                    </p>
                     <p className="text-slate-200 text-sm mt-1 break-words">{comment.content}</p>
                   </div>
                   <p className="text-slate-400 text-xs mt-1">{formatTimeAgo(comment.createdAt)}</p>

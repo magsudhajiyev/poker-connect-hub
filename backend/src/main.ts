@@ -36,11 +36,12 @@ async function bootstrap() {
 
   // Enable CORS for frontend communication
   app.enableCors({
-    origin (origin, callback) {
+    origin(origin, callback) {
       const allowedOrigins = [
-        'http://localhost:5173',
-        'http://localhost:3000',
+        'http://localhost:5173', // Vite default port
         'http://localhost:5174', // Vite alternative port
+        'http://localhost:3000', // Frontend alternative port
+        'http://127.0.0.1:5173', // localhost alternative
         configService.get<string>('FRONTEND_URL'),
       ].filter(Boolean);
 
@@ -53,8 +54,8 @@ async function bootstrap() {
 
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) {
-return callback(null, true);
-}
+        return callback(null, true);
+      }
 
       // Log the origin for debugging in development
       if (configService.get('NODE_ENV') !== 'production') {

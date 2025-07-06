@@ -41,7 +41,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Check for backend authentication
   useEffect(() => {
     const checkBackendAuth = async () => {
-
       // Check if we're in a logout flow
       const urlParams = new URLSearchParams(window.location.search);
       const isLogout = urlParams.get('logout') === 'true';
@@ -52,14 +51,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setBackendUser(null);
         return;
       }
-      
+
       // Check if this is a fresh login (came from signin page)
-      const isFreshLogin = document.referrer.includes('/auth/signin') || 
-                          window.location.pathname === '/onboarding';
-      
+      const isFreshLogin =
+        document.referrer.includes('/auth/signin') || window.location.pathname === '/onboarding';
+
       // Add extra delay for fresh logins to ensure cookies are set
       if (isFreshLogin && !backendUser) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
 
       // Always check backend auth to ensure we have JWT cookies
@@ -71,12 +70,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         const response = await authEndpoints.getMe();
 
-
         // The response structure is { success: true, data: { user: {...} } }
         const userData = response.data?.data?.user || response.data?.user || response.data;
 
         if (userData && userData.id) {
-
           setBackendUser({
             id: userData.id,
             email: userData.email,
@@ -91,12 +88,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (error?.response?.status === 401) {
           try {
             const refreshResponse = await authEndpoints.refreshToken();
-            
+
             if (refreshResponse.data?.success) {
               // Retry getting user data with new token
               const retryResponse = await authEndpoints.getMe();
-              const userData = retryResponse.data?.data?.user || retryResponse.data?.user || retryResponse.data;
-              
+              const userData =
+                retryResponse.data?.data?.user || retryResponse.data?.user || retryResponse.data;
+
               if (userData && userData.id) {
                 setBackendUser({
                   id: userData.id,
@@ -123,7 +121,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (backendUser && backendUser.email !== session.user.email) {
             setBackendUser(null);
           }
-          
+
           setIsSyncing(true);
           try {
             const syncPayload = {
@@ -133,7 +131,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               picture: session.user.image || '',
             };
 
-
             const syncResponse = await fetch('/api/auth/google/sync', {
               method: 'POST',
               headers: {
@@ -142,7 +139,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               credentials: 'include',
               body: JSON.stringify(syncPayload),
             });
-
 
             if (syncResponse.ok) {
               const syncData = await syncResponse.json();
@@ -239,18 +235,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     setIsLoggingOut(true);
-    
+
     // Clear backend user state immediately to prevent stale data
     setBackendUser(null);
-    
+
     // Also clear any auth check states to prevent race conditions
     setIsCheckingBackendAuth(false);
     setIsSyncing(false);
-    
+
     try {
       // Always call both logout methods to ensure complete session clearing
       // This prevents the issue where switching between auth methods shows previous user
-      
+
       // 1. Call backend logout to clear JWT cookies and invalidate refresh token
       try {
         await authEndpoints.logout();
@@ -259,21 +255,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // This is not critical as we clear cookies anyway
       }
 
-      // 2. Call the unified signout endpoint that handles both NextAuth and backend
-      // This ensures complete session clearing
-      try {
-        await authEndpoints.signout();
-      } catch (_signoutError) {
-        // If unified signout fails, try NextAuth signOut directly
-        if (session) {
-          try {
-            await signOut({ redirect: false });
-          } catch (_nextAuthError) {
-            // Last resort: force clear all state
-            setBackendUser(null);
-            setIsCheckingBackendAuth(false);
-            setIsSyncing(false);
-          }
+      // 2. Sign out from NextAuth if there's a session
+      if (session) {
+        try {
+          await signOut({ redirect: false });
+        } catch (_nextAuthError) {
+          // Last resort: force clear all state
+          setBackendUser(null);
+          setIsCheckingBackendAuth(false);
+          setIsSyncing(false);
         }
       }
 
@@ -283,15 +273,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user_data');
         sessionStorage.clear();
-        
+
         // Force clear all cookies from client side as well
-        document.cookie.split(';').forEach(function(c) { 
-          document.cookie = c.replace(/^ +/, '').replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`); 
+        document.cookie.split(';').forEach(function (c) {
+          document.cookie = c
+            .replace(/^ +/, '')
+            .replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`);
         });
-        
+
         // Clear cookies with domain variations
         const domain = window.location.hostname;
-        document.cookie.split(';').forEach(function(c) {
+        document.cookie.split(';').forEach(function (c) {
           const eqPos = c.indexOf('=');
           const name = eqPos > -1 ? c.substr(0, eqPos).trim() : c.trim();
           document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${domain}`;
@@ -320,7 +312,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsCheckingBackendAuth(false);
       setIsSyncing(false);
       router.replace('/');
-      
+
       // Force reload as last resort
       if (typeof window !== 'undefined') {
         setTimeout(() => {
@@ -336,11 +328,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Always re-check backend auth status to get the latest user data
     // This is important after onboarding completion to get updated hasCompletedOnboarding status
     try {
-      const response = await authEndpoints.getMe();
-      
+      const response = await backendAuthEndpoints.getMe();
+
       // The response structure is { success: true, data: { user: {...} } }
       const userData = response.data?.data?.user || response.data?.user || response.data;
-      
+
       if (userData && userData.id) {
         setBackendUser({
           id: userData.id,
@@ -350,7 +342,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           hasCompletedOnboarding: userData.hasCompletedOnboarding,
           createdAt: userData.createdAt,
         });
-        
+
         // If onboarding was just completed, navigate to feed
         if (userData.hasCompletedOnboarding && window.location.pathname === '/onboarding') {
           router.push('/feed');

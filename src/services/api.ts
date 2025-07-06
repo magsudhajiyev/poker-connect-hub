@@ -16,18 +16,11 @@ export class ApiService {
   private retryDelay: number;
 
   constructor(config: ApiConfig = {}) {
-    this.baseUrl =
-      config.baseUrl ||
-      (typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_API_URL : undefined) ||
-      'http://localhost:3000';
+    // Use empty string for same-origin API calls
+    this.baseUrl = config.baseUrl || '';
     this.timeout = config.timeout || 10000; // 10 seconds
     this.retries = config.retries || 3;
     this.retryDelay = config.retryDelay || 1000; // 1 second
-
-    // Log the base URL to help debug
-    if (typeof window !== 'undefined') {
-      // Client-side initialization
-    }
   }
 
   private async delay(ms: number): Promise<void> {
@@ -57,6 +50,7 @@ export class ApiService {
       const response = await fetch(url, {
         ...options,
         signal: controller.signal,
+        credentials: 'include', // Include cookies for authentication
         headers: {
           'Content-Type': 'application/json',
           ...options.headers,
@@ -97,6 +91,22 @@ export class ApiService {
                 errorData.message || 'Bad Request',
                 ApiErrorType.VALIDATION_ERROR,
                 'BAD_REQUEST',
+                errorData,
+                false,
+              );
+            case 401:
+              throw this.createApiError(
+                errorData.message || 'Unauthorized',
+                ApiErrorType.VALIDATION_ERROR,
+                'UNAUTHORIZED',
+                errorData,
+                false,
+              );
+            case 403:
+              throw this.createApiError(
+                errorData.message || 'Forbidden',
+                ApiErrorType.VALIDATION_ERROR,
+                'FORBIDDEN',
                 errorData,
                 false,
               );
