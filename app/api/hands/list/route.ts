@@ -52,8 +52,8 @@ export async function GET(request: NextRequest) {
     // Add computed fields
     const handsWithCounts = hands.map((hand: any) => ({
       ...hand,
-      likeCount: hand.likes?.length || 0,
-      commentCount: hand.comments?.length || 0,
+      likeCount: (hand as any).likes?.length || 0,
+      commentCount: (hand as any).comments?.length || 0,
     }));
 
     return NextResponse.json({

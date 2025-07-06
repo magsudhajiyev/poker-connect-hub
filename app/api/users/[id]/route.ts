@@ -32,12 +32,12 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     const [totalHands, totalLikes, totalComments] = await Promise.all([
       SharedHand.countDocuments({ userId: id, isPublic: true }),
       SharedHand.aggregate([
-        { $match: { userId: user._id, isPublic: true } },
+        { $match: { userId: (user as any)._id, isPublic: true } },
         { $project: { likesCount: { $size: '$likes' } } },
         { $group: { _id: null, total: { $sum: '$likesCount' } } },
       ]),
       SharedHand.aggregate([
-        { $match: { userId: user._id, isPublic: true } },
+        { $match: { userId: (user as any)._id, isPublic: true } },
         { $project: { commentsCount: { $size: '$comments' } } },
         { $group: { _id: null, total: { $sum: '$commentsCount' } } },
       ]),
@@ -59,19 +59,19 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
     const profileData = {
       user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        image: user.image,
-        authProvider: user.authProvider,
-        createdAt: user.createdAt,
-        hasCompletedOnboarding: user.hasCompletedOnboarding,
+        _id: (user as any)._id,
+        name: (user as any).name,
+        email: (user as any).email,
+        image: (user as any).image,
+        authProvider: (user as any).authProvider,
+        createdAt: (user as any).createdAt,
+        hasCompletedOnboarding: (user as any).hasCompletedOnboarding,
       },
       stats: {
         totalHands,
         totalLikes: totalLikes[0]?.total || 0,
         totalComments: totalComments[0]?.total || 0,
-        memberSince: user.createdAt,
+        memberSince: (user as any).createdAt,
       },
       recentHands: recentHandsWithCounts,
     };
