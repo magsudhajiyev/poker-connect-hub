@@ -149,10 +149,7 @@ export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
               const userName = commentUser?.name || 'Anonymous';
               const userPicture = commentUser?.picture || '';
               const commentUserId = commentUser?._id;
-              const isOwnComment =
-                user &&
-                commentUser &&
-                (commentUser._id === user.id || commentUser.email === user.email);
+              const isOwnComment = user && commentUser && commentUser._id === user.id;
               const commentId = (commentItem as any)._id;
 
               const handleUserClick = () => {
@@ -163,7 +160,10 @@ export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
 
               return (
                 <div key={index} className="flex space-x-3 group">
-                  <Avatar className="w-8 h-8 flex-shrink-0">
+                  <Avatar
+                    className="w-8 h-8 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-emerald-400/50 transition-all duration-200"
+                    onClick={handleUserClick}
+                  >
                     <AvatarImage src={userPicture} />
                     <AvatarFallback>{userName[0]}</AvatarFallback>
                   </Avatar>

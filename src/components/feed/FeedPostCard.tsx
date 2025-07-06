@@ -147,7 +147,8 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
           src={authorPicture}
           name={authorName}
           size="md"
-          className="mr-2 sm:mr-3 flex-shrink-0"
+          className="mr-2 sm:mr-3 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-emerald-400/50 transition-all duration-200"
+          onClick={handleUserClick}
         />
         <div className="flex-1 min-w-0">
           <h3
@@ -261,7 +262,8 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
                     src={commentUser?.picture || ''}
                     name={commentUserName}
                     size="xs"
-                    className="flex-shrink-0"
+                    className="flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-emerald-400/50 transition-all duration-200"
+                    onClick={handleCommentUserClick}
                   />
                   <div className="flex-1 min-w-0">
                     <div className="bg-slate-700/30 rounded-lg px-3 py-2">
