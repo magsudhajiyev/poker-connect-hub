@@ -83,9 +83,7 @@ class PokerConnectErrorLogger implements ErrorLogger {
       const logMethod =
         entry.level === 'error'
           ? console.error
-          : entry.level === 'warning'
-            ? console.warn
-            : console.log;
+          : console.warn;
 
       logMethod(
         `[${entry.level.toUpperCase()}] ${entry.context ? `${entry.context}: ` : ''}${entry.message}`,
@@ -173,7 +171,6 @@ class PokerConnectErrorLogger implements ErrorLogger {
 
   clearLogs(): void {
     this.logs = [];
-    console.log('Error logs cleared');
   }
 
   exportLogs(): string {

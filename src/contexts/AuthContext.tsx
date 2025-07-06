@@ -109,8 +109,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 return;
               }
             }
-          } catch (refreshError) {
-            }
+          } catch {
+            // Refresh failed, continue without error
+          }
         }
 
         // If we have a NextAuth session but no backend auth, sync with backend
@@ -251,7 +252,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // 1. Call backend logout to clear JWT cookies and invalidate refresh token
       try {
         await authEndpoints.logout();
-      } catch (backendError) {
+      } catch {
         // Continue with NextAuth logout even if backend fails
       }
 
@@ -259,12 +260,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // This ensures complete session clearing
       try {
         await authEndpoints.signout();
-      } catch (signoutError) {
+      } catch {
         // If unified signout fails, try NextAuth signOut directly
         if (session) {
           try {
             await signOut({ redirect: false });
-          } catch (nextAuthError) {
+          } catch {
+            // Continue even if NextAuth signout fails
           }
         }
       }

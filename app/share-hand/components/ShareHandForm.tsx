@@ -59,7 +59,6 @@ const ShareHandForm = () => {
         }
 
         // For action steps, try to get actions from poker algorithm first
-        console.log('Getting available actions for street:', street, 'index:', index);
 
         // Find the player that should be acting at this index
         const actionStep = allActions[index];
@@ -67,7 +66,6 @@ const ShareHandForm = () => {
           if (pokerActions.isPlayerToAct(actionStep.playerId)) {
             const validActions = pokerActions.getAvailableActions(actionStep.playerId);
             const actionTypes = validActions.map((action: any) => action.type || action);
-            console.log('Poker algorithm actions for player:', actionStep.playerId, actionTypes);
             return actionTypes;
           }
         }
@@ -87,7 +85,6 @@ const ShareHandForm = () => {
             const success = pokerActions.executeAction(actionStep.playerId, action as any, amount);
 
             if (success) {
-              console.log(`Action ${action} executed successfully`);
               // Update the form data as well for consistency
               updateAction(street, index, action as any, betAmount);
             }
@@ -114,7 +111,6 @@ const ShareHandForm = () => {
             );
 
             if (success) {
-              console.log(`Bet size ${amount} executed successfully`);
               // Update the form data as well for consistency
               handleBetSizeSelect(street, index, amount);
             }
