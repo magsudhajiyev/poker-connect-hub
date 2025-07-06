@@ -19,7 +19,9 @@ export async function verifyTokenEdge(token: string): Promise<JwtPayload | null>
   try {
     const { payload } = await jwtVerify(token, secret);
     return payload as JwtPayload;
-  } catch {
+  } catch (_error) {
+    // JWT verification failed - this is expected for invalid tokens
+    // Don't log as it would spam logs for every unauthenticated request
     return null;
   }
 }

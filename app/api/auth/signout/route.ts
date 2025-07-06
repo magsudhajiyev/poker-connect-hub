@@ -17,12 +17,12 @@ export async function POST(_request: NextRequest) {
     // This ensures the NextAuth session is properly invalidated
     try {
       await signOut({ redirect: false });
-    } catch {
+    } catch (_error) {
       // Continue even if NextAuth signOut fails
     }
 
     return response;
-  } catch {
+  } catch (_error) {
     
     // Even on error, clear cookies and return success
     const response = NextResponse.json({ 

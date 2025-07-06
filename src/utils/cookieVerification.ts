@@ -18,7 +18,9 @@ export async function verifyCookiesSet(): Promise<boolean> {
     }
     
     return false;
-  } catch {
+  } catch (_error) {
+    // Expected during logout or when cookies are not set
+    // Don't log to avoid spam
     return false;
   }
 }

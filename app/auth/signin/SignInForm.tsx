@@ -170,7 +170,7 @@ export default function SignInForm() {
 
       // Sign in with Google and redirect to the callback URL
       await signIn('google', { redirectTo: callbackUrl });
-    } catch {
+    } catch (_error) {
       setError('An unexpected error occurred. Please try again.');
       setLoading(false);
     }

@@ -109,8 +109,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 return;
               }
             }
-          } catch {
-            // Refresh failed, continue without error
+          } catch (_refreshError) {
+            // Token refresh failed - this is expected if tokens are expired
+            // Clear invalid tokens and continue
+            setBackendUser(null);
           }
         }
 
@@ -252,21 +254,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // 1. Call backend logout to clear JWT cookies and invalidate refresh token
       try {
         await authEndpoints.logout();
-      } catch {
-        // Continue with NextAuth logout even if backend fails
+      } catch (_backendError) {
+        // Backend logout failed - continue with NextAuth logout
+        // This is not critical as we clear cookies anyway
       }
 
       // 2. Call the unified signout endpoint that handles both NextAuth and backend
       // This ensures complete session clearing
       try {
         await authEndpoints.signout();
-      } catch {
+      } catch (_signoutError) {
         // If unified signout fails, try NextAuth signOut directly
         if (session) {
           try {
             await signOut({ redirect: false });
-          } catch {
-            // Continue even if NextAuth signout fails
+          } catch (_nextAuthError) {
+            // Last resort: force clear all state
+            setBackendUser(null);
+            setIsCheckingBackendAuth(false);
+            setIsSyncing(false);
           }
         }
       }
@@ -308,7 +314,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           window.location.href = `${window.location.origin}/?logout=true`;
         }, 100);
       }
-    } catch {
+    } catch (_error) {
       // Even if logout fails, clear state and redirect to home
       setBackendUser(null);
       setIsCheckingBackendAuth(false);

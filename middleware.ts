@@ -42,7 +42,8 @@ export default auth(async (req) => {
     try {
       jwtPayload = await verifyTokenEdge(accessTokenCookie.value);
       hasValidBackendAuth = Boolean(jwtPayload);
-    } catch {
+    } catch (_error) {
+      // JWT verification failed - expected for invalid/expired tokens
       hasValidBackendAuth = false;
     }
   }

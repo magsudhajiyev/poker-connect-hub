@@ -186,8 +186,9 @@ const Onboarding = () => {
           setUsernameError('Username is already taken');
         }
       }
-    } catch {
-      // Don't set error, allow user to continue
+    } catch (_error) {
+      // Don't set error state, allow user to continue
+      // Network issues shouldn't block onboarding
     } finally {
       setIsCheckingUsername(false);
     }
