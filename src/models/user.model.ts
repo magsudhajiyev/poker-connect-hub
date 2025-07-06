@@ -1,5 +1,7 @@
+import { ObjectId } from 'mongodb';
+
 export interface User {
-  _id?: string;
+  _id?: ObjectId | string;
   id?: string;
   googleId?: string;
   email: string;
@@ -15,7 +17,7 @@ export interface User {
 }
 
 export interface OnboardingAnswer {
-  _id?: string;
+  _id?: ObjectId | string;
   userId: string;
   username: string; // Added username from onboarding
   playFrequency: 'daily' | 'weekly' | 'monthly' | 'rarely';
