@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
-import { requireAuth, errorResponse, successResponse } from '@/lib/api-utils';
+import { requireAuth, errorResponse } from '@/lib/api-utils';
 import { OnboardingAnswer } from '@/models/user.model';
 import { ObjectId } from 'mongodb';
 
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
     const response = await createAuthResponse(
       updatedUser,
       usersCollection,
-      'Onboarding completed successfully'
+      'Onboarding completed successfully',
     );
 
     return response;

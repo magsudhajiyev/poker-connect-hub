@@ -18,7 +18,7 @@ export async function verifyCookiesSet(): Promise<boolean> {
     }
     
     return false;
-  } catch (error) {
+  } catch {
     return false;
   }
 }

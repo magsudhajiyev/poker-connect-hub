@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     // Find user and verify refresh token matches
     const user = await usersCollection.findOne({
       _id: new ObjectId(decoded.userId),
-      refreshToken: refreshToken,
+      refreshToken,
     });
 
     if (!user) {
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const response = await createAuthResponse(
       user,
       usersCollection,
-      'Token refreshed successfully'
+      'Token refreshed successfully',
     );
 
     return response;

@@ -1,6 +1,5 @@
 // Edge Runtime compatible JWT utilities using jose
-import { jwtVerify, SignJWT } from 'jose';
-import type { JWTPayload } from 'jose';
+import { jwtVerify, SignJWT, type JWTPayload } from 'jose';
 
 // Define our custom JWT payload interface
 export interface JwtPayload extends JWTPayload {
@@ -20,7 +19,7 @@ export async function verifyTokenEdge(token: string): Promise<JwtPayload | null>
   try {
     const { payload } = await jwtVerify(token, secret);
     return payload as JwtPayload;
-  } catch (error) {
+  } catch {
     return null;
   }
 }

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
-import { errorResponse, getCurrentUser } from '@/lib/api-utils';
+import { errorResponse } from '@/lib/api-utils';
 import { ObjectId } from 'mongodb';
 import { createAuthResponse } from '../../_utils';
 import { User } from '@/models/user.model';

@@ -42,7 +42,7 @@ export default auth(async (req) => {
     try {
       jwtPayload = await verifyTokenEdge(accessTokenCookie.value);
       hasValidBackendAuth = Boolean(jwtPayload);
-    } catch (error) {
+    } catch {
       hasValidBackendAuth = false;
     }
   }
@@ -96,6 +96,7 @@ export default auth(async (req) => {
 
     // If coming from logout, allow access to signin page
     if (isFromLogout || isLogout) {
+      // Allow access
     }
   }
 

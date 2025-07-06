@@ -44,7 +44,7 @@ const Onboarding = () => {
     preferredStakes: '',
   });
   const router = useRouter();
-  const { user, refreshAuth, loading } = useAuth();
+  const { user, loading } = useAuth();
   const checkUsernameTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Handle authentication and onboarding status
@@ -186,7 +186,7 @@ const Onboarding = () => {
           setUsernameError('Username is already taken');
         }
       }
-    } catch (error) {
+    } catch {
       // Don't set error, allow user to continue
     } finally {
       setIsCheckingUsername(false);

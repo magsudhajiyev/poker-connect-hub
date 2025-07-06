@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { signOut } from '@/lib/auth';
 import { clearAuthCookies } from '@/lib/api-utils';
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     // Create a response object
     let response = NextResponse.json({ 
       success: true, 
-      message: 'Signout successful' 
+      message: 'Signout successful',
     });
 
     // Clear all auth cookies (both backend JWT and NextAuth)
@@ -17,19 +17,17 @@ export async function POST(request: NextRequest) {
     // This ensures the NextAuth session is properly invalidated
     try {
       await signOut({ redirect: false });
-    } catch (error) {
-      console.error('NextAuth signOut error:', error);
+    } catch {
       // Continue even if NextAuth signOut fails
     }
 
     return response;
-  } catch (error) {
-    console.error('Signout error:', error);
+  } catch {
     
     // Even on error, clear cookies and return success
-    let response = NextResponse.json({ 
+    const response = NextResponse.json({ 
       success: true, 
-      message: 'Signout completed' 
+      message: 'Signout completed',
     });
     
     return clearAuthCookies(response);

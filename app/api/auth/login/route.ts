@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
     const hasExistingSession = cookieStore.get('access_token') || cookieStore.get('refresh_token');
     
     if (hasExistingSession) {
+      // Session exists, continue with login
     }
 
     const db = await getDatabase();

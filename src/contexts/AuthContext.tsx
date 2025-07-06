@@ -59,7 +59,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       // Add extra delay for fresh logins to ensure cookies are set
       if (isFreshLogin && !backendUser) {
-        console.log('[AuthContext] Fresh login detected, adding delay for cookie propagation');
         await new Promise(resolve => setTimeout(resolve, 500));
       }
 
@@ -278,14 +277,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         sessionStorage.clear();
         
         // Force clear all cookies from client side as well
-        document.cookie.split(";").forEach(function(c) { 
-          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        document.cookie.split(';').forEach(function(c) { 
+          document.cookie = c.replace(/^ +/, '').replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`); 
         });
         
         // Clear cookies with domain variations
         const domain = window.location.hostname;
-        document.cookie.split(";").forEach(function(c) {
-          const eqPos = c.indexOf("=");
+        document.cookie.split(';').forEach(function(c) {
+          const eqPos = c.indexOf('=');
           const name = eqPos > -1 ? c.substr(0, eqPos).trim() : c.trim();
           document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${domain}`;
           document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${domain}`;
@@ -307,7 +306,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           window.location.href = `${window.location.origin}/?logout=true`;
         }, 100);
       }
-    } catch (error) {
+    } catch {
       // Even if logout fails, clear state and redirect to home
       setBackendUser(null);
       setIsCheckingBackendAuth(false);
