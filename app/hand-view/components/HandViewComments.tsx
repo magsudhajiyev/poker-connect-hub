@@ -5,9 +5,10 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Send } from 'lucide-react';
-import { SharedHand } from '@/services/sharedHandsApi';
+import { Send, Trash2 } from 'lucide-react';
+import { SharedHand, sharedHandsApi } from '@/services/sharedHandsApi';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from '@/hooks/use-toast';
 
 interface HandViewCommentsProps {
   hand?: SharedHand;
@@ -17,6 +18,7 @@ export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
   const { user } = useAuth();
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState(hand?.comments || []);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
@@ -36,20 +38,68 @@ export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
     return `${Math.floor(diffMins / 1440)}d ago`;
   };
 
-  const handleAddComment = () => {
-    if (comment.trim() && user) {
-      const newComment = {
-        userId: {
-          _id: user.id || '',
-          name: user.name || 'Anonymous',
-          picture: user.picture || '',
-        },
-        content: comment.trim(),
-        createdAt: new Date().toISOString(),
-      };
-      setComments([...comments, newComment]);
-      setComment('');
-      // TODO: Call API to add comment
+  const handleAddComment = async () => {
+    if (!comment.trim() || !user || !hand?._id) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await sharedHandsApi.addComment(hand._id, comment.trim());
+
+      if (response.success && response.data) {
+        // Add the new comment to the list
+        setComments([...comments, response.data.comment]);
+        setComment('');
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to add comment',
+          variant: 'destructive',
+        });
+      }
+    } catch (_error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to add comment',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string, index: number) => {
+    if (!hand?._id || !user) {
+      return;
+    }
+
+    try {
+      const response = await sharedHandsApi.deleteComment(hand._id, commentId);
+
+      if (response.success) {
+        // Remove the comment from the list
+        const newComments = [...comments];
+        newComments.splice(index, 1);
+        setComments(newComments);
+
+        toast({
+          title: 'Success',
+          description: 'Comment deleted',
+        });
+      } else {
+        toast({
+          title: 'Error',
+          description: response.error?.message || 'Failed to delete comment',
+          variant: 'destructive',
+        });
+      }
+    } catch (_error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete comment',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -75,7 +125,7 @@ export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
               />
               <Button
                 onClick={handleAddComment}
-                disabled={!comment.trim()}
+                disabled={!comment.trim() || isSubmitting || !user}
                 className="bg-gradient-to-r from-emerald-500 to-violet-500 text-slate-900 self-end"
               >
                 <Send className="w-4 h-4" />
@@ -96,9 +146,14 @@ export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
                 typeof commentItem.userId === 'object' ? commentItem.userId : null;
               const userName = commentUser?.name || 'Anonymous';
               const userPicture = commentUser?.picture || '';
+              const isOwnComment =
+                user &&
+                commentUser &&
+                (commentUser._id === user.id || commentUser.email === user.email);
+              const commentId = (commentItem as any)._id;
 
               return (
-                <div key={index} className="flex space-x-3">
+                <div key={index} className="flex space-x-3 group">
                   <Avatar className="w-8 h-8 flex-shrink-0">
                     <AvatarImage src={userPicture} />
                     <AvatarFallback>{userName[0]}</AvatarFallback>
@@ -107,9 +162,21 @@ export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
                     <div className="bg-slate-700/30 rounded-lg px-4 py-3">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-slate-300 text-sm font-medium">{userName}</p>
-                        <p className="text-slate-400 text-xs">
-                          {formatTimeAgo(commentItem.createdAt)}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-slate-400 text-xs">
+                            {formatTimeAgo(commentItem.createdAt)}
+                          </p>
+                          {isOwnComment && commentId && (
+                            <Button
+                              onClick={() => handleDeleteComment(commentId, index)}
+                              variant="ghost"
+                              size="sm"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 text-red-400 hover:text-red-300"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                       <p className="text-slate-200 text-sm break-words">{commentItem.content}</p>
                     </div>

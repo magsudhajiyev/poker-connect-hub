@@ -70,6 +70,22 @@ export interface LikeResponse {
   likeCount: number;
 }
 
+export interface CommentResponse {
+  comment: {
+    _id?: string;
+    userId:
+      | string
+      | {
+          _id: string;
+          name: string;
+          picture?: string;
+        };
+    content: string;
+    createdAt: string;
+  };
+  commentCount: number;
+}
+
 // Create axios instance for Next.js API routes
 const api = axios.create({
   baseURL: '', // Use relative URLs for same-origin API calls
@@ -165,9 +181,21 @@ class SharedHandsApiService {
     }
   }
 
-  async addComment(handId: string, content: string): Promise<ApiResponse<SharedHand>> {
+  async addComment(handId: string, content: string): Promise<ApiResponse<CommentResponse>> {
     try {
       const response = await api.post(`/api/hands/${handId}/comments`, { content });
+      return response.data;
+    } catch (error) {
+      return ApiErrorHandler.handle(error);
+    }
+  }
+
+  async deleteComment(
+    handId: string,
+    commentId: string,
+  ): Promise<ApiResponse<{ commentCount: number }>> {
+    try {
+      const response = await api.delete(`/api/hands/${handId}/comments/${commentId}`);
       return response.data;
     } catch (error) {
       return ApiErrorHandler.handle(error);

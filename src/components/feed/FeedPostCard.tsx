@@ -79,16 +79,42 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
     setShowComments(!showComments);
   };
 
-  const handleAddComment = (e: React.MouseEvent) => {
+  const handleAddComment = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (newComment.trim()) {
-      const comment = {
-        userId: user?.id || '',
-        content: newComment.trim(),
-        createdAt: new Date().toISOString(),
-      };
-      setComments([...comments, comment]);
-      setNewComment('');
+
+    if (!user) {
+      toast({
+        title: 'Authentication required',
+        description: 'Please sign in to comment',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!newComment.trim()) {
+      return;
+    }
+
+    try {
+      const response = await sharedHandsApi.addComment(hand._id, newComment.trim());
+
+      if (response.success && response.data) {
+        // Add the new comment to the list
+        setComments([...comments, response.data.comment]);
+        setNewComment('');
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Failed to add comment',
+          variant: 'destructive',
+        });
+      }
+    } catch (_error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to add comment',
+        variant: 'destructive',
+      });
     }
   };
 
