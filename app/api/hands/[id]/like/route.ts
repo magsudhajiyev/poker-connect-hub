@@ -3,6 +3,7 @@ import { getAuthUser } from '@/lib/jwt-auth';
 import dbConnect from '@/lib/mongoose';
 import { SharedHand } from '@/models/SharedHand';
 import User from '@/models/User';
+import mongoose from 'mongoose';
 
 interface RouteParams {
   params: Promise<{
@@ -46,7 +47,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Check if user already liked this hand
-    const likeIndex = hand.likes.findIndex((likeId) => likeId.toString() === user._id.toString());
+    const likeIndex = hand.likes.findIndex(
+      (likeId: mongoose.Types.ObjectId) => likeId.toString() === user._id.toString(),
+    );
 
     if (likeIndex > -1) {
       // Unlike

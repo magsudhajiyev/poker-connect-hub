@@ -83,11 +83,9 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
     e.stopPropagation();
     if (newComment.trim()) {
       const comment = {
-        id: Date.now().toString(),
-        author: user?.name || 'You',
+        userId: user?.id || '',
         content: newComment.trim(),
-        createdAt: new Date(),
-        avatar: user?.picture || '',
+        createdAt: new Date().toISOString(),
       };
       setComments([...comments, comment]);
       setNewComment('');

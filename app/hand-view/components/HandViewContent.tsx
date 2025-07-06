@@ -28,22 +28,18 @@ export const HandViewContent = ({ handId: propHandId }: HandViewContentProps = {
     const fetchHand = async (id: string) => {
       try {
         setIsLoading(true);
-        console.log('Fetching hand with ID:', id);
         const response = await sharedHandsApi.getSharedHand(id);
-        console.log('API Response:', response);
 
         if (response.success && response.data) {
           setHand(response.data);
         } else {
-          console.error('Failed to load hand:', response.error);
           toast({
             title: 'Error',
             description: response.error?.message || 'Failed to load hand',
             variant: 'destructive',
           });
         }
-      } catch (error) {
-        console.error('Error fetching hand:', error);
+      } catch (_error) {
         toast({
           title: 'Error',
           description: 'Failed to load hand',
@@ -128,6 +124,14 @@ export const HandViewContent = ({ handId: propHandId }: HandViewContentProps = {
                   riverDescription: hand.analysis?.riverDescription || '',
                   turnCard: hand.turnCard ? [hand.turnCard] : [],
                   riverCard: hand.riverCard ? [hand.riverCard] : [],
+                  stackSize: '',
+                  heroStackSize: [],
+                  villainStackSize: [],
+                  flopCards: hand.flopCards || [],
+                  preflopActions: hand.preflopActions || [],
+                  flopActions: hand.flopActions || [],
+                  turnActions: hand.turnActions || [],
+                  riverActions: hand.riverActions || [],
                 }}
                 getPositionName={getPositionName}
                 getCurrencySymbol={getCurrencySymbol}

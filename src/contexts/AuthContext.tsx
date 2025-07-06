@@ -328,7 +328,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Always re-check backend auth status to get the latest user data
     // This is important after onboarding completion to get updated hasCompletedOnboarding status
     try {
-      const response = await backendAuthEndpoints.getMe();
+      const response = await authEndpoints.getMe();
 
       // The response structure is { success: true, data: { user: {...} } }
       const userData = response.data?.data?.user || response.data?.user || response.data;

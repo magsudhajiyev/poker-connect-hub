@@ -29,12 +29,13 @@ export const FeedMainContent = () => {
       });
 
       if (response.success && response.data) {
+        const { hands } = response.data;
         if (append) {
-          setSharedHands((prev) => [...prev, ...response.data.hands]);
+          setSharedHands((prev) => [...prev, ...hands]);
         } else {
-          setSharedHands(response.data.hands);
+          setSharedHands(hands);
         }
-        setHasMore(response.data.hands.length === 10);
+        setHasMore(hands.length === 10);
       } else {
         toast({
           title: 'Error',
@@ -58,7 +59,7 @@ export const FeedMainContent = () => {
   }, []);
 
   const handleHandClick = (handId: string) => {
-    router.push(`/app/hand-view/${handId}`);
+    router.push(`/hand-view/${handId}`);
   };
 
   const formatTimeAgo = (dateString: string) => {

@@ -11,10 +11,9 @@ interface RouteParams {
 }
 
 // GET /api/shared-hands/[id] - Get a single shared hand
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
-    console.log('Fetching hand with ID:', id);
 
     await dbConnect();
 
@@ -23,7 +22,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     User;
 
     const hand = await SharedHand.findById(id).populate('userId', 'name email image').lean();
-    console.log('Found hand:', hand ? 'Yes' : 'No');
 
     if (!hand) {
       return NextResponse.json(

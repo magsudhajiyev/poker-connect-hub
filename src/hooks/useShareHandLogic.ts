@@ -169,12 +169,10 @@ export const useShareHandLogic = () => {
         isPublic: true,
       };
 
-      console.log('Sending shared hand data:', sharedHandData);
-
       // Save to backend
       const response = await sharedHandsApi.createSharedHand(sharedHandData);
 
-      if (!response.success) {
+      if (!response.success || !response.data) {
         throw new Error(response.error?.message || 'Failed to share hand');
       }
 
