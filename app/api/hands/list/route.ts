@@ -41,6 +41,7 @@ export async function GET(request: NextRequest) {
     const [hands, total] = await Promise.all([
       SharedHand.find(filter)
         .populate('userId', 'name email image')
+        .populate('comments.userId', 'name email picture')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
@@ -48,9 +49,16 @@ export async function GET(request: NextRequest) {
       SharedHand.countDocuments(filter),
     ]);
 
+    // Add computed fields
+    const handsWithCounts = hands.map((hand: any) => ({
+      ...hand,
+      likeCount: hand.likes?.length || 0,
+      commentCount: hand.comments?.length || 0,
+    }));
+
     return NextResponse.json({
       success: true,
-      data: { hands, total, page, limit },
+      data: { hands: handsWithCounts, total, page, limit },
     });
   } catch (error) {
     console.error('Error fetching hands:', error);

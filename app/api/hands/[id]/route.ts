@@ -21,7 +21,10 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     // eslint-disable-next-line no-unused-expressions, @typescript-eslint/no-unused-expressions
     User;
 
-    const hand = await SharedHand.findById(id).populate('userId', 'name email image').lean();
+    const hand = await SharedHand.findById(id)
+      .populate('userId', 'name email image')
+      .populate('comments.userId', 'name email picture')
+      .lean();
 
     if (!hand) {
       return NextResponse.json(
@@ -33,9 +36,16 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     // Increment view count
     await SharedHand.findByIdAndUpdate(id, { $inc: { viewCount: 1 } });
 
+    // Add computed fields
+    const handWithCounts = {
+      ...hand,
+      likeCount: hand.likes?.length || 0,
+      commentCount: hand.comments?.length || 0,
+    };
+
     return NextResponse.json({
       success: true,
-      data: hand,
+      data: handWithCounts,
     });
   } catch (error) {
     console.error('Error fetching shared hand:', error);
@@ -92,11 +102,19 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       { new: true },
     )
       .populate('userId', 'name email image')
+      .populate('comments.userId', 'name email picture')
       .lean();
+
+    // Add computed fields
+    const updatedWithCounts = {
+      ...updated,
+      likeCount: updated?.likes?.length || 0,
+      commentCount: updated?.comments?.length || 0,
+    };
 
     return NextResponse.json({
       success: true,
-      data: updated,
+      data: updatedWithCounts,
     });
   } catch (error) {
     console.error('Error updating shared hand:', error);
