@@ -44,7 +44,15 @@ export const UserAvatar = ({ src, name, size = 'md', className, onClick }: UserA
   const initials = getInitials(name);
 
   return (
-    <Avatar className={cn(sizeClasses[size], className)} onClick={onClick}>
+    <Avatar
+      className={cn(
+        sizeClasses[size],
+        onClick &&
+          'cursor-pointer hover:scale-105 hover:ring-2 hover:ring-emerald-400/50 transition-all duration-200',
+        className,
+      )}
+      onClick={onClick}
+    >
       {src && <AvatarImage src={src} alt={name || 'User avatar'} />}
       <AvatarFallback className="bg-slate-700 text-slate-300">
         {initials || <User className={cn(iconSizes[size], 'text-slate-400')} />}

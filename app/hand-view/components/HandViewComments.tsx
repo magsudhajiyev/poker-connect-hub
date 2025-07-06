@@ -4,12 +4,11 @@ import { useState } from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { Send, Trash2 } from 'lucide-react';
 import { SharedHand, sharedHandsApi } from '@/services/sharedHandsApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
 
 interface HandViewCommentsProps {
   hand?: SharedHand;
@@ -17,7 +16,6 @@ interface HandViewCommentsProps {
 
 export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
   const { user } = useAuth();
-  const router = useRouter();
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState(hand?.comments || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -114,10 +112,12 @@ export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
         {/* Comment Input */}
         <div className="space-y-2">
           <div className="flex space-x-3">
-            <Avatar className="w-8 h-8 flex-shrink-0">
-              <AvatarImage src={user?.picture || ''} />
-              <AvatarFallback>{user?.name?.[0] || 'A'}</AvatarFallback>
-            </Avatar>
+            <UserAvatar
+              src={user?.picture || ''}
+              name={user?.name || 'Anonymous'}
+              size="sm"
+              className="flex-shrink-0"
+            />
             <div className="flex-1 flex space-x-2">
               <Textarea
                 placeholder="Share your thoughts on this hand..."
@@ -148,25 +148,25 @@ export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
                 typeof commentItem.userId === 'object' ? commentItem.userId : null;
               const userName = commentUser?.name || 'Anonymous';
               const userPicture = commentUser?.picture || '';
-              const commentUserId = commentUser?._id;
               const isOwnComment = user && commentUser && commentUser._id === user.id;
               const commentId = (commentItem as any)._id;
 
               const handleUserClick = () => {
-                if (commentUserId) {
-                  router.push(`/profile/${commentUserId}`);
-                }
+                toast({
+                  title: 'User Profiles',
+                  description: 'User profile viewing is coming soon!',
+                });
               };
 
               return (
                 <div key={index} className="flex space-x-3 group">
-                  <Avatar
-                    className="w-8 h-8 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-emerald-400/50 transition-all duration-200"
+                  <UserAvatar
+                    src={userPicture}
+                    name={userName}
+                    size="sm"
+                    className="flex-shrink-0 hover:ring-2 hover:ring-emerald-400/50 transition-all duration-200"
                     onClick={handleUserClick}
-                  >
-                    <AvatarImage src={userPicture} />
-                    <AvatarFallback>{userName[0]}</AvatarFallback>
-                  </Avatar>
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="bg-slate-700/30 rounded-lg px-4 py-3">
                       <div className="flex items-center justify-between mb-2">
