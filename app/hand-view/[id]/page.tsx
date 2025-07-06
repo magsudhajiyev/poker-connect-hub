@@ -1,8 +1,6 @@
-'use client';
-
 import { Suspense } from 'react';
 import { SidebarProvider } from '@/components/GlobalSidebar';
-import { HandViewContent } from '../components/HandViewContent';
+import HandViewPageWrapper from './page-wrapper';
 
 // Loading component for Suspense
 function HandViewLoading() {
@@ -14,19 +12,19 @@ function HandViewLoading() {
 }
 
 interface HandViewPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
-const HandViewPage = ({ params }: HandViewPageProps) => {
+export default async function HandViewPage({ params }: HandViewPageProps) {
+  const { id } = await params;
+
   return (
     <SidebarProvider>
       <Suspense fallback={<HandViewLoading />}>
-        <HandViewContent handId={params.id} />
+        <HandViewPageWrapper handId={id} />
       </Suspense>
     </SidebarProvider>
   );
-};
-
-export default HandViewPage;
+}

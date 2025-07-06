@@ -28,18 +28,22 @@ export const HandViewContent = ({ handId: propHandId }: HandViewContentProps = {
     const fetchHand = async (id: string) => {
       try {
         setIsLoading(true);
+        console.log('Fetching hand with ID:', id);
         const response = await sharedHandsApi.getSharedHand(id);
+        console.log('API Response:', response);
 
         if (response.success && response.data) {
           setHand(response.data);
         } else {
+          console.error('Failed to load hand:', response.error);
           toast({
             title: 'Error',
             description: response.error?.message || 'Failed to load hand',
             variant: 'destructive',
           });
         }
-      } catch (_error) {
+      } catch (error) {
+        console.error('Error fetching hand:', error);
         toast({
           title: 'Error',
           description: 'Failed to load hand',

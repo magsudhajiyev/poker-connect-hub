@@ -13,15 +13,17 @@ interface RouteParams {
 // GET /api/shared-hands/[id] - Get a single shared hand
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    const { id } = await params;
+    console.log('Fetching hand with ID:', id);
+
     await dbConnect();
 
     // Ensure User model is registered
     // eslint-disable-next-line no-unused-expressions, @typescript-eslint/no-unused-expressions
     User;
 
-    const { id } = await params;
-
     const hand = await SharedHand.findById(id).populate('userId', 'name email image').lean();
+    console.log('Found hand:', hand ? 'Yes' : 'No');
 
     if (!hand) {
       return NextResponse.json(
@@ -40,7 +42,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   } catch (error) {
     console.error('Error fetching shared hand:', error);
     return NextResponse.json(
-      { success: false, error: { message: 'Failed to fetch shared hand' } },
+      {
+        success: false,
+        error: { message: error instanceof Error ? error.message : 'Failed to fetch shared hand' },
+      },
       { status: 500 },
     );
   }
