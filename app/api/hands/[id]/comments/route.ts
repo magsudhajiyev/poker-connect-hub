@@ -68,13 +68,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       .populate('comments.userId', 'name email picture')
       .lean();
 
-    const addedComment = populatedHand?.comments[populatedHand.comments.length - 1];
+    const addedComment = (populatedHand as any)?.comments[
+      (populatedHand as any)?.comments.length - 1
+    ];
 
     return NextResponse.json({
       success: true,
       data: {
         comment: addedComment,
-        commentCount: populatedHand?.comments.length || 0,
+        commentCount: (populatedHand as any)?.comments?.length || 0,
       },
     });
   } catch (error) {

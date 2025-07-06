@@ -146,10 +146,7 @@ export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
                 typeof commentItem.userId === 'object' ? commentItem.userId : null;
               const userName = commentUser?.name || 'Anonymous';
               const userPicture = commentUser?.picture || '';
-              const isOwnComment =
-                user &&
-                commentUser &&
-                (commentUser._id === user.id || commentUser.email === user.email);
+              const isOwnComment = user && commentUser && commentUser._id === user.id;
               const commentId = (commentItem as any)._id;
 
               return (

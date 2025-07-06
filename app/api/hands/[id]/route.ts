@@ -39,8 +39,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     // Add computed fields
     const handWithCounts = {
       ...hand,
-      likeCount: hand.likes?.length || 0,
-      commentCount: hand.comments?.length || 0,
+      likeCount: (hand as any).likes?.length || 0,
+      commentCount: (hand as any).comments?.length || 0,
     };
 
     return NextResponse.json({
@@ -108,8 +108,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     // Add computed fields
     const updatedWithCounts = {
       ...updated,
-      likeCount: updated?.likes?.length || 0,
-      commentCount: updated?.comments?.length || 0,
+      likeCount: (updated as any)?.likes?.length || 0,
+      commentCount: (updated as any)?.comments?.length || 0,
     };
 
     return NextResponse.json({
