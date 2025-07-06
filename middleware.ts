@@ -96,9 +96,7 @@ export default auth(async (req) => {
     }
 
     // If coming from logout, allow access to signin page
-    if (isFromLogout || isLogout) {
-      // Allow access
-    }
+    // No redirect needed in this case
   }
 
   // Check if route requires onboarding to be completed
