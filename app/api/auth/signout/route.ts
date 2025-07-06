@@ -9,7 +9,7 @@ export async function POST(_request: NextRequest) {
       NextResponse.json({ 
         success: true, 
         message: 'Signout successful',
-      })
+      }),
     );
 
     // Call NextAuth signOut on server side

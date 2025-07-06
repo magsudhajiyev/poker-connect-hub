@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { requireAuth, errorResponse } from '@/lib/api-utils';
-import { OnboardingAnswer } from '@/models/user.model';
+import { OnboardingAnswer, User } from '@/models/user.model';
 import { ObjectId } from 'mongodb';
 
 export async function POST(request: NextRequest) {
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     const db = await getDatabase();
     const onboardingCollection = db.collection<OnboardingAnswer>('onboardinganswers');
-    const usersCollection = db.collection('users');
+    const usersCollection = db.collection<User>('users');
 
     // Check if user already completed onboarding
     const existingAnswer = await onboardingCollection.findOne({
