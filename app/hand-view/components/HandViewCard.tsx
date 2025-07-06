@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { Button } from '@/components/ui/button';
 import { Heart, MessageCircle, Share2, Bookmark } from 'lucide-react';
 import { SharedHand, sharedHandsApi } from '@/services/sharedHandsApi';
@@ -88,15 +88,30 @@ export const HandViewCard = ({ hand }: HandViewCardProps) => {
   const authorName = authorInfo?.name || 'Anonymous';
   const authorPicture = authorInfo?.picture || '';
 
+  const handleUserClick = () => {
+    toast({
+      title: 'User Profiles',
+      description: 'User profile viewing is coming soon!',
+    });
+  };
+
   return (
     <Card className="bg-slate-800/40 border-slate-700/30 w-full">
       <CardHeader className="flex flex-row items-center space-y-0 pb-4">
-        <Avatar className="w-12 h-12 mr-4 flex-shrink-0">
-          <AvatarImage src={authorPicture} />
-          <AvatarFallback>{authorName[0]}</AvatarFallback>
-        </Avatar>
+        <UserAvatar
+          src={authorPicture}
+          name={authorName}
+          size="lg"
+          className="mr-4 flex-shrink-0 hover:ring-2 hover:ring-emerald-400/50 transition-all duration-200"
+          onClick={handleUserClick}
+        />
         <div className="flex-1 min-w-0">
-          <h3 className="text-slate-200 font-medium text-lg truncate">{authorName}</h3>
+          <h3
+            className="text-slate-200 font-medium text-lg truncate hover:text-emerald-400 cursor-pointer transition-colors"
+            onClick={handleUserClick}
+          >
+            {authorName}
+          </h3>
           <p className="text-slate-400">{formatTimeAgo(hand.createdAt)}</p>
         </div>
       </CardHeader>

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { Send, Trash2 } from 'lucide-react';
 import { SharedHand, sharedHandsApi } from '@/services/sharedHandsApi';
 import { useAuth } from '@/contexts/AuthContext';
@@ -112,10 +112,12 @@ export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
         {/* Comment Input */}
         <div className="space-y-2">
           <div className="flex space-x-3">
-            <Avatar className="w-8 h-8 flex-shrink-0">
-              <AvatarImage src={user?.picture || ''} />
-              <AvatarFallback>{user?.name?.[0] || 'A'}</AvatarFallback>
-            </Avatar>
+            <UserAvatar
+              src={user?.picture || ''}
+              name={user?.name || 'Anonymous'}
+              size="sm"
+              className="flex-shrink-0"
+            />
             <div className="flex-1 flex space-x-2">
               <Textarea
                 placeholder="Share your thoughts on this hand..."
@@ -149,16 +151,31 @@ export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
               const isOwnComment = user && commentUser && commentUser._id === user.id;
               const commentId = (commentItem as any)._id;
 
+              const handleUserClick = () => {
+                toast({
+                  title: 'User Profiles',
+                  description: 'User profile viewing is coming soon!',
+                });
+              };
+
               return (
                 <div key={index} className="flex space-x-3 group">
-                  <Avatar className="w-8 h-8 flex-shrink-0">
-                    <AvatarImage src={userPicture} />
-                    <AvatarFallback>{userName[0]}</AvatarFallback>
-                  </Avatar>
+                  <UserAvatar
+                    src={userPicture}
+                    name={userName}
+                    size="sm"
+                    className="flex-shrink-0 hover:ring-2 hover:ring-emerald-400/50 transition-all duration-200"
+                    onClick={handleUserClick}
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="bg-slate-700/30 rounded-lg px-4 py-3">
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-slate-300 text-sm font-medium">{userName}</p>
+                        <p
+                          className="text-slate-300 text-sm font-medium hover:text-emerald-400 cursor-pointer transition-colors"
+                          onClick={handleUserClick}
+                        >
+                          {userName}
+                        </p>
                         <div className="flex items-center gap-2">
                           <p className="text-slate-400 text-xs">
                             {formatTimeAgo(commentItem.createdAt)}

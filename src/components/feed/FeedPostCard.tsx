@@ -122,6 +122,14 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
     onHandClick(hand._id);
   };
 
+  const handleUserClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toast({
+      title: 'User Profiles',
+      description: 'User profile viewing is coming soon!',
+    });
+  };
+
   // Extract user info from populated or string userId
   const authorInfo = typeof hand.userId === 'object' ? hand.userId : null;
   const authorName = authorInfo?.name || 'Anonymous';
@@ -137,10 +145,16 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
           src={authorPicture}
           name={authorName}
           size="md"
-          className="mr-2 sm:mr-3 flex-shrink-0"
+          className="mr-2 sm:mr-3 flex-shrink-0 hover:ring-2 hover:ring-emerald-400/50 transition-all duration-200"
+          onClick={handleUserClick}
         />
         <div className="flex-1 min-w-0">
-          <h3 className="text-slate-200 font-medium text-sm sm:text-base truncate">{authorName}</h3>
+          <h3
+            className="text-slate-200 font-medium text-sm sm:text-base truncate hover:text-emerald-400 cursor-pointer transition-colors"
+            onClick={handleUserClick}
+          >
+            {authorName}
+          </h3>
           <p className="text-slate-400 text-xs sm:text-sm">{formatTimeAgo(hand.createdAt)}</p>
         </div>
         <Badge
@@ -228,25 +242,44 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
         {showComments && (
           <div className="mt-4 space-y-3 border-t border-slate-700/30 pt-4">
             {/* Existing Comments */}
-            {comments.map((comment, index) => (
-              <div key={index} className="flex space-x-3">
-                <UserAvatar
-                  src={typeof comment.userId === 'object' ? comment.userId.picture : ''}
-                  name={typeof comment.userId === 'object' ? comment.userId.name : 'Anonymous'}
-                  size="xs"
-                  className="flex-shrink-0"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="bg-slate-700/30 rounded-lg px-3 py-2">
-                    <p className="text-slate-300 text-sm font-medium">
-                      {typeof comment.userId === 'object' ? comment.userId.name : 'Anonymous'}
+            {comments.map((comment, index) => {
+              const commentUser = typeof comment.userId === 'object' ? comment.userId : null;
+              const commentUserName = commentUser?.name || 'Anonymous';
+
+              const handleCommentUserClick = (e: React.MouseEvent) => {
+                e.stopPropagation();
+                toast({
+                  title: 'User Profiles',
+                  description: 'User profile viewing is coming soon!',
+                });
+              };
+
+              return (
+                <div key={index} className="flex space-x-3">
+                  <UserAvatar
+                    src={commentUser?.picture || ''}
+                    name={commentUserName}
+                    size="xs"
+                    className="flex-shrink-0 hover:ring-2 hover:ring-emerald-400/50 transition-all duration-200"
+                    onClick={handleCommentUserClick}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="bg-slate-700/30 rounded-lg px-3 py-2">
+                      <p
+                        className="text-slate-300 text-sm font-medium hover:text-emerald-400 cursor-pointer transition-colors"
+                        onClick={handleCommentUserClick}
+                      >
+                        {commentUserName}
+                      </p>
+                      <p className="text-slate-200 text-sm mt-1 break-words">{comment.content}</p>
+                    </div>
+                    <p className="text-slate-400 text-xs mt-1">
+                      {formatTimeAgo(comment.createdAt)}
                     </p>
-                    <p className="text-slate-200 text-sm mt-1 break-words">{comment.content}</p>
                   </div>
-                  <p className="text-slate-400 text-xs mt-1">{formatTimeAgo(comment.createdAt)}</p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* Comment Input */}
             <div className="flex space-x-3">

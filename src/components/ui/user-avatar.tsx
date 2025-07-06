@@ -9,6 +9,7 @@ interface UserAvatarProps {
   name?: string | null;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 const sizeClasses = {
@@ -27,12 +28,12 @@ const iconSizes = {
   xl: 'w-8 h-8',
 };
 
-export const UserAvatar = ({ src, name, size = 'md', className }: UserAvatarProps) => {
+export const UserAvatar = ({ src, name, size = 'md', className, onClick }: UserAvatarProps) => {
   // Get initials from name
   const getInitials = (name: string | null | undefined) => {
     if (!name) {
-return '';
-}
+      return '';
+    }
     const parts = name.trim().split(' ');
     if (parts.length >= 2) {
       return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
@@ -43,7 +44,15 @@ return '';
   const initials = getInitials(name);
 
   return (
-    <Avatar className={cn(sizeClasses[size], className)}>
+    <Avatar
+      className={cn(
+        sizeClasses[size],
+        onClick &&
+          'cursor-pointer hover:scale-105 hover:ring-2 hover:ring-emerald-400/50 transition-all duration-200',
+        className,
+      )}
+      onClick={onClick}
+    >
       {src && <AvatarImage src={src} alt={name || 'User avatar'} />}
       <AvatarFallback className="bg-slate-700 text-slate-300">
         {initials || <User className={cn(iconSizes[size], 'text-slate-400')} />}

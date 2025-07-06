@@ -86,6 +86,34 @@ export interface CommentResponse {
   commentCount: number;
 }
 
+export interface UserProfile {
+  user: {
+    _id: string;
+    name: string;
+    email: string;
+    image?: string;
+    authProvider: string;
+    createdAt: string;
+    hasCompletedOnboarding: boolean;
+  };
+  stats: {
+    totalHands: number;
+    totalLikes: number;
+    totalComments: number;
+    memberSince: string;
+  };
+  recentHands: Array<{
+    _id: string;
+    title: string;
+    description: string;
+    gameType: string;
+    gameFormat: string;
+    createdAt: string;
+    likeCount: number;
+    commentCount: number;
+  }>;
+}
+
 // Create axios instance for Next.js API routes
 const api = axios.create({
   baseURL: '', // Use relative URLs for same-origin API calls
@@ -196,6 +224,15 @@ class SharedHandsApiService {
   ): Promise<ApiResponse<{ commentCount: number }>> {
     try {
       const response = await api.delete(`/api/hands/${handId}/comments/${commentId}`);
+      return response.data;
+    } catch (error) {
+      return ApiErrorHandler.handle(error);
+    }
+  }
+
+  async getUserProfile(userId: string): Promise<ApiResponse<UserProfile>> {
+    try {
+      const response = await api.get(`/api/users/${userId}`);
       return response.data;
     } catch (error) {
       return ApiErrorHandler.handle(error);
