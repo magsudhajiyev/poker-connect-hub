@@ -113,7 +113,21 @@ export async function POST(request: NextRequest) {
       },
     );
 
-    return successResponse({ onboardingAnswer }, 'Onboarding completed successfully');
+    // Generate new tokens with updated onboarding status
+    const updatedUser = await usersCollection.findOne({ _id: new ObjectId(currentUser.userId) });
+    if (!updatedUser) {
+      return errorResponse('User not found after update', 404);
+    }
+
+    // Create auth response with new tokens that include hasCompletedOnboarding: true
+    const { createAuthResponse } = await import('../../auth/_utils');
+    const response = await createAuthResponse(
+      updatedUser,
+      usersCollection,
+      'Onboarding completed successfully'
+    );
+
+    return response;
   } catch (error) {
     console.error('Onboarding submission error:', error);
     return errorResponse('Internal server error', 500);

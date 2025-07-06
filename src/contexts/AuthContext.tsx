@@ -52,6 +52,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setBackendUser(null);
         return;
       }
+      
+      // Check if this is a fresh login (came from signin page)
+      const isFreshLogin = document.referrer.includes('/auth/signin') || 
+                          window.location.pathname === '/onboarding';
+      
+      // Add extra delay for fresh logins to ensure cookies are set
+      if (isFreshLogin && !backendUser) {
+        console.log('[AuthContext] Fresh login detected, adding delay for cookie propagation');
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
 
       // Always check backend auth to ensure we have JWT cookies
       // This is important for Google OAuth users
@@ -77,10 +87,41 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             createdAt: userData.createdAt,
           });
         }
-      } catch {
+      } catch (error: any) {
+        // If we get a 401, try to refresh the token
+        if (error?.response?.status === 401) {
+          try {
+            const refreshResponse = await authEndpoints.refreshToken();
+            
+            if (refreshResponse.data?.success) {
+              // Retry getting user data with new token
+              const retryResponse = await authEndpoints.getMe();
+              const userData = retryResponse.data?.data?.user || retryResponse.data?.user || retryResponse.data;
+              
+              if (userData && userData.id) {
+                setBackendUser({
+                  id: userData.id,
+                  email: userData.email,
+                  name: userData.name,
+                  picture: userData.picture,
+                  hasCompletedOnboarding: userData.hasCompletedOnboarding,
+                  createdAt: userData.createdAt,
+                });
+                return;
+              }
+            }
+          } catch (refreshError) {
+            }
+        }
 
         // If we have a NextAuth session but no backend auth, sync with backend
         if (session?.user?.email && status === 'authenticated') {
+          // CRITICAL: Clear any existing backend user state before syncing
+          // This prevents showing previous user data during Google OAuth
+          if (backendUser && backendUser.email !== session.user.email) {
+            setBackendUser(null);
+          }
+          
           setIsSyncing(true);
           try {
             const syncPayload = {
@@ -196,26 +237,69 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     setIsLoggingOut(true);
+    
+    // Clear backend user state immediately to prevent stale data
+    setBackendUser(null);
+    
+    // Also clear any auth check states to prevent race conditions
+    setIsCheckingBackendAuth(false);
+    setIsSyncing(false);
+    
     try {
-      // If user is authenticated via backend, call backend logout
-      if (backendUser && !session) {
+      // Always call both logout methods to ensure complete session clearing
+      // This prevents the issue where switching between auth methods shows previous user
+      
+      // 1. Call backend logout to clear JWT cookies and invalidate refresh token
+      try {
         await authEndpoints.logout();
-        setBackendUser(null);
-      } else {
-        // Otherwise use NextAuth signOut
-        await signOut({ redirect: false });
+      } catch (backendError) {
+        // Continue with NextAuth logout even if backend fails
       }
 
-      // Clear any local state
-      // (removed hasCheckedOnboarding state)
+      // 2. Call the unified signout endpoint that handles both NextAuth and backend
+      // This ensures complete session clearing
+      try {
+        await authEndpoints.signout();
+      } catch (signoutError) {
+        // If unified signout fails, try NextAuth signOut directly
+        if (session) {
+          try {
+            await signOut({ redirect: false });
+          } catch (nextAuthError) {
+          }
+        }
+      }
 
-      // Wait a bit for cookies to be cleared
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // 3. Clear all possible client-side storage
+      if (typeof window !== 'undefined') {
+        // Clear any localStorage/sessionStorage that might hold auth data
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user_data');
+        sessionStorage.clear();
+        
+        // Force clear all cookies from client side as well
+        document.cookie.split(";").forEach(function(c) { 
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+        
+        // Clear cookies with domain variations
+        const domain = window.location.hostname;
+        document.cookie.split(";").forEach(function(c) {
+          const eqPos = c.indexOf("=");
+          const name = eqPos > -1 ? c.substr(0, eqPos).trim() : c.trim();
+          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${domain}`;
+          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${domain}`;
+        });
+      }
+
+      // Wait a bit for all logout operations to complete
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Use replace instead of push to prevent back navigation issues
       router.replace('/');
 
-      // Force a page reload to ensure all state is cleared
+      // Force a complete page reload to ensure all state is cleared
+      // This is critical to prevent any cached auth state
       if (typeof window !== 'undefined') {
         setTimeout(() => {
           // Add logout parameter to prevent middleware redirect
@@ -223,34 +307,54 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           window.location.href = `${window.location.origin}/?logout=true`;
         }, 100);
       }
-    } catch {
-      // Even if logout fails, redirect to home
+    } catch (error) {
+      // Even if logout fails, clear state and redirect to home
+      setBackendUser(null);
+      setIsCheckingBackendAuth(false);
+      setIsSyncing(false);
       router.replace('/');
+      
+      // Force reload as last resort
+      if (typeof window !== 'undefined') {
+        setTimeout(() => {
+          window.location.href = `${window.location.origin}/?logout=true`;
+        }, 100);
+      }
     } finally {
       setIsLoggingOut(false);
     }
   };
 
   const refreshAuth = async () => {
-    // NextAuth handles session refresh automatically
-    // For backend auth, we can re-check the auth status
-    if (!session && backendUser) {
-      try {
-        const response = await authEndpoints.getMe();
-
-        if (response.data) {
-          setBackendUser({
-            id: response.data.id,
-            email: response.data.email,
-            name: response.data.name,
-            picture: response.data.picture,
-            hasCompletedOnboarding: response.data.hasCompletedOnboarding,
-            createdAt: response.data.createdAt,
-          });
+    // Always re-check backend auth status to get the latest user data
+    // This is important after onboarding completion to get updated hasCompletedOnboarding status
+    try {
+      const response = await authEndpoints.getMe();
+      
+      // The response structure is { success: true, data: { user: {...} } }
+      const userData = response.data?.data?.user || response.data?.user || response.data;
+      
+      if (userData && userData.id) {
+        setBackendUser({
+          id: userData.id,
+          email: userData.email,
+          name: userData.name,
+          picture: userData.picture,
+          hasCompletedOnboarding: userData.hasCompletedOnboarding,
+          createdAt: userData.createdAt,
+        });
+        
+        // If onboarding was just completed, navigate to feed
+        if (userData.hasCompletedOnboarding && window.location.pathname === '/onboarding') {
+          router.push('/feed');
         }
-      } catch {
+      } else {
+        // No valid backend user
         setBackendUser(null);
       }
+    } catch (error) {
+      console.error('Failed to refresh auth:', error);
+      setBackendUser(null);
     }
   };
 

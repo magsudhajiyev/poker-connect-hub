@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
-import { errorResponse } from '@/lib/api-utils';
+import { errorResponse, getCurrentUser } from '@/lib/api-utils';
+import { ObjectId } from 'mongodb';
 import { createAuthResponse } from '../../_utils';
 import { User } from '@/models/user.model';
 
@@ -16,6 +17,35 @@ export async function POST(request: NextRequest) {
 
     const db = await getDatabase();
     const usersCollection = db.collection<User>('users');
+
+    // Important: Clear any existing auth cookies before creating new session
+    // This prevents the issue where previous user's session might persist
+    const cookieStore = request.cookies;
+    const hasExistingSession = cookieStore.get('access_token') || cookieStore.get('refresh_token');
+    
+    if (hasExistingSession) {
+      
+      // Get the existing user ID from the token to properly clear their session
+      const existingToken = cookieStore.get('access_token')?.value;
+      if (existingToken) {
+        try {
+          const { verifyToken } = await import('@/lib/api-utils');
+          const decoded = await verifyToken(existingToken);
+          if (decoded && decoded.userId) {
+            // Clear the refresh token for the previous user
+            await usersCollection.updateOne(
+              { _id: new ObjectId(decoded.userId) },
+              {
+                $unset: { refreshToken: 1 },
+                $set: { updatedAt: new Date() },
+              },
+            );
+          }
+        } catch (error) {
+          console.error('Error clearing previous user session:', error);
+        }
+      }
+    }
 
     // Check if user exists by googleId or email
     let user: User | null = await usersCollection.findOne({

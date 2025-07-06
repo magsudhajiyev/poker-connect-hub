@@ -14,6 +14,13 @@ export async function POST(request: NextRequest) {
       return errorResponse('Email and password are required');
     }
 
+    // Log if there's an existing session (for debugging)
+    const cookieStore = request.cookies;
+    const hasExistingSession = cookieStore.get('access_token') || cookieStore.get('refresh_token');
+    
+    if (hasExistingSession) {
+    }
+
     const db = await getDatabase();
     const usersCollection = db.collection<User>('users');
 

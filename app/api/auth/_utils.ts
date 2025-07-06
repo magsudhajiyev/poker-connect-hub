@@ -84,7 +84,13 @@ export async function createAuthResponse(
     },
   };
 
-  const response = NextResponse.json(responseData);
+  const response = NextResponse.json(responseData, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+    },
+  });
 
   // Set auth cookies
   return setAuthCookies(response, tokens);

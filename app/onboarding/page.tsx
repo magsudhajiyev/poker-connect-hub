@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -25,7 +25,7 @@ import {
   AlertCircle,
   Loader2,
 } from 'lucide-react';
-import { useRouter, redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { onboardingEndpoints } from '@/services/authApi';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -33,6 +33,7 @@ const Onboarding = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [usernameError, setUsernameError] = useState('');
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [formData, setFormData] = useState({
     username: '',
     experience: '',
@@ -43,12 +44,53 @@ const Onboarding = () => {
     preferredStakes: '',
   });
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, refreshAuth, loading } = useAuth();
   const checkUsernameTimeoutRef = useRef<NodeJS.Timeout>();
 
-  // Redirect if not authenticated
+  // Handle authentication and onboarding status
+  useEffect(() => {
+    // Wait for auth context to load
+    if (loading) {
+      return;
+    }
+    
+    // Add a delay before checking user to ensure auth context is fully loaded
+    // This prevents the race condition where user is null during initial load
+    const checkAuthTimer = setTimeout(() => {
+      // If not authenticated after loading and delay, redirect to signin
+      if (!user) {
+        router.push('/auth/signin');
+        return;
+      }
+      
+      // If user has already completed onboarding, redirect to feed
+      if (user.hasCompletedOnboarding) {
+        router.push('/feed');
+        return;
+      }
+      
+      // User is authenticated and needs onboarding
+      setIsInitializing(false);
+    }, 500); // Give auth context time to sync with cookies
+    
+    return () => clearTimeout(checkAuthTimer);
+  }, [user, loading, router]);
+  
+  // Show loading while checking auth status
+  if (loading || isInitializing) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-8 h-8 text-emerald-500 animate-spin mx-auto" />
+          <p className="text-slate-400">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // If we reach here without a user, show nothing (redirect will happen)
   if (!user) {
-    redirect('/auth/signin');
+    return null;
   }
 
   const steps = [
@@ -145,7 +187,6 @@ const Onboarding = () => {
         }
       }
     } catch (error) {
-      console.error('Failed to check username:', error);
       // Don't set error, allow user to continue
     } finally {
       setIsCheckingUsername(false);
@@ -296,18 +337,26 @@ const Onboarding = () => {
         };
 
         // Submit onboarding data
-        await onboardingEndpoints.submitAnswers(onboardingData);
-
-        // Navigate to feed
-        router.push('/feed');
+        const response = await onboardingEndpoints.submitAnswers(onboardingData);
+        
+        // If the response includes new tokens, they have already been set as cookies
+        // The response should have updated user data with hasCompletedOnboarding: true
+        if (response.data?.success) {
+          
+          // Give cookies time to be set properly
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          
+          // Force a page reload to ensure all auth state is refreshed with new tokens
+          // This is more reliable than just calling refreshAuth() which uses old tokens
+          window.location.href = '/feed';
+        } else {
+          throw new Error('Onboarding submission did not return success');
+        }
       } catch (error) {
-        console.error('Failed to complete onboarding:', error);
-        console.error('Error response:', (error as any).response?.data);
 
         // Handle different error types
         if ((error as any).response?.status === 401) {
           // Authentication error
-          console.error('Authentication error during onboarding submission');
           alert('Your session has expired. Please sign in again.');
           router.push('/auth/signin');
         } else if ((error as any).response?.data?.message) {

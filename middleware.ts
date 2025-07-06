@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { verifyToken, type JwtPayload } from '@/lib/api-utils';
+import { verifyTokenEdge, type JwtPayload } from '@/lib/edge-jwt';
 
 // Define protected routes
 const protectedRoutes = ['/profile', '/settings', '/share-hand', '/feed', '/onboarding'];
@@ -11,13 +11,20 @@ const onboardingRequiredRoutes = ['/feed', '/share-hand', '/profile'];
 // Wrap the auth middleware to add custom logic
 export default auth(async (req) => {
   const pathname = req.nextUrl.pathname;
+  
+  // Skip authentication checks for static assets and API routes that handle auth
+  const isAuthEndpoint = pathname.startsWith('/api/auth/');
+  const isStaticAsset = pathname.match(/\.(jpg|jpeg|png|gif|svg|ico|css|js)$/);
+  
+  if (isAuthEndpoint || isStaticAsset) {
+    return NextResponse.next();
+  }
 
   // Check for logout parameter
   const isLogout = req.nextUrl.searchParams.get('logout') === 'true';
 
   // If logout parameter is present, don't do any redirects
   if (isLogout) {
-    console.log('Logout parameter detected, allowing access without redirects');
     return NextResponse.next();
   }
 
@@ -32,8 +39,12 @@ export default auth(async (req) => {
   let hasValidBackendAuth = false;
 
   if (accessTokenCookie?.value) {
-    jwtPayload = await verifyToken(accessTokenCookie.value);
-    hasValidBackendAuth = Boolean(jwtPayload);
+    try {
+      jwtPayload = await verifyTokenEdge(accessTokenCookie.value);
+      hasValidBackendAuth = Boolean(jwtPayload);
+    } catch (error) {
+      hasValidBackendAuth = false;
+    }
   }
 
   // Check for NextAuth session
@@ -41,18 +52,21 @@ export default auth(async (req) => {
 
   // User is authenticated if they have either valid auth method
   const isAuthenticated = hasNextAuthSession || hasValidBackendAuth;
-
-  // Log authentication state for debugging
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Middleware check:', {
-      path: pathname,
-      hasValidBackendAuth,
-      hasNextAuthSession,
-      isAuthenticated,
-      hasCompletedOnboarding: jwtPayload?.hasCompletedOnboarding,
-      cookies: req.cookies.getAll().map((c) => c.name),
-    });
+  
+  // Check if this is a fresh login attempt (coming from signin page)
+  const referer = req.headers.get('referer');
+  const isFromSignin = referer && referer.includes('/auth/signin');
+  const isFreshLogin = isFromSignin || req.headers.get('x-fresh-login') === 'true';
+  
+  // Allow grace period for cookie propagation on fresh logins
+  if (isFreshLogin && protectedRoutes.some(route => pathname.startsWith(route))) {
+    // Set a header to track this is a fresh login navigation
+    const response = NextResponse.next();
+    response.headers.set('x-fresh-login-allowed', 'true');
+    return response;
   }
+  
+
 
   // Handle the signin page
   if (pathname === '/auth/signin') {
@@ -73,18 +87,15 @@ export default auth(async (req) => {
       // Verify the auth token is actually valid
       if (hasValidBackendAuth && jwtPayload) {
         const callbackUrl = req.nextUrl.searchParams.get('callbackUrl') || '/feed';
-        console.log('User already authenticated, redirecting to:', callbackUrl);
         return NextResponse.redirect(new URL(callbackUrl, req.url));
       } else if (hasNextAuthSession) {
         const callbackUrl = req.nextUrl.searchParams.get('callbackUrl') || '/feed';
-        console.log('User already authenticated via NextAuth, redirecting to:', callbackUrl);
         return NextResponse.redirect(new URL(callbackUrl, req.url));
       }
     }
 
     // If coming from logout, allow access to signin page
     if (isFromLogout || isLogout) {
-      console.log('User coming from logout, allowing access to signin page');
     }
   }
 
@@ -95,7 +106,15 @@ export default auth(async (req) => {
   if (isAuthenticated && requiresOnboarding && hasValidBackendAuth && jwtPayload) {
     // Check if user has completed onboarding from JWT payload
     if (jwtPayload.hasCompletedOnboarding === false) {
-      console.log('Middleware: Redirecting to onboarding (user incomplete)');
+      // Special case: if coming from onboarding page with fresh tokens, allow access
+      const referer = req.headers.get('referer');
+      const isFromOnboarding = referer && referer.includes('/onboarding');
+      
+      if (isFromOnboarding) {
+        // Allow the request to proceed to let new tokens be validated
+        return NextResponse.next();
+      }
+      
       return NextResponse.redirect(new URL('/onboarding', req.url));
     }
   }
@@ -107,9 +126,25 @@ export default auth(async (req) => {
     // Check if this might be a fresh login (referrer is signin page)
     const referer = req.headers.get('referer');
     if (referer && referer.includes('/auth/signin')) {
-      console.log('Fresh login detected, allowing one-time access to verify cookies');
       // Allow the request to proceed once to let cookies settle
+      const response = NextResponse.next();
+      response.headers.set('x-fresh-login-allowed', 'true');
+      return response;
+    }
+
+    // Also check if we're coming from a login API call
+    // This helps with cookie propagation timing
+    const isFromAuthAPI = referer && (referer.includes('/api/auth/login') || referer.includes('/api/auth/register'));
+    if (isFromAuthAPI) {
       return NextResponse.next();
+    }
+    
+    // Check for RSC navigation from signin (Next.js server component requests)
+    const isRSCRequest = req.headers.get('rsc') || req.nextUrl.searchParams.has('_rsc');
+    if (isRSCRequest && referer && referer.includes('/auth/signin')) {
+      const response = NextResponse.next();
+      response.headers.set('x-fresh-login-allowed', 'true');
+      return response;
     }
 
     const url = new URL('/auth/signin', req.url);

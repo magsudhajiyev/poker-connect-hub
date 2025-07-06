@@ -8,6 +8,7 @@ export const authApi = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 second timeout
 });
 
 // Request interceptor for debugging
@@ -25,9 +26,16 @@ authApi.interceptors.request.use(
 // Response interceptor for error handling
 authApi.interceptors.response.use(
   (response) => {
+    // Ensure we return the full response for auth endpoints
     return response;
   },
   (error) => {
+    // Handle network errors
+    if (!error.response && error.code === 'ERR_NETWORK') {
+      console.error('Network error:', error.message);
+      return Promise.reject(error);
+    }
+    
     // Don't log 401 errors as they're expected during logout
     if (error.response?.status === 401) {
       // Silently handle unauthorized errors
@@ -60,6 +68,8 @@ export const authEndpoints = {
       return response;
     });
   },
+
+  signout: () => authApi.post('/auth/signout'),
 
   getMe: () => authApi.get('/auth/me'),
 

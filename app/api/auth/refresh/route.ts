@@ -1,76 +1,50 @@
 import { NextRequest } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
-import {
-  verifyToken,
-  generateTokens,
-  setAuthCookies,
-  errorResponse,
-  successResponse,
-} from '@/lib/api-utils';
-import { ObjectId } from 'mongodb';
-import { cookies } from 'next/headers';
+import { verifyToken, errorResponse } from '@/lib/api-utils';
+import { createAuthResponse } from '../_utils';
 import { User } from '@/models/user.model';
+import { ObjectId } from 'mongodb';
 
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const refreshToken = cookieStore.get('refresh_token')?.value;
-
+    // Get the refresh token from cookies
+    const refreshToken = request.cookies.get('refresh_token')?.value;
+    
     if (!refreshToken) {
       return errorResponse('Refresh token not provided', 401);
     }
 
-    // Verify refresh token
+    // Verify the refresh token
     const decoded = await verifyToken(refreshToken);
+    
     if (!decoded) {
       return errorResponse('Invalid refresh token', 401);
     }
 
     const db = await getDatabase();
-    const usersCollection = db.collection('users');
+    const usersCollection = db.collection<User>('users');
 
     // Find user and verify refresh token matches
     const user = await usersCollection.findOne({
       _id: new ObjectId(decoded.userId),
-      refreshToken,
+      refreshToken: refreshToken,
     });
 
     if (!user) {
-      return errorResponse('Invalid refresh token', 401);
+      return errorResponse('Invalid refresh token or user not found', 401);
     }
 
-    const typedUser = user as unknown as User;
-    if (!typedUser.isActive) {
-      return errorResponse('Account is deactivated', 403);
-    }
-
-    const userId = typedUser._id!.toString();
-
-    // Generate new tokens
-    const tokens = generateTokens({
-      userId,
-      email: typedUser.email,
-      name: typedUser.name,
-      hasCompletedOnboarding: typedUser.hasCompletedOnboarding,
-    });
-
-    // Update refresh token in database
-    await usersCollection.updateOne(
-      { _id: new ObjectId(userId) },
-      {
-        $set: {
-          refreshToken: tokens.refreshToken,
-          updatedAt: new Date(),
-        },
-      },
+    // Create new auth response with fresh tokens
+    // This will get the latest user data including hasCompletedOnboarding status
+    const response = await createAuthResponse(
+      user,
+      usersCollection,
+      'Token refreshed successfully'
     );
 
-    // Set auth cookies and return response
-    const response = successResponse({ tokens }, 'Token refreshed successfully');
-
-    return setAuthCookies(response, tokens);
+    return response;
   } catch (error) {
     console.error('Token refresh error:', error);
-    return errorResponse('Internal server error', 500);
+    return errorResponse('Failed to refresh token', 500);
   }
 }

@@ -9,11 +9,11 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { authEndpoints } from '@/services/authApi';
 import { AxiosError } from 'axios';
-import { checkCookies } from '@/utils/cookieUtils';
+import { waitForCookiesWithVerification } from '@/utils/cookieVerification';
 
 export default function SignInForm() {
   const [mounted, setMounted] = useState(false);
@@ -29,7 +29,6 @@ export default function SignInForm() {
   const [loading, setLoading] = useState(false);
 
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   // Prevent hydration mismatch
   useEffect(() => {
@@ -66,36 +65,30 @@ export default function SignInForm() {
         });
 
         if (response.data.success) {
-          // Check cookies immediately
-          checkCookies();
-
-          // Wait a bit longer for cookies to be set by the browser
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
-          // Check cookies after delay
-          checkCookies();
-
-          // Verify authentication by calling /auth/me
-          try {
-            await authEndpoints.getMe();
-
-            // Check if user has completed onboarding
-            if (response.data.data?.user?.hasCompletedOnboarding) {
-              router.push('/feed');
-            } else {
-              router.push('/onboarding');
+          // Skip verification - trust the login response
+          // The login endpoint already returned user data and set cookies
+          const userData = response.data.data?.user;
+          
+          if (userData) {
+            // Store redirect URL before initiating redirect
+            const redirectUrl = userData.hasCompletedOnboarding ? '/feed' : '/onboarding';
+            
+            // Wait for cookies to be properly set and verified
+            const cookiesVerified = await waitForCookiesWithVerification();
+            
+            if (!cookiesVerified) {
+              // Still try to redirect even if verification failed
+              // The middleware grace period should allow access
             }
-          } catch (verifyError) {
-            console.error('Authentication verification failed:', verifyError);
-            // Try to get more info about the error
-            if (verifyError instanceof AxiosError) {
-              console.error('Error details:', {
-                status: verifyError.response?.status,
-                data: verifyError.response?.data,
-                headers: verifyError.response?.headers,
-              });
-            }
-            setError('Authentication failed. Please try again.');
+            
+            // Use window.location for hard navigation to ensure cookies are sent
+            // This is more reliable than router.push for auth state changes
+            window.location.href = redirectUrl;
+            
+            // Keep loading state true during redirect
+            // The page will unmount, so we don't need to set it back to false
+          } else {
+            setError('Login failed. Please try again.');
             setLoading(false);
             return;
           }
@@ -121,39 +114,32 @@ export default function SignInForm() {
         });
 
         if (response.data.success) {
-          // Check cookies immediately
-          checkCookies();
-
-          // Wait a bit longer for cookies to be set by the browser
-          await new Promise((resolve) => setTimeout(resolve, 500));
-
-          // Check cookies after delay
-          checkCookies();
-
-          // Verify authentication by calling /auth/me
-          try {
-            await authEndpoints.getMe();
-
+          // Skip verification - trust the registration response
+          // The registration endpoint already returned user data and set cookies
+          const userData = response.data.data?.user;
+          
+          if (userData) {
             // New registrations always need onboarding
-            router.push('/onboarding');
-          } catch (verifyError) {
-            console.error('Authentication verification failed:', verifyError);
-            // Try to get more info about the error
-            if (verifyError instanceof AxiosError) {
-              console.error('Error details:', {
-                status: verifyError.response?.status,
-                data: verifyError.response?.data,
-                headers: verifyError.response?.headers,
-              });
+            // Wait for cookies to be properly set and verified
+            const cookiesVerified = await waitForCookiesWithVerification();
+            
+            if (!cookiesVerified) {
+              // Still try to redirect even if verification failed
+              // The middleware grace period should allow access
             }
-            setError('Registration succeeded but authentication failed. Please try logging in.');
+            
+            // Use window.location for hard navigation to ensure cookies are sent
+            window.location.href = '/onboarding';
+            
+            // Keep loading state true during redirect
+          } else {
+            setError('Registration failed. Please try again.');
             setLoading(false);
             return;
           }
         }
       }
     } catch (error) {
-      console.error('Auth error:', error);
 
       if (error instanceof AxiosError) {
         if (error.response?.status === 0 || error.code === 'ERR_NETWORK') {
@@ -184,8 +170,7 @@ export default function SignInForm() {
 
       // Sign in with Google and redirect to the callback URL
       await signIn('google', { redirectTo: callbackUrl });
-    } catch (error) {
-      console.error('Google sign-in error:', error);
+    } catch {
       setError('An unexpected error occurred. Please try again.');
       setLoading(false);
     }

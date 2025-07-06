@@ -63,13 +63,14 @@ export function setAuthCookies(
   const isSecureContext = process.env.NEXT_PUBLIC_APP_URL?.startsWith('https://') || false;
 
   // For production, we need to be careful with sameSite and secure flags
-  // If the site is served over HTTPS, use 'none' for cross-site requests
-  // Otherwise, use 'lax' to avoid cookie issues
+  // Use 'lax' for better compatibility with redirects
   const cookieOptions = {
     httpOnly: true,
     secure: isProduction && isSecureContext,
-    sameSite: (isProduction && isSecureContext ? 'none' : 'lax') as 'none' | 'lax' | 'strict',
+    sameSite: 'lax' as 'none' | 'lax' | 'strict', // Changed to always use 'lax' for better compatibility
     path: '/',
+    // Set explicit domain for production to ensure cookies work across subdomains
+    ...(isProduction && process.env.COOKIE_DOMAIN ? { domain: process.env.COOKIE_DOMAIN } : {}),
   };
 
   // Access token cookie
@@ -93,8 +94,56 @@ export function setAuthCookies(
 
 // Clear Auth Cookies
 export function clearAuthCookies(response: NextResponse) {
-  response.cookies.delete('access_token');
-  response.cookies.delete('refresh_token');
+  const isProduction = process.env.NODE_ENV === 'production';
+  const cookieDomain = process.env.COOKIE_DOMAIN;
+  
+  // Clear backend JWT cookies with proper options
+  const cookieOptions = {
+    path: '/',
+    ...(isProduction && cookieDomain ? { domain: cookieDomain } : {}),
+  };
+  
+  response.cookies.delete({
+    name: 'access_token',
+    ...cookieOptions,
+  });
+  response.cookies.delete({
+    name: 'refresh_token',
+    ...cookieOptions,
+  });
+  
+  // Clear NextAuth session cookies
+  // NextAuth uses different cookie names based on environment
+  const cookiesToClear = [
+    'next-auth.session-token',
+    '__Secure-next-auth.session-token',
+    'next-auth.callback-url',
+    '__Secure-next-auth.callback-url',
+    'next-auth.csrf-token',
+    '__Secure-next-auth.csrf-token',
+  ];
+  
+  cookiesToClear.forEach(cookieName => {
+    response.cookies.delete({
+      name: cookieName,
+      ...cookieOptions,
+    });
+  });
+  
+  // Also try to clear with domain variations
+  if (isProduction) {
+    const domain = process.env.NEXT_PUBLIC_APP_URL?.replace(/^https?:\/\//, '').split('/')[0];
+    if (domain && domain !== cookieDomain) {
+      cookiesToClear.forEach(cookieName => {
+        response.cookies.delete({
+          name: cookieName,
+          path: '/',
+          domain: `.${domain}`,
+        });
+      });
+    }
+  }
+  
   return response;
 }
 
@@ -103,7 +152,8 @@ export async function verifyToken(token: string): Promise<JwtPayload | null> {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
     return decoded;
-  } catch {
+  } catch (error) {
+    console.error('JWT verification failed:', error);
     return null;
   }
 }
