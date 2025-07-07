@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { onboardingEndpoints } from '@/services/authApi';
-import { sharedHandsApi } from '@/services/sharedHandsApi';
 
 interface ProfileData {
   userData: {
@@ -94,7 +93,9 @@ export const useUserProfileData = (userId?: string): ProfileData => {
           }
         } else if (userId) {
           // Fetch other user's profile data with cache busting
-          const response = await fetch(`/api/users/${userId}?_=${Date.now()}`).then(res => res.json());
+          const response = await fetch(`/api/users/${userId}?_=${Date.now()}`).then((res) =>
+            res.json(),
+          );
 
           if (response.success && response.data) {
             const { user: userData, stats } = response.data;

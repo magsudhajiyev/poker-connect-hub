@@ -50,6 +50,12 @@ This document tracks TypeScript 'any' types that need to be replaced with proper
 
 - `/src/types/unified.ts:86,109,115-117` - Complex unified type definitions
 
+### Follow System API Routes (Added in Follow Feature)
+
+- `/app/api/users/[id]/followers/route.ts:40` - MongoDB populate result type
+- `/app/api/users/[id]/following/route.ts:40` - MongoDB populate result type
+- `/app/api/users/[id]/route.ts:37,42,58,66-72,80` - MongoDB aggregation and user data types
+
 ## Priority for fixing:
 
 1. **High Priority**: API response types and error handling
