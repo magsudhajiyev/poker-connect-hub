@@ -13,6 +13,7 @@ import {
 import { usePathname, useRouter } from 'next/navigation';
 import { useSidebar } from './SidebarContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { SearchBar } from '@/components/shared/SearchBar';
 
 export const SidebarNavigation = () => {
   const pathname = usePathname();
@@ -56,6 +57,13 @@ export const SidebarNavigation = () => {
           )}
         </div>
       </div>
+
+      {/* Search Bar (only when expanded) */}
+      {!isCollapsed && (
+        <div className="px-4 pb-4">
+          <SearchBar placeholder="Search players..." className="w-full" />
+        </div>
+      )}
 
       {/* Main Navigation */}
       <nav className="flex-1 p-4 space-y-1">

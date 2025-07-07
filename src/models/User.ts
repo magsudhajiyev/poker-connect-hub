@@ -47,6 +47,11 @@ const userSchema = new mongoose.Schema(
 userSchema.index({ email: 1 }, { unique: true });
 userSchema.index({ googleId: 1 }, { unique: true, sparse: true });
 
+// Add search optimization indexes
+userSchema.index({ name: 'text' }); // Text index for full-text search
+userSchema.index({ name: 1 }); // Regular index for regex searches
+userSchema.index({ isActive: 1, name: 1 }); // Compound index for active users search
+
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 export default User;

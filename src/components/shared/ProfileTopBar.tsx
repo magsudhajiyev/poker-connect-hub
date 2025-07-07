@@ -1,9 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search, Home, Bell, User, Settings, LogOut, Menu } from 'lucide-react';
+import { Home, Bell, User, Settings, LogOut, Menu } from 'lucide-react';
+import { SearchBar } from '@/components/shared/SearchBar';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -17,7 +16,6 @@ import { useSidebar } from '@/components/sidebar/SidebarContext';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const ProfileTopBar = () => {
-  const [searchValue, setSearchValue] = useState('');
   const router = useRouter();
   const { toggleSidebar } = useSidebar();
   const { logout, user, isLoggingOut } = useAuth();
@@ -66,16 +64,7 @@ export const ProfileTopBar = () => {
 
           {/* Search Bar */}
           <div className="hidden md:block flex-1 max-w-md mx-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-              <Input
-                type="text"
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                className="w-full pl-10 bg-slate-800/40 border-slate-700/30 text-slate-200 placeholder-slate-400 focus:ring-violet-500/50"
-                placeholder="Search hands, players, tags..."
-              />
-            </div>
+            <SearchBar placeholder="Search players..." />
           </div>
 
           {/* Navigation Icons */}
