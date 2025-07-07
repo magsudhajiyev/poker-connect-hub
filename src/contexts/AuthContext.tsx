@@ -11,6 +11,7 @@ export interface User {
   name: string;
   picture?: string;
   hasCompletedOnboarding: boolean;
+  hasPassword?: boolean;
   createdAt: string;
 }
 
@@ -80,6 +81,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             name: userData.name,
             picture: userData.picture,
             hasCompletedOnboarding: userData.hasCompletedOnboarding,
+            hasPassword: userData.hasPassword,
             createdAt: userData.createdAt,
           });
         }
@@ -102,6 +104,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                   name: userData.name,
                   picture: userData.picture,
                   hasCompletedOnboarding: userData.hasCompletedOnboarding,
+                  hasPassword: userData.hasPassword,
                   createdAt: userData.createdAt,
                 });
                 return;
@@ -150,9 +153,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                   name: syncData.data.user.name,
                   picture: syncData.data.user.picture,
                   hasCompletedOnboarding: syncData.data.user.hasCompletedOnboarding,
+                  hasPassword: syncData.data.user.hasPassword,
                   createdAt: syncData.data.user.createdAt,
                 };
                 setBackendUser(syncedUser);
+
+                // Note: Password setup will be handled in onboarding flow
 
                 // After sync, try to verify auth cookies were set by calling /api/auth/me
                 try {
@@ -340,6 +346,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           name: userData.name,
           picture: userData.picture,
           hasCompletedOnboarding: userData.hasCompletedOnboarding,
+          hasPassword: userData.hasPassword,
           createdAt: userData.createdAt,
         });
 

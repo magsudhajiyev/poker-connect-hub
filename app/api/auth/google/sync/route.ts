@@ -22,9 +22,8 @@ export async function POST(request: NextRequest) {
     // This prevents the issue where previous user's session might persist
     const cookieStore = request.cookies;
     const hasExistingSession = cookieStore.get('access_token') || cookieStore.get('refresh_token');
-    
+
     if (hasExistingSession) {
-      
       // Get the existing user ID from the token to properly clear their session
       const existingToken = cookieStore.get('access_token')?.value;
       if (existingToken) {
@@ -92,8 +91,27 @@ export async function POST(request: NextRequest) {
       user = { ...newUser, _id: result.insertedId } as User;
     }
 
+    // Check if this is a new Google user without a password
+    const isNewGoogleUser = !user.password && user.authProvider === 'google';
+
     // Create standardized auth response with tokens and cookies
     const response = await createAuthResponse(user, usersCollection, 'Google sync successful');
+
+    // Add additional data for new Google users who need password setup
+    if (isNewGoogleUser) {
+      // Clone the response and modify the body
+      const clonedResponse = response.clone();
+      const responseBody = await clonedResponse.json();
+
+      responseBody.requiresPasswordSetup = true;
+      responseBody.isNewUser = true;
+
+      // Create new response with updated body but same headers/cookies
+      return new Response(JSON.stringify(responseBody), {
+        status: response.status,
+        headers: response.headers,
+      });
+    }
 
     return response;
   } catch {

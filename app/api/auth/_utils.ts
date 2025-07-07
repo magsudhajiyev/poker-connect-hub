@@ -10,6 +10,7 @@ export interface AuthUserResponse {
   picture?: string;
   authProvider: string;
   hasCompletedOnboarding: boolean;
+  hasPassword: boolean;
   googleId?: string;
   createdAt: string;
   updatedAt: string;
@@ -35,6 +36,7 @@ export function formatUserData(user: User): AuthUserResponse {
     picture: user.picture,
     authProvider: user.authProvider,
     hasCompletedOnboarding: user.hasCompletedOnboarding,
+    hasPassword: Boolean(user.password),
     googleId: user.googleId,
     createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
     updatedAt: user.updatedAt?.toISOString() || new Date().toISOString(),

@@ -24,6 +24,9 @@ import {
   Users,
   AlertCircle,
   Loader2,
+  Lock,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { onboardingEndpoints } from '@/services/authApi';
@@ -34,6 +37,11 @@ const Onboarding = () => {
   const [usernameError, setUsernameError] = useState('');
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  // Password setup state
+  const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isAddingPassword, setIsAddingPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     experience: '',
@@ -42,9 +50,12 @@ const Onboarding = () => {
     bio: '',
     location: '',
     preferredStakes: '',
+    // Password setup fields
+    password: '',
+    confirmPassword: '',
   });
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, loading, refreshAuth } = useAuth();
   const checkUsernameTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Handle authentication and onboarding status
@@ -53,7 +64,7 @@ const Onboarding = () => {
     if (loading) {
       return;
     }
-    
+
     // Add a delay before checking user to ensure auth context is fully loaded
     // This prevents the race condition where user is null during initial load
     const checkAuthTimer = setTimeout(() => {
@@ -62,20 +73,20 @@ const Onboarding = () => {
         router.push('/auth/signin');
         return;
       }
-      
+
       // If user has already completed onboarding, redirect to feed
       if (user.hasCompletedOnboarding) {
         router.push('/feed');
         return;
       }
-      
+
       // User is authenticated and needs onboarding
       setIsInitializing(false);
     }, 500); // Give auth context time to sync with cookies
-    
+
     return () => clearTimeout(checkAuthTimer);
   }, [user, loading, router]);
-  
+
   // Show loading while checking auth status
   if (loading || isInitializing) {
     return (
@@ -87,13 +98,27 @@ const Onboarding = () => {
       </div>
     );
   }
-  
+
   // If we reach here without a user, show nothing (redirect will happen)
   if (!user) {
     return null;
   }
 
+  // Check if user needs password setup (Google user without password)
+  const needsPasswordSetup = user && !user.hasPassword;
+
   const steps = [
+    // Conditionally include password setup step for Google users
+    ...(needsPasswordSetup
+      ? [
+          {
+            title: 'Secure Your Account 🔐',
+            subtitle: 'Create a password for additional security (optional)',
+            icon: Lock,
+            emoji: '🔐',
+          },
+        ]
+      : []),
     {
       title: 'Welcome to PokerConnect! 🎉',
       subtitle: "Let's set up your profile",
@@ -157,6 +182,27 @@ const Onboarding = () => {
     'Track my progress 📊',
     'Join poker discussions 💬',
   ];
+
+  // Password validation function
+  const validatePassword = (password: string): string[] => {
+    const issues = [];
+    if (password.length < 8) {
+      issues.push('At least 8 characters');
+    }
+    if (!/[A-Z]/.test(password)) {
+      issues.push('One uppercase letter');
+    }
+    if (!/[a-z]/.test(password)) {
+      issues.push('One lowercase letter');
+    }
+    if (!/\d/.test(password)) {
+      issues.push('One number');
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      issues.push('One special character');
+    }
+    return issues;
+  };
 
   // Check username availability
   const checkUsername = async (username: string) => {
@@ -240,6 +286,64 @@ const Onboarding = () => {
     }));
   };
   const handleNext = async () => {
+    const stepIndex = needsPasswordSetup ? currentStep : currentStep + 1;
+
+    // Handle password setup step
+    if (stepIndex === 0 && needsPasswordSetup) {
+      if (formData.password) {
+        // User wants to add password - validate and submit
+        const passwordIssues = validatePassword(formData.password);
+        if (passwordIssues.length > 0) {
+          setPasswordErrors({ password: `Password must have: ${passwordIssues.join(', ')}` });
+          return;
+        }
+
+        if (formData.password !== formData.confirmPassword) {
+          setPasswordErrors({ confirmPassword: 'Passwords do not match' });
+          return;
+        }
+
+        setIsAddingPassword(true);
+        setPasswordErrors({});
+
+        try {
+          const response = await fetch('/api/auth/add-password', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              password: formData.password,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            // Refresh auth context to update user data
+            await refreshAuth();
+            // Continue to next step
+            setCurrentStep(currentStep + 1);
+          } else {
+            setPasswordErrors({
+              password: data.error?.message || 'Failed to add password. Please try again.',
+            });
+          }
+        } catch (_error) {
+          setPasswordErrors({
+            password: 'Network error. Please check your connection and try again.',
+          });
+        } finally {
+          setIsAddingPassword(false);
+        }
+      } else {
+        // User skipped password - continue to next step
+        setCurrentStep(currentStep + 1);
+      }
+      return;
+    }
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -339,14 +443,13 @@ const Onboarding = () => {
 
         // Submit onboarding data
         const response = await onboardingEndpoints.submitAnswers(onboardingData);
-        
+
         // If the response includes new tokens, they have already been set as cookies
         // The response should have updated user data with hasCompletedOnboarding: true
         if (response.data?.success) {
-          
           // Give cookies time to be set properly
           await new Promise((resolve) => setTimeout(resolve, 1000));
-          
+
           // Force a page reload to ensure all auth state is refreshed with new tokens
           // This is more reliable than just calling refreshAuth() which uses old tokens
           window.location.href = '/feed';
@@ -354,7 +457,6 @@ const Onboarding = () => {
           throw new Error('Onboarding submission did not return success');
         }
       } catch (error) {
-
         // Handle different error types
         if ((error as any).response?.status === 401) {
           // Authentication error
@@ -384,8 +486,106 @@ const Onboarding = () => {
     }
   };
   const renderStepContent = () => {
-    switch (currentStep) {
+    const stepIndex = needsPasswordSetup ? currentStep : currentStep + 1;
+
+    switch (stepIndex) {
       case 0:
+        // Password setup step (only for Google users without passwords)
+        return (
+          <div className="space-y-4 lg:space-y-6">
+            <div className="text-center space-y-3 lg:space-y-4">
+              <p className="text-slate-300 text-base lg:text-lg">
+                Welcome! You're signed in with Google. Create a password for additional security.
+              </p>
+              <p className="text-slate-400 text-sm lg:text-base">
+                This is optional - you can continue with Google sign-in only.
+              </p>
+            </div>
+            <div className="space-y-3 lg:space-y-4">
+              <div>
+                <Label htmlFor="password" className="text-slate-200 text-sm lg:text-base">
+                  Password (optional)
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Create a strong password"
+                    value={formData.password}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+                    className="mt-1 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500 text-sm lg:text-base pr-10"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-slate-700/50"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4 text-slate-400" />
+                    ) : (
+                      <Eye className="w-4 h-4 text-slate-400" />
+                    )}
+                  </Button>
+                </div>
+                {passwordErrors.password && (
+                  <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {passwordErrors.password}
+                  </p>
+                )}
+              </div>
+
+              {formData.password && (
+                <div>
+                  <Label htmlFor="confirmPassword" className="text-slate-200 text-sm lg:text-base">
+                    Confirm Password
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      placeholder="Confirm your password"
+                      value={formData.confirmPassword}
+                      onChange={(e) =>
+                        setFormData((prev) => ({ ...prev, confirmPassword: e.target.value }))
+                      }
+                      className="mt-1 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500 text-sm lg:text-base pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-slate-700/50"
+                    >
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-4 h-4 text-slate-400" />
+                      ) : (
+                        <Eye className="w-4 h-4 text-slate-400" />
+                      )}
+                    </Button>
+                  </div>
+                  {passwordErrors.confirmPassword && (
+                    <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      {passwordErrors.confirmPassword}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="p-3 bg-slate-800/30 rounded-lg">
+                <p className="text-slate-400 text-xs text-center">
+                  Password requirements: 8+ characters, uppercase, lowercase, number, special
+                  character
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      case 1:
         return (
           <div className="space-y-4 lg:space-y-6">
             <div className="text-center space-y-3 lg:space-y-4">
@@ -447,7 +647,7 @@ const Onboarding = () => {
             </div>
           </div>
         );
-      case 1:
+      case 2:
         return (
           <div className="space-y-4 lg:space-y-6">
             <div className="text-center"></div>
@@ -516,7 +716,7 @@ const Onboarding = () => {
             </div>
           </div>
         );
-      case 2:
+      case 3:
         return (
           <div className="space-y-4 lg:space-y-6">
             <div className="text-center"></div>
@@ -539,7 +739,7 @@ const Onboarding = () => {
             </div>
           </div>
         );
-      case 3:
+      case 4:
         return (
           <div className="space-y-4 lg:space-y-6">
             <div className="text-center"></div>
@@ -605,17 +805,29 @@ const Onboarding = () => {
     }
   };
   const isStepValid = () => {
-    switch (currentStep) {
+    const stepIndex = needsPasswordSetup ? currentStep : currentStep + 1;
+
+    switch (stepIndex) {
       case 0:
+        // Password setup step - allow proceeding with or without password
+        if (formData.password) {
+          // If password provided, validate it
+          const passwordIssues = validatePassword(formData.password);
+          const passwordsMatch = formData.password === formData.confirmPassword;
+          return passwordIssues.length === 0 && passwordsMatch;
+        }
+        // If no password provided, allow proceeding (optional)
+        return true;
+      case 1:
         return formData.username.trim().length > 0 && !usernameError && !isCheckingUsername;
-      case 1: {
+      case 2: {
         const isValid =
           formData.experience && formData.favoriteGame && formData.favoriteGame.trim() !== '';
         return isValid;
       }
-      case 2:
-        return formData.playingGoals.length > 0;
       case 3:
+        return formData.playingGoals.length > 0;
+      case 4:
         return true;
       // Optional fields
       default:
@@ -674,11 +886,20 @@ const Onboarding = () => {
 
               <Button
                 onClick={handleNext}
-                disabled={!isStepValid()}
+                disabled={!isStepValid() || isAddingPassword}
                 className="bg-gradient-to-r from-emerald-500 to-violet-500 hover:from-emerald-600 hover:to-violet-600 text-slate-900 font-medium text-sm lg:text-base px-3 lg:px-4 py-2"
               >
-                {currentStep === steps.length - 1 ? 'Complete Setup' : 'Next'}
-                <ArrowRight className="w-3 h-3 lg:w-4 lg:h-4 ml-1 lg:ml-2" />
+                {isAddingPassword ? (
+                  <>
+                    <Loader2 className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2 animate-spin" />
+                    Adding Password...
+                  </>
+                ) : (
+                  <>
+                    {currentStep === steps.length - 1 ? 'Complete Setup' : 'Next'}
+                    <ArrowRight className="w-3 h-3 lg:w-4 lg:h-4 ml-1 lg:ml-2" />
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>
