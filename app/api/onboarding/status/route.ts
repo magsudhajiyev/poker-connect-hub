@@ -2,6 +2,9 @@ import { NextRequest } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 import { requireAuth, errorResponse, successResponse } from '@/lib/api-utils';
 import { OnboardingAnswer } from '@/models/user.model';
+import dbConnect from '@/lib/mongoose';
+import { Follow } from '@/models/Follow';
+import { SharedHand } from '@/models/SharedHand';
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,6 +27,21 @@ export async function GET(request: NextRequest) {
       return successResponse({ hasCompleted: false }, 'Onboarding not completed');
     }
 
+    // Connect to Mongoose for follow counts
+    await dbConnect();
+
+    // Get follow counts and stats
+    const [followersCount, followingCount, handsShared, totalLikes] = await Promise.all([
+      Follow.countDocuments({ following: currentUser.userId }),
+      Follow.countDocuments({ follower: currentUser.userId }),
+      SharedHand.countDocuments({ userId: currentUser.userId, isPublic: true }),
+      SharedHand.aggregate([
+        { $match: { userId: currentUser.userId, isPublic: true } },
+        { $project: { likesCount: { $size: '$likes' } } },
+        { $group: { _id: null, total: { $sum: '$likesCount' } } },
+      ]),
+    ]);
+
     return successResponse({
       hasCompleted: true,
       onboardingData: {
@@ -38,6 +56,12 @@ export async function GET(request: NextRequest) {
         preferredStakes: onboardingAnswer.preferredStakes,
         otherInfo: onboardingAnswer.otherInfo,
         createdAt: onboardingAnswer.createdAt,
+      },
+      stats: {
+        followersCount,
+        followingCount,
+        handsShared,
+        likesReceived: totalLikes[0]?.total || 0,
       },
     });
   } catch (error) {

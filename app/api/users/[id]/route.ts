@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongoose';
 import User from '@/models/User';
 import { SharedHand } from '@/models/SharedHand';
+import { Follow } from '@/models/Follow';
+import mongoose from 'mongoose';
 
 interface RouteParams {
   params: Promise<{
@@ -28,8 +30,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Get user's shared hands statistics
-    const [totalHands, totalLikes, totalComments] = await Promise.all([
+    // Get user's shared hands statistics and follow counts
+    const [totalHands, totalLikes, totalComments, followersCount, followingCount] = await Promise.all([
       SharedHand.countDocuments({ userId: id, isPublic: true }),
       SharedHand.aggregate([
         { $match: { userId: (user as any)._id, isPublic: true } },
@@ -41,10 +43,12 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
         { $project: { commentsCount: { $size: '$comments' } } },
         { $group: { _id: null, total: { $sum: '$commentsCount' } } },
       ]),
+      Follow.countDocuments({ following: new mongoose.Types.ObjectId(id) }),
+      Follow.countDocuments({ follower: new mongoose.Types.ObjectId(id) }),
     ]);
 
     // Get user's recent hands
-    const recentHands = await SharedHand.find({ userId: id, isPublic: true })
+    const recentHands = await SharedHand.find({ userId: new mongoose.Types.ObjectId(id), isPublic: true })
       .select('title description gameType gameFormat createdAt likes comments')
       .sort({ createdAt: -1 })
       .limit(5)
@@ -71,6 +75,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
         totalHands,
         totalLikes: totalLikes[0]?.total || 0,
         totalComments: totalComments[0]?.total || 0,
+        followersCount,
+        followingCount,
         memberSince: (user as any).createdAt,
       },
       recentHands: recentHandsWithCounts,

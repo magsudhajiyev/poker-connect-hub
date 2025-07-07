@@ -2,9 +2,11 @@
 
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Edit3, Settings, Check, Share, Users, UserPlus, ThumbsUp, MapPin } from 'lucide-react';
+import { Edit3, Settings, Check, Share, Users, UserPlus, UserMinus, ThumbsUp, MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUserProfileData } from '@/hooks/useUserProfileData';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ProfileHeaderProps {
   userId?: string;
@@ -13,10 +15,82 @@ interface ProfileHeaderProps {
 
 export const ProfileHeader = ({ userId, isOwnProfile }: ProfileHeaderProps) => {
   const router = useRouter();
-  const { userData, stats, loading } = useUserProfileData(userId);
+  const { userData, stats: initialStats, loading } = useUserProfileData(userId);
+  const { isAuthenticated } = useAuth();
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const [stats, setStats] = useState(initialStats);
+
+  // Update stats when initialStats changes
+  useEffect(() => {
+    setStats(initialStats);
+  }, [initialStats]);
 
   const handleSettingsClick = () => {
     router.push('/settings');
+  };
+
+  // Fetch follow status on mount
+  useEffect(() => {
+    if (isAuthenticated && userId && !isOwnProfile) {
+      fetchFollowStatus();
+    }
+  }, [userId, isAuthenticated, isOwnProfile]);
+
+  const fetchFollowStatus = async () => {
+    try {
+      const response = await fetch(`/api/users/${userId}/follow?_=${Date.now()}`);
+      const data = await response.json();
+      if (data.success) {
+        setIsFollowing(data.data.isFollowing);
+        // Update stats with current counts from API
+        setStats(prev => ({
+          ...prev,
+          followers: data.data.followersCount,
+          following: data.data.followingCount,
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching follow status:', error);
+    }
+  };
+
+  const handleFollowToggle = async () => {
+    if (!isAuthenticated) {
+      // TODO: Could trigger login modal here
+      alert('Please login to follow users');
+      return;
+    }
+
+    setIsFollowLoading(true);
+    try {
+      const method = isFollowing ? 'DELETE' : 'POST';
+      const response = await fetch(`/api/users/${userId}/follow`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setIsFollowing(data.data.isFollowing);
+        // Update stats with the actual counts from API
+        setStats(prev => ({
+          ...prev,
+          followers: data.data.followersCount,
+          following: data.data.followingCount,
+        }));
+      } else {
+        alert(data.error?.message || 'Failed to update follow status');
+      }
+    } catch (error) {
+      console.error('Error toggling follow:', error);
+      alert('Failed to update follow status');
+    } finally {
+      setIsFollowLoading(false);
+    }
   };
 
   // Get initials for avatar fallback
@@ -92,9 +166,27 @@ export const ProfileHeader = ({ userId, isOwnProfile }: ProfileHeaderProps) => {
                     </Button>
                   </>
                 ) : (
-                  <Button className="bg-gradient-to-r from-emerald-500 to-violet-500 text-slate-800 hover:from-emerald-600 hover:to-violet-600 text-sm w-full sm:w-auto">
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Follow
+                  <Button 
+                    onClick={handleFollowToggle}
+                    disabled={isFollowLoading}
+                    className={isFollowing 
+                      ? 'bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm w-full sm:w-auto'
+                      : 'bg-gradient-to-r from-emerald-500 to-violet-500 text-slate-800 hover:from-emerald-600 hover:to-violet-600 text-sm w-full sm:w-auto'
+                    }
+                  >
+                    {isFollowLoading ? (
+                      <>Loading...</>
+                    ) : isFollowing ? (
+                      <>
+                        <UserMinus className="w-4 h-4 mr-2" />
+                        Following
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-4 h-4 mr-2" />
+                        Follow
+                      </>
+                    )}
                   </Button>
                 )}
               </div>

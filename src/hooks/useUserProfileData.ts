@@ -62,6 +62,7 @@ export const useUserProfileData = (userId?: string): ProfileData => {
 
           if (response.data?.success && response.data?.data?.onboardingData) {
             const onboardingData = response.data.data.onboardingData;
+            const stats = response.data.data.stats;
 
             setProfileData((prev) => ({
               ...prev,
@@ -81,19 +82,19 @@ export const useUserProfileData = (userId?: string): ProfileData => {
                 createdAt: user.createdAt,
                 hasCompletedOnboarding: user.hasCompletedOnboarding,
               },
-              // Temporary dummy stats for own profile
+              // Use real stats from API if available, otherwise use defaults
               stats: {
-                handsShared: 1280,
-                followers: 3476,
-                following: 521,
-                likesReceived: 9824,
+                handsShared: stats?.handsShared || 0,
+                followers: stats?.followersCount || 0,
+                following: stats?.followingCount || 0,
+                likesReceived: stats?.likesReceived || 0,
               },
               loading: false,
             }));
           }
         } else if (userId) {
-          // Fetch other user's profile data
-          const response = await sharedHandsApi.getUserProfile(userId);
+          // Fetch other user's profile data with cache busting
+          const response = await fetch(`/api/users/${userId}?_=${Date.now()}`).then(res => res.json());
 
           if (response.success && response.data) {
             const { user: userData, stats } = response.data;
@@ -112,8 +113,8 @@ export const useUserProfileData = (userId?: string): ProfileData => {
               },
               stats: {
                 handsShared: stats.totalHands,
-                followers: 0, // To be implemented
-                following: 0, // To be implemented
+                followers: stats.followersCount || 0,
+                following: stats.followingCount || 0,
                 likesReceived: stats.totalLikes,
                 totalComments: stats.totalComments,
               },
