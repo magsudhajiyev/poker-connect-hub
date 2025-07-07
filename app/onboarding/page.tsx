@@ -321,8 +321,10 @@ const Onboarding = () => {
           if (data.success) {
             // Refresh auth context to update user data
             await refreshAuth();
-            // Continue to next step
-            setCurrentStep(currentStep + 1);
+            // After password setup, move to step 1 (username step)
+            // Since needsPasswordSetup will become false after refreshAuth,
+            // we need to set currentStep to 1 to show the first regular step
+            setCurrentStep(1);
           } else {
             setPasswordErrors({
               password: data.error?.message || 'Failed to add password. Please try again.',
@@ -336,8 +338,8 @@ const Onboarding = () => {
           setIsAddingPassword(false);
         }
       } else {
-        // User skipped password - continue to next step
-        setCurrentStep(currentStep + 1);
+        // User skipped password - move to step 1 (username step)
+        setCurrentStep(1);
       }
       return;
     }
