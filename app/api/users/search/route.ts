@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
 
     // Add users found by name
     usersByName.forEach((user) => {
-      const userId = user._id.toString();
+      const userId = (user._id as any).toString();
       allUsers.set(userId, {
         id: userId,
         name: user.name,
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
 
     // Add users found by username (will overwrite if duplicate, keeping username match priority)
     usersByUsername.forEach((user) => {
-      const userId = user._id.toString();
+      const userId = (user._id as any).toString();
       allUsers.set(userId, {
         id: userId,
         name: user.name,
