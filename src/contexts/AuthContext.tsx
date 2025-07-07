@@ -204,6 +204,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           hasCompletedOnboarding:
             (session.user as User & { hasCompletedOnboarding?: boolean }).hasCompletedOnboarding ??
             false,
+          hasPassword: undefined, // Unknown for fallback users
           createdAt: new Date().toISOString(),
         }
       : null;
@@ -213,7 +214,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const loading = status === 'loading' || isCheckingBackendAuth || isSyncing;
   const isAuthenticated = status === 'authenticated' || Boolean(backendUser);
 
-  // Redirect to onboarding if needed (simplified logic)
+  // Handle redirects for password setup and onboarding
   useEffect(() => {
     if (!effectiveUser || loading) {
       return;
@@ -224,6 +225,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const isOnOnboardingRequiredPath = onboardingRequiredPaths.some((path) =>
       currentPath.startsWith(path),
     );
+
+    // Check if Google user needs password setup (redirect to password setup page first)
+    if (effectiveUser.hasPassword === false && currentPath !== '/auth/add-password') {
+      router.push('/auth/add-password');
+      return;
+    }
 
     // Only redirect if user is on a protected path but hasn't completed onboarding
     if (!effectiveUser.hasCompletedOnboarding && isOnOnboardingRequiredPath) {
