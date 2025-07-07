@@ -286,10 +286,8 @@ const Onboarding = () => {
     }));
   };
   const handleNext = async () => {
-    const stepIndex = needsPasswordSetup ? currentStep : currentStep + 1;
-
     // Handle password setup step
-    if (stepIndex === 0 && needsPasswordSetup) {
+    if (needsPasswordSetup && currentStep === 0) {
       if (formData.password) {
         // User wants to add password - validate and submit
         const passwordIssues = validatePassword(formData.password);
@@ -486,106 +484,112 @@ const Onboarding = () => {
     }
   };
   const renderStepContent = () => {
-    const stepIndex = needsPasswordSetup ? currentStep : currentStep + 1;
+    // If user needs password setup, show password step as step 0, then normal steps
+    // If user doesn't need password setup, show normal steps starting from 0
 
-    switch (stepIndex) {
-      case 0:
-        // Password setup step (only for Google users without passwords)
-        return (
-          <div className="space-y-4 lg:space-y-6">
-            <div className="text-center space-y-3 lg:space-y-4">
-              <p className="text-slate-300 text-base lg:text-lg">
-                Welcome! You're signed in with Google. Create a password for additional security.
-              </p>
-              <p className="text-slate-400 text-sm lg:text-base">
-                This is optional - you can continue with Google sign-in only.
-              </p>
+    if (needsPasswordSetup && currentStep === 0) {
+      // Password setup step (only for Google users without passwords)
+      return (
+        <div className="space-y-4 lg:space-y-6">
+          <div className="text-center space-y-3 lg:space-y-4">
+            <p className="text-slate-300 text-base lg:text-lg">
+              Welcome! You're signed in with Google. Create a password for additional security.
+            </p>
+            <p className="text-slate-400 text-sm lg:text-base">
+              This is optional - you can continue with Google sign-in only.
+            </p>
+          </div>
+          <div className="space-y-3 lg:space-y-4">
+            <div>
+              <Label htmlFor="password" className="text-slate-200 text-sm lg:text-base">
+                Password (optional)
+              </Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Create a strong password"
+                  value={formData.password}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+                  className="mt-1 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500 text-sm lg:text-base pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-slate-700/50"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4 text-slate-400" />
+                  ) : (
+                    <Eye className="w-4 h-4 text-slate-400" />
+                  )}
+                </Button>
+              </div>
+              {passwordErrors.password && (
+                <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {passwordErrors.password}
+                </p>
+              )}
             </div>
-            <div className="space-y-3 lg:space-y-4">
+
+            {formData.password && (
               <div>
-                <Label htmlFor="password" className="text-slate-200 text-sm lg:text-base">
-                  Password (optional)
+                <Label htmlFor="confirmPassword" className="text-slate-200 text-sm lg:text-base">
+                  Confirm Password
                 </Label>
                 <div className="relative">
                   <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Create a strong password"
-                    value={formData.password}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+                    id="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="Confirm your password"
+                    value={formData.confirmPassword}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, confirmPassword: e.target.value }))
+                    }
                     className="mt-1 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500 text-sm lg:text-base pr-10"
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-slate-700/50"
                   >
-                    {showPassword ? (
+                    {showConfirmPassword ? (
                       <EyeOff className="w-4 h-4 text-slate-400" />
                     ) : (
                       <Eye className="w-4 h-4 text-slate-400" />
                     )}
                   </Button>
                 </div>
-                {passwordErrors.password && (
+                {passwordErrors.confirmPassword && (
                   <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
                     <AlertCircle className="w-3 h-3" />
-                    {passwordErrors.password}
+                    {passwordErrors.confirmPassword}
                   </p>
                 )}
               </div>
+            )}
 
-              {formData.password && (
-                <div>
-                  <Label htmlFor="confirmPassword" className="text-slate-200 text-sm lg:text-base">
-                    Confirm Password
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="Confirm your password"
-                      value={formData.confirmPassword}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, confirmPassword: e.target.value }))
-                      }
-                      className="mt-1 bg-slate-900/50 border-slate-600 text-slate-200 focus:border-emerald-500 text-sm lg:text-base pr-10"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-slate-700/50"
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="w-4 h-4 text-slate-400" />
-                      ) : (
-                        <Eye className="w-4 h-4 text-slate-400" />
-                      )}
-                    </Button>
-                  </div>
-                  {passwordErrors.confirmPassword && (
-                    <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" />
-                      {passwordErrors.confirmPassword}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              <div className="p-3 bg-slate-800/30 rounded-lg">
-                <p className="text-slate-400 text-xs text-center">
-                  Password requirements: 8+ characters, uppercase, lowercase, number, special
-                  character
-                </p>
-              </div>
+            <div className="p-3 bg-slate-800/30 rounded-lg">
+              <p className="text-slate-400 text-xs text-center">
+                Password requirements: 8+ characters, uppercase, lowercase, number, special
+                character
+              </p>
             </div>
           </div>
-        );
-      case 1:
+        </div>
+      );
+    }
+
+    // For all other steps, calculate the actual step based on whether password setup was shown
+    const actualStep = needsPasswordSetup ? currentStep - 1 : currentStep;
+
+    switch (actualStep) {
+      case 0:
         return (
           <div className="space-y-4 lg:space-y-6">
             <div className="text-center space-y-3 lg:space-y-4">
@@ -647,7 +651,7 @@ const Onboarding = () => {
             </div>
           </div>
         );
-      case 2:
+      case 1:
         return (
           <div className="space-y-4 lg:space-y-6">
             <div className="text-center"></div>
@@ -716,7 +720,7 @@ const Onboarding = () => {
             </div>
           </div>
         );
-      case 3:
+      case 2:
         return (
           <div className="space-y-4 lg:space-y-6">
             <div className="text-center"></div>
@@ -739,7 +743,7 @@ const Onboarding = () => {
             </div>
           </div>
         );
-      case 4:
+      case 3:
         return (
           <div className="space-y-4 lg:space-y-6">
             <div className="text-center"></div>
@@ -805,29 +809,33 @@ const Onboarding = () => {
     }
   };
   const isStepValid = () => {
-    const stepIndex = needsPasswordSetup ? currentStep : currentStep + 1;
+    // Handle password setup step
+    if (needsPasswordSetup && currentStep === 0) {
+      // Password setup step - allow proceeding with or without password
+      if (formData.password) {
+        // If password provided, validate it
+        const passwordIssues = validatePassword(formData.password);
+        const passwordsMatch = formData.password === formData.confirmPassword;
+        return passwordIssues.length === 0 && passwordsMatch;
+      }
+      // If no password provided, allow proceeding (optional)
+      return true;
+    }
 
-    switch (stepIndex) {
+    // For all other steps, calculate the actual step based on whether password setup was shown
+    const actualStep = needsPasswordSetup ? currentStep - 1 : currentStep;
+
+    switch (actualStep) {
       case 0:
-        // Password setup step - allow proceeding with or without password
-        if (formData.password) {
-          // If password provided, validate it
-          const passwordIssues = validatePassword(formData.password);
-          const passwordsMatch = formData.password === formData.confirmPassword;
-          return passwordIssues.length === 0 && passwordsMatch;
-        }
-        // If no password provided, allow proceeding (optional)
-        return true;
-      case 1:
         return formData.username.trim().length > 0 && !usernameError && !isCheckingUsername;
-      case 2: {
+      case 1: {
         const isValid =
           formData.experience && formData.favoriteGame && formData.favoriteGame.trim() !== '';
         return isValid;
       }
-      case 3:
+      case 2:
         return formData.playingGoals.length > 0;
-      case 4:
+      case 3:
         return true;
       // Optional fields
       default:
