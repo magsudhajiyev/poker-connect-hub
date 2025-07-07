@@ -10,6 +10,7 @@ import { Heart, MessageCircle, Share2, Bookmark, TrendingUp, Send } from 'lucide
 import { SharedHand, sharedHandsApi } from '@/services/sharedHandsApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 interface FeedPostCardProps {
   hand: SharedHand;
@@ -19,6 +20,7 @@ interface FeedPostCardProps {
 
 export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardProps) => {
   const { user } = useAuth();
+  const router = useRouter();
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(hand.likeCount || 0);
   const [showComments, setShowComments] = useState(false);
@@ -124,10 +126,10 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
 
   const handleUserClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    toast({
-      title: 'User Profiles',
-      description: 'User profile viewing is coming soon!',
-    });
+    const userId = typeof hand.userId === 'object' ? hand.userId._id : hand.userId;
+    if (userId) {
+      router.push(`/profile/${userId}`);
+    }
   };
 
   // Extract user info from populated or string userId
@@ -248,10 +250,10 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
 
               const handleCommentUserClick = (e: React.MouseEvent) => {
                 e.stopPropagation();
-                toast({
-                  title: 'User Profiles',
-                  description: 'User profile viewing is coming soon!',
-                });
+                const commentUserId = commentUser?._id;
+                if (commentUserId) {
+                  router.push(`/profile/${commentUserId}`);
+                }
               };
 
               return (

@@ -1,14 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { ProfileHeader } from './components/ProfileHeader';
-import { ProfileNav } from './components/ProfileNav';
-import { ProfileContent } from './components/ProfileContent';
+import { useParams } from 'next/navigation';
+import { ProfileHeader } from '../components/ProfileHeader';
+import { ProfileNav } from '../components/ProfileNav';
+import { ProfileContent } from '../components/ProfileContent';
 import { ProfileTopBar } from '@/components/shared/ProfileTopBar';
 import { GlobalSidebar, SidebarProvider, useSidebar } from '@/components/GlobalSidebar';
 import { MobileSidebarContent } from '@/components/MobileSidebarContent';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Sheet,
   SheetContent,
@@ -39,8 +41,15 @@ const MobileSidebar = () => {
 };
 
 const ProfileContent_Internal = () => {
+  const params = useParams();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('hands');
   const { isCollapsed } = useSidebar();
+
+  // Extract userId from params - it will be an array or undefined
+  const userIdParam = params.userId as string[] | undefined;
+  const userId = userIdParam?.[0];
+  const isOwnProfile = !userId || userId === user?.id;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex overflow-hidden">
@@ -60,7 +69,9 @@ const ProfileContent_Internal = () => {
           <div className="flex items-center justify-between h-14 px-4">
             <div className="flex items-center space-x-3 min-w-0">
               <MobileSidebar />
-              <h1 className="text-lg font-semibold text-slate-200 truncate">Profile</h1>
+              <h1 className="text-lg font-semibold text-slate-200 truncate">
+                {isOwnProfile ? 'Your Profile' : 'Profile'}
+              </h1>
             </div>
           </div>
         </div>
@@ -75,9 +86,9 @@ const ProfileContent_Internal = () => {
           <div className="w-full h-full overflow-y-auto">
             <div className="px-4 lg:px-6 py-6 lg:py-8">
               <div className="max-w-6xl mx-auto space-y-4 lg:space-y-6">
-                <ProfileHeader />
+                <ProfileHeader userId={userId} isOwnProfile={isOwnProfile} />
                 <ProfileNav activeTab={activeTab} onTabChange={setActiveTab} />
-                <ProfileContent activeTab={activeTab} />
+                <ProfileContent activeTab={activeTab} userId={userId} isOwnProfile={isOwnProfile} />
               </div>
             </div>
           </div>

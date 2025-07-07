@@ -9,6 +9,7 @@ import { Send, Trash2 } from 'lucide-react';
 import { SharedHand, sharedHandsApi } from '@/services/sharedHandsApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 interface HandViewCommentsProps {
   hand?: SharedHand;
@@ -16,6 +17,7 @@ interface HandViewCommentsProps {
 
 export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
   const { user } = useAuth();
+  const router = useRouter();
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState(hand?.comments || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -152,10 +154,10 @@ export const HandViewComments = ({ hand }: HandViewCommentsProps) => {
               const commentId = (commentItem as any)._id;
 
               const handleUserClick = () => {
-                toast({
-                  title: 'User Profiles',
-                  description: 'User profile viewing is coming soon!',
-                });
+                const commentUserId = commentUser?._id;
+                if (commentUserId) {
+                  router.push(`/profile/${commentUserId}`);
+                }
               };
 
               return (

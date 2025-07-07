@@ -4,11 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Edit3, Settings, Check, Share, Users, UserPlus, ThumbsUp, MapPin } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useProfileData } from '@/hooks/useProfileData';
+import { useUserProfileData } from '@/hooks/useUserProfileData';
 
-export const ProfileHeader = () => {
+interface ProfileHeaderProps {
+  userId?: string;
+  isOwnProfile: boolean;
+}
+
+export const ProfileHeader = ({ userId, isOwnProfile }: ProfileHeaderProps) => {
   const router = useRouter();
-  const { userData, stats, loading } = useProfileData();
+  const { userData, stats, loading } = useUserProfileData(userId);
 
   const handleSettingsClick = () => {
     router.push('/settings');
@@ -71,18 +76,27 @@ export const ProfileHeader = () => {
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-2 lg:gap-3 flex-shrink-0 w-full sm:w-auto">
-                <Button className="bg-gradient-to-r from-emerald-500 to-violet-500 text-slate-800 hover:from-emerald-600 hover:to-violet-600 text-sm w-full sm:w-auto">
-                  <Edit3 className="w-4 h-4 mr-2" />
-                  Edit Profile
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleSettingsClick}
-                  className="border-slate-700/30 bg-slate-800/40 self-center sm:self-auto flex-shrink-0"
-                >
-                  <Settings className="w-4 h-4" />
-                </Button>
+                {isOwnProfile ? (
+                  <>
+                    <Button className="bg-gradient-to-r from-emerald-500 to-violet-500 text-slate-800 hover:from-emerald-600 hover:to-violet-600 text-sm w-full sm:w-auto">
+                      <Edit3 className="w-4 h-4 mr-2" />
+                      Edit Profile
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleSettingsClick}
+                      className="border-slate-700/30 bg-slate-800/40 self-center sm:self-auto flex-shrink-0"
+                    >
+                      <Settings className="w-4 h-4" />
+                    </Button>
+                  </>
+                ) : (
+                  <Button className="bg-gradient-to-r from-emerald-500 to-violet-500 text-slate-800 hover:from-emerald-600 hover:to-violet-600 text-sm w-full sm:w-auto">
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Follow
+                  </Button>
+                )}
               </div>
             </div>
           </div>
