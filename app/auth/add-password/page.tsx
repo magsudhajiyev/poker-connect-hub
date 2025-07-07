@@ -109,10 +109,6 @@ const AddPasswordPage = () => {
     }
   };
 
-  const handleSkip = () => {
-    router.push('/onboarding');
-  };
-
   if (success) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
@@ -143,14 +139,14 @@ const AddPasswordPage = () => {
           </div>
           <CardTitle className="text-xl text-slate-200">Secure Your Account</CardTitle>
           <CardDescription className="text-slate-400">
-            Create a password to also sign in with email (optional but recommended)
+            Create a password to secure your account and enable email sign-in
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="mb-4 p-3 bg-emerald-950/20 border border-emerald-500/20 rounded-lg">
             <p className="text-slate-300 text-sm">
-              Welcome! You're signed in with Google. Create a password for additional security and
-              convenience.
+              Welcome! As a Google user, please create a password to secure your account and enable
+              email/password authentication.
             </p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -249,15 +245,6 @@ const AddPasswordPage = () => {
                 ) : (
                   'Add Password'
                 )}
-              </Button>
-
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={handleSkip}
-                className="w-full text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
-              >
-                Skip for now
               </Button>
             </div>
           </form>
