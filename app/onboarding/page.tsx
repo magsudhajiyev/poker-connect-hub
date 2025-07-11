@@ -354,20 +354,34 @@ const Onboarding = () => {
         }
       } catch (error) {
         // Handle different error types
-        if ((error as any).response?.status === 401) {
-          // Authentication error
-          alert('Your session has expired. Please sign in again.');
-          router.push('/auth/signin');
-        } else if ((error as any).response?.data?.message) {
-          // Validation error
-          const errorMessage = Array.isArray((error as any).response.data.message)
-            ? (error as any).response.data.message.join('\\n')
-            : (error as any).response.data.message;
-          alert(
-            `Failed to complete onboarding:\\n${errorMessage}\\n\\nPlease check the console for more details.`,
-          );
-        } else if ((error as any).message) {
-          alert(`Failed to complete onboarding: ${(error as any).message}`);
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as {
+            response?: {
+              status?: number;
+              data?: {
+                message?: string | string[];
+              };
+            };
+            message?: string;
+          };
+
+          if (axiosError.response?.status === 401) {
+            // Authentication error
+            alert('Your session has expired. Please sign in again.');
+            router.push('/auth/signin');
+          } else if (axiosError.response?.data?.message) {
+            // Validation error
+            const errorMessage = Array.isArray(axiosError.response.data.message)
+              ? axiosError.response.data.message.join('\\n')
+              : axiosError.response.data.message;
+            alert(
+              `Failed to complete onboarding:\\n${errorMessage}\\n\\nPlease check the console for more details.`,
+            );
+          } else if (axiosError.message) {
+            alert(`Failed to complete onboarding: ${axiosError.message}`);
+          } else {
+            alert('Failed to complete onboarding. Please try again.');
+          }
         } else {
           alert('Failed to complete onboarding. Please try again.');
         }

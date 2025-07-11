@@ -111,27 +111,32 @@ export const HandViewContent = ({ handId: propHandId }: HandViewContentProps = {
               <HandReplay
                 formData={{
                   ...hand,
-                  holeCards: hand.preflopCards?.holeCards || [],
-                  heroPosition: hand.positions?.heroPosition || '',
-                  villainPosition: hand.positions?.villainPosition || '',
-                  players: hand.positions?.players || [],
-                  smallBlind: hand.analysis?.smallBlind || '',
-                  bigBlind: hand.analysis?.bigBlind || '',
-                  ante: hand.analysis?.ante || false,
-                  preflopDescription: hand.analysis?.preflopDescription || '',
-                  flopDescription: hand.analysis?.flopDescription || '',
-                  turnDescription: hand.analysis?.turnDescription || '',
-                  riverDescription: hand.analysis?.riverDescription || '',
+                  holeCards: hand.preflopCards?.holeCards
+                    ? [
+                        (hand.preflopCards.holeCards as any).card1,
+                        (hand.preflopCards.holeCards as any).card2,
+                      ].filter(Boolean)
+                    : [],
+                  heroPosition: (hand.positions as any)?.heroPosition || '',
+                  villainPosition: (hand.positions as any)?.villainPosition || '',
+                  players: (hand.positions as any)?.players || [],
+                  smallBlind: (hand.analysis as any)?.smallBlind || '',
+                  bigBlind: (hand.analysis as any)?.bigBlind || '',
+                  ante: (hand.analysis as any)?.ante || false,
+                  preflopDescription: (hand.analysis as any)?.preflopDescription || '',
+                  flopDescription: (hand.analysis as any)?.flopDescription || '',
+                  turnDescription: (hand.analysis as any)?.turnDescription || '',
+                  riverDescription: (hand.analysis as any)?.riverDescription || '',
                   turnCard: hand.turnCard ? [hand.turnCard] : [],
                   riverCard: hand.riverCard ? [hand.riverCard] : [],
                   stackSize: '',
                   heroStackSize: [],
                   villainStackSize: [],
                   flopCards: hand.flopCards || [],
-                  preflopActions: hand.preflopActions || [],
-                  flopActions: hand.flopActions || [],
-                  turnActions: hand.turnActions || [],
-                  riverActions: hand.riverActions || [],
+                  preflopActions: (hand.preflopActions as any) || [],
+                  flopActions: (hand.flopActions as any) || [],
+                  turnActions: (hand.turnActions as any) || [],
+                  riverActions: (hand.riverActions as any) || [],
                 }}
                 getPositionName={getPositionName}
                 getCurrencySymbol={getCurrencySymbol}

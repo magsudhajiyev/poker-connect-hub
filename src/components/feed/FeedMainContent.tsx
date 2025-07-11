@@ -6,9 +6,12 @@ import { ProfileTopBar } from '@/components/shared/ProfileTopBar';
 import { useSidebar } from '@/components/sidebar/SidebarContext';
 import { PostComposer } from '@/components/feed/PostComposer';
 import { FeedPostCard } from '@/components/feed/FeedPostCard';
+import { PostCard } from '@/components/feed/PostCard';
 // import { SamplePostCard } from '@/components/feed/SamplePostCard';
 import { FeedHeader } from '@/components/feed/FeedHeader';
 import { sharedHandsApi, SharedHand } from '@/services/sharedHandsApi';
+import { postsApi } from '@/services/postsApi';
+import { Post } from '@/models/post.model';
 import { toast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -16,13 +19,18 @@ export const FeedMainContent = () => {
   const { isCollapsed } = useSidebar();
   const router = useRouter();
   const [sharedHands, setSharedHands] = useState<SharedHand[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [handsPage, setHandsPage] = useState(1);
+  const [postsPage, setPostsPage] = useState(1);
+  const [hasMoreHands, setHasMoreHands] = useState(true);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [feedItems, setFeedItems] = useState<
+    Array<{ type: 'hand' | 'post'; item: SharedHand | Post; date: Date }>
+  >([]);
 
-  const fetchHands = async (pageNum: number, append = false) => {
+  const fetchHands = async (pageNum: number) => {
     try {
-      setIsLoading(true);
       const response = await sharedHandsApi.getSharedHands({
         page: pageNum,
         limit: 10,
@@ -30,23 +38,102 @@ export const FeedMainContent = () => {
 
       if (response.success && response.data) {
         const { hands } = response.data;
-        if (append) {
-          setSharedHands((prev) => [...prev, ...hands]);
-        } else {
-          setSharedHands(hands);
-        }
-        setHasMore(hands.length === 10);
-      } else {
-        toast({
-          title: 'Error',
-          description: response.error?.message || 'Failed to load hands',
-          variant: 'destructive',
-        });
+        setHasMoreHands(hands.length === 10);
+        return hands;
       }
     } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to load hands',
+        variant: 'destructive',
+      });
+    }
+    return [];
+  };
+
+  const fetchPosts = async (pageNum: number) => {
+    try {
+      const response = await postsApi.listPosts({
+        page: pageNum,
+        pageSize: 10,
+      });
+
+      if (response.success && response.data) {
+        const { posts } = response.data;
+        setHasMorePosts(posts.length === 10);
+        return posts;
+      }
+    } catch (_error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load posts',
+        variant: 'destructive',
+      });
+    }
+    return [];
+  };
+
+  const fetchFeedData = async (initial = false) => {
+    try {
+      setIsLoading(true);
+
+      const [handsData, postsData] = await Promise.all([
+        fetchHands(initial ? 1 : handsPage),
+        fetchPosts(initial ? 1 : postsPage),
+      ]);
+
+      if (initial) {
+        setSharedHands(handsData);
+        setPosts(postsData);
+      } else {
+        setSharedHands((prev) => [...prev, ...handsData]);
+        setPosts((prev) => [...prev, ...postsData]);
+      }
+
+      // Combine and sort all items by date
+      const allItems = [...sharedHands, ...handsData, ...posts, ...postsData];
+
+      const combined = allItems.map((item) => {
+        if ('gameType' in item) {
+          // It's a hand
+          return {
+            type: 'hand' as const,
+            item: item as SharedHand,
+            date: new Date(item.createdAt),
+          };
+        } else {
+          // It's a post
+          return {
+            type: 'post' as const,
+            item: item as Post,
+            date: new Date(item.createdAt),
+          };
+        }
+      });
+
+      // Sort by date (newest first)
+      combined.sort((a, b) => b.date.getTime() - a.date.getTime());
+
+      // Remove duplicates
+      const uniqueItems = combined.filter((item, index, self) => {
+        return (
+          index ===
+          self.findIndex((i) => {
+            if (item.type === 'hand' && i.type === 'hand') {
+              return (item.item as SharedHand)._id === (i.item as SharedHand)._id;
+            } else if (item.type === 'post' && i.type === 'post') {
+              return (item.item as Post)._id === (i.item as Post)._id;
+            }
+            return false;
+          })
+        );
+      });
+
+      setFeedItems(uniqueItems);
+    } catch (_error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load feed',
         variant: 'destructive',
       });
     } finally {
@@ -55,7 +142,8 @@ export const FeedMainContent = () => {
   };
 
   useEffect(() => {
-    fetchHands(1);
+    fetchFeedData(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleHandClick = (handId: string) => {
@@ -79,11 +167,34 @@ export const FeedMainContent = () => {
     return `${Math.floor(diffMins / 1440)}d ago`;
   };
 
-  const loadMore = () => {
-    if (!isLoading && hasMore) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      fetchHands(nextPage, true);
+  const handlePostDeleted = (postId: string) => {
+    setPosts(posts.filter((p) => p._id !== postId));
+    setFeedItems(
+      feedItems.filter((item) => !(item.type === 'post' && (item.item as Post)._id === postId)),
+    );
+  };
+
+  const handlePostCreated = (newPost: Post) => {
+    // Add to posts array
+    setPosts([newPost, ...posts]);
+
+    // Add to feed items at the beginning
+    const newFeedItem = {
+      type: 'post' as const,
+      item: newPost,
+      date: new Date(newPost.createdAt),
+    };
+
+    setFeedItems([newFeedItem, ...feedItems]);
+  };
+
+  const loadMore = async () => {
+    if (!isLoading && (hasMoreHands || hasMorePosts)) {
+      const nextHandsPage = handsPage + 1;
+      const nextPostsPage = postsPage + 1;
+      setHandsPage(nextHandsPage);
+      setPostsPage(nextPostsPage);
+      await fetchFeedData(false);
     }
   };
 
@@ -111,10 +222,10 @@ export const FeedMainContent = () => {
               </div>
 
               {/* Post Composer */}
-              <PostComposer />
+              <PostComposer onPostCreated={handlePostCreated} />
 
               <div className="space-y-4 sm:space-y-6">
-                {isLoading && sharedHands.length === 0 ? (
+                {isLoading && feedItems.length === 0 ? (
                   // Loading skeletons
                   <>
                     {[1, 2, 3].map((i) => (
@@ -127,17 +238,32 @@ export const FeedMainContent = () => {
                   </>
                 ) : (
                   <>
-                    {sharedHands.map((hand) => (
-                      <FeedPostCard
-                        key={hand._id}
-                        hand={hand}
-                        onHandClick={handleHandClick}
-                        formatTimeAgo={formatTimeAgo}
-                      />
-                    ))}
+                    {feedItems.map((feedItem) => {
+                      if (feedItem.type === 'hand') {
+                        const hand = feedItem.item as SharedHand;
+                        return (
+                          <FeedPostCard
+                            key={`hand-${hand._id}`}
+                            hand={hand}
+                            onHandClick={handleHandClick}
+                            formatTimeAgo={formatTimeAgo}
+                          />
+                        );
+                      } else {
+                        const post = feedItem.item as Post;
+                        return (
+                          <PostCard
+                            key={`post-${post._id}`}
+                            post={post}
+                            formatTimeAgo={formatTimeAgo}
+                            onPostDeleted={handlePostDeleted}
+                          />
+                        );
+                      }
+                    })}
 
                     {/* Load more button */}
-                    {hasMore && (
+                    {(hasMoreHands || hasMorePosts) && (
                       <div className="flex justify-center pt-4">
                         <button
                           onClick={loadMore}
@@ -149,11 +275,11 @@ export const FeedMainContent = () => {
                       </div>
                     )}
 
-                    {/* Show message when no hands */}
-                    {!isLoading && sharedHands.length === 0 && (
+                    {/* Show message when no content */}
+                    {!isLoading && feedItems.length === 0 && (
                       <div className="text-center py-10">
                         <p className="text-slate-400">
-                          No hands shared yet. Be the first to share!
+                          No posts or hands shared yet. Be the first to share!
                         </p>
                       </div>
                     )}

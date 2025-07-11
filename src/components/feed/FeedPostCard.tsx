@@ -134,8 +134,8 @@ export const FeedPostCard = ({ hand, onHandClick, formatTimeAgo }: FeedPostCardP
 
   // Extract user info from populated or string userId
   const authorInfo = typeof hand.userId === 'object' ? hand.userId : null;
-  const authorName = authorInfo?.name || 'Anonymous';
-  const authorPicture = authorInfo?.picture || '';
+  const authorName = (authorInfo as any)?.name || 'Anonymous';
+  const authorPicture = (authorInfo as any)?.picture || '';
 
   return (
     <Card className="bg-slate-800/40 border-slate-700/30 hover:bg-slate-800/60 transition-colors">

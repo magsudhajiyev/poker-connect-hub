@@ -8,6 +8,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserPlus, UserMinus } from 'lucide-react';
+import { PostCard } from '@/components/feed/PostCard';
+import { postsApi } from '@/services/postsApi';
+import { Post } from '@/models/post.model';
+import { toast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ProfileContentProps {
   activeTab: string;
@@ -23,12 +28,7 @@ interface UserData {
   followedAt: string;
 }
 
-
-export const ProfileContent = ({
-  activeTab,
-  userId,
-  isOwnProfile,
-}: ProfileContentProps) => {
+export const ProfileContent = ({ activeTab, userId, isOwnProfile }: ProfileContentProps) => {
   const router = useRouter();
   const { user } = useAuth();
   const [followers, setFollowers] = useState<UserData[]>([]);
@@ -38,6 +38,9 @@ export const ProfileContent = ({
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [followStatus, setFollowStatus] = useState<{ [key: string]: boolean }>({});
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [postsLoading, setPostsLoading] = useState(false);
+  const [postsCount, setPostsCount] = useState(0);
 
   // Use current user's ID if viewing own profile
   const profileUserId = userId || user?.id;
@@ -46,6 +49,13 @@ export const ProfileContent = ({
   useEffect(() => {
     if (activeTab === 'followers' && profileUserId) {
       fetchFollowers();
+    }
+  }, [activeTab, profileUserId]);
+
+  // Fetch posts when tab is active
+  useEffect(() => {
+    if (activeTab === 'posts' && profileUserId) {
+      fetchPosts();
     }
   }, [activeTab, profileUserId]);
 
@@ -64,11 +74,11 @@ export const ProfileContent = ({
       if (data.success) {
         setFollowers(data.data.followers);
         setFollowersCount(data.data.pagination.totalCount);
-        
+
         // Fetch follow status for each follower if logged in
         if (user) {
           const statusPromises = data.data.followers.map((follower: UserData) =>
-            fetch(`/api/users/${follower.id}/follow?_=${Date.now()}`).then(res => res.json()),
+            fetch(`/api/users/${follower.id}/follow?_=${Date.now()}`).then((res) => res.json()),
           );
           const statuses = await Promise.all(statusPromises);
           const statusMap: { [key: string]: boolean } = {};
@@ -95,7 +105,7 @@ export const ProfileContent = ({
       if (data.success) {
         setFollowing(data.data.following);
         setFollowingCount(data.data.pagination.totalCount);
-        
+
         // Set all following users as followed
         const statusMap: { [key: string]: boolean } = {};
         data.data.following.forEach((user: UserData) => {
@@ -107,6 +117,31 @@ export const ProfileContent = ({
       console.error('Error fetching following:', error);
     } finally {
       setFollowingLoading(false);
+    }
+  };
+
+  const fetchPosts = async () => {
+    setPostsLoading(true);
+    try {
+      const response = await postsApi.listPosts({
+        userId: profileUserId,
+        page: 1,
+        pageSize: 20,
+      });
+
+      if (response.success && response.data) {
+        setPosts(response.data.posts);
+        setPostsCount(response.data.totalCount);
+      }
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load posts',
+        variant: 'destructive',
+      });
+    } finally {
+      setPostsLoading(false);
     }
   };
 
@@ -128,13 +163,13 @@ export const ProfileContent = ({
       });
 
       const data = await response.json();
-      
+
       if (data.success) {
-        setFollowStatus(prev => ({
+        setFollowStatus((prev) => ({
           ...prev,
           [targetUserId]: data.data.isFollowing,
         }));
-        
+
         // Refresh the followers/following lists to reflect changes
         if (activeTab === 'followers') {
           fetchFollowers();
@@ -159,6 +194,69 @@ export const ProfileContent = ({
       .toUpperCase()
       .slice(0, 2);
   };
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    if (diffMins < 1) {
+      return 'Just now';
+    }
+    if (diffMins < 60) {
+      return `${diffMins}m ago`;
+    }
+    if (diffMins < 1440) {
+      return `${Math.floor(diffMins / 60)}h ago`;
+    }
+    return `${Math.floor(diffMins / 1440)}d ago`;
+  };
+
+  const handlePostDeleted = (postId: string) => {
+    setPosts(posts.filter((p) => p._id !== postId));
+    setPostsCount(postsCount - 1);
+  };
+
+  if (activeTab === 'posts') {
+    return (
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h2 className="text-lg sm:text-xl font-semibold text-slate-200">Posts</h2>
+          <div className="text-xs sm:text-sm text-slate-400">
+            {postsLoading ? 'Loading...' : `${postsCount} posts`}
+          </div>
+        </div>
+
+        {postsLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-slate-900/50 rounded-lg p-6">
+                <Skeleton className="h-4 w-1/4 mb-4" />
+                <Skeleton className="h-20 w-full mb-4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-slate-400">No posts yet</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {posts.map((post) => (
+              <PostCard
+                key={post._id as string}
+                post={post}
+                formatTimeAgo={formatTimeAgo}
+                onPostDeleted={handlePostDeleted}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   if (activeTab === 'stats') {
     return <ProfileStats />;
   }
@@ -226,14 +324,14 @@ export const ProfileContent = ({
               <Card key={follower.id} className="bg-slate-900/60 border-slate-700/20">
                 <CardContent className="p-3 sm:p-4">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <Avatar 
+                    <Avatar
                       className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 cursor-pointer"
                       onClick={() => navigateToProfile(follower.id)}
                     >
                       <AvatarImage src={follower.picture} />
                       <AvatarFallback>{getInitials(follower.name)}</AvatarFallback>
                     </Avatar>
-                    <div 
+                    <div
                       className="flex-1 min-w-0 cursor-pointer"
                       onClick={() => navigateToProfile(follower.id)}
                     >
@@ -249,9 +347,10 @@ export const ProfileContent = ({
                         size="sm"
                         variant="outline"
                         onClick={() => handleFollowToggle(follower.id)}
-                        className={followStatus[follower.id]
-                          ? 'border-slate-700/30 bg-slate-800/40 text-xs sm:text-sm flex-shrink-0'
-                          : 'border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 text-xs sm:text-sm flex-shrink-0'
+                        className={
+                          followStatus[follower.id]
+                            ? 'border-slate-700/30 bg-slate-800/40 text-xs sm:text-sm flex-shrink-0'
+                            : 'border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 text-xs sm:text-sm flex-shrink-0'
                         }
                       >
                         {followStatus[follower.id] ? (
@@ -301,14 +400,14 @@ export const ProfileContent = ({
               <Card key={user.id} className="bg-slate-900/60 border-slate-700/20">
                 <CardContent className="p-3 sm:p-4">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <Avatar 
+                    <Avatar
                       className="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 cursor-pointer"
                       onClick={() => navigateToProfile(user.id)}
                     >
                       <AvatarImage src={user.picture} />
                       <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                     </Avatar>
-                    <div 
+                    <div
                       className="flex-1 min-w-0 cursor-pointer"
                       onClick={() => navigateToProfile(user.id)}
                     >

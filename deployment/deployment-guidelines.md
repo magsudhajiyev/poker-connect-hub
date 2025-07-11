@@ -21,21 +21,43 @@ This document outlines the steps to follow before deploying the Poker Connect Hu
 - Test all critical user flows:
   - User authentication (login/logout)
   - Hand sharing functionality
-  - Feed page loading
+  - Feed page loading (posts and hands)
   - Hand view page
   - Onboarding flow
-- Verify API endpoints are working correctly
+  - Post creation, editing, and deletion
+  - Like functionality on posts
+  - Comment functionality on posts
+  - User profile posts tab
+- Verify API endpoints are working correctly:
+  - `/api/posts/*` endpoints for CRUD operations
+  - Dynamic route parameters are properly awaited
 
 ### 4. Ensure no TypeScript errors
 
 - Run `npm run build` to check for TypeScript compilation errors
 - Fix any type errors that appear
 
-### 5. Fix usage of 'any' types
+### 5. Check and fix 'any' type usage
 
-- Replace `any` types with proper type definitions where possible
+**IMPORTANT**: TypeScript's `any` type defeats the purpose of type safety and should be avoided.
+
+- Search for all occurrences of `any` types:
+  ```bash
+  find . -name "*.ts" -o -name "*.tsx" | grep -v node_modules | grep -v .next | xargs grep -n "any"
+  ```
+- Replace `any` types with proper type definitions:
+  - For API responses: Create interface types for the expected data structure
+  - For error handling: Use proper error types (e.g., `AxiosError<ApiErrorResponse>`)
+  - For MongoDB documents: Create document interfaces extending base types
+  - For React event handlers: Use proper event types (e.g., `React.MouseEvent`)
+  - For third-party libraries: Check if @types packages are available
+- Common replacements:
+  - `catch (error: any)` → `catch (error)` or `catch (error: unknown)`
+  - `(item: any)` → Create proper interface for the item
+  - `Record<string, any>` → Define specific object shape
 - If changing would risk breaking functionality:
-  - Skip the change
+  - Skip the change temporarily
+  - Add `// TODO: Replace any with proper type` comment
   - Document it in `/deployment/tech-debt.md` for future fixing
 
 ### 6. Run build command
@@ -43,6 +65,9 @@ This document outlines the steps to follow before deploying the Poker Connect Hu
 - Execute `npm run build`
 - Ensure build completes without errors
 - Check build output size and warnings
+- Fix any runtime errors related to:
+  - Dynamic route params must be awaited in Next.js 13+
+  - React Hook dependency warnings
 
 ### 7. Merge branch back to main
 

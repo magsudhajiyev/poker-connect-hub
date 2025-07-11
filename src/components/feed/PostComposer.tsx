@@ -6,16 +6,65 @@ import { Card, CardContent } from '@/components/ui/card';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Share2, Image, Smile } from 'lucide-react';
+import { Share2, Image, Smile, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { postsApi } from '@/services/postsApi';
+import { toast } from '@/hooks/use-toast';
+import { Post } from '@/models/post.model';
 
-export const PostComposer = () => {
+interface PostComposerProps {
+  onPostCreated?: (post: Post) => void;
+}
+
+export const PostComposer = ({ onPostCreated }: PostComposerProps = {}) => {
   const [content, setContent] = useState('');
+  const [isPosting, setIsPosting] = useState(false);
   const router = useRouter();
   const { user } = useAuth();
 
   const handleShareHand = () => {
     router.push('/share-hand');
+  };
+
+  const handlePost = async () => {
+    if (!content.trim() || isPosting) {
+      return;
+    }
+
+    try {
+      setIsPosting(true);
+      const response = await postsApi.createPost({ content });
+
+      if (response.success && response.data) {
+        setContent('');
+        toast({
+          title: 'Posted successfully',
+          description: 'Your post has been shared with the community.',
+        });
+
+        // Call the callback if provided
+        if (onPostCreated) {
+          onPostCreated(response.data);
+        } else {
+          // Fallback to refresh if no callback
+          router.refresh();
+        }
+      } else {
+        toast({
+          title: 'Failed to post',
+          description: response.error || 'Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } catch (_error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to create post. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsPosting(false);
+    }
   };
 
   return (
@@ -58,10 +107,18 @@ export const PostComposer = () => {
                   <span className="truncate">Share Hand</span>
                 </Button>
                 <Button
-                  disabled={!content.trim()}
+                  onClick={handlePost}
+                  disabled={!content.trim() || isPosting}
                   className="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed px-3 sm:px-4 py-2 flex-shrink-0"
                 >
-                  Post
+                  {isPosting ? (
+                    <>
+                      <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 animate-spin" />
+                      Posting...
+                    </>
+                  ) : (
+                    'Post'
+                  )}
                 </Button>
               </div>
             </div>

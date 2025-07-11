@@ -2,22 +2,50 @@ import { ApiResponse } from '@/types/unified';
 import { ApiErrorHandler } from '@/utils/apiErrorHandler';
 import axios from 'axios';
 
+// Type definitions for poker game data
+export interface PlayerPosition {
+  name: string;
+  chips: number;
+  isHero?: boolean;
+}
+
+export interface HoleCards {
+  card1: string;
+  card2: string;
+}
+
+export interface PokerAction {
+  playerId: string;
+  playerName: string;
+  action: string;
+  amount?: number;
+  position?: string;
+  isHero?: boolean;
+}
+
+export interface AnalysisData {
+  summary?: string;
+  keyPoints?: string[];
+  suggestions?: string[];
+  [key: string]: unknown;
+}
+
 export interface SharedHandFormData {
   title: string;
   description: string;
   gameType: string;
   gameFormat: string;
   tableSize: number;
-  positions: Record<string, any>;
-  preflopCards: Record<string, any>;
-  preflopActions?: Array<any>;
+  positions: Record<string, PlayerPosition>;
+  preflopCards: Record<string, HoleCards>;
+  preflopActions?: PokerAction[];
   flopCards?: string[];
-  flopActions?: Array<any>;
+  flopActions?: PokerAction[];
   turnCard?: string;
-  turnActions?: Array<any>;
+  turnActions?: PokerAction[];
   riverCard?: string;
-  riverActions?: Array<any>;
-  analysis?: Record<string, any>;
+  riverActions?: PokerAction[];
+  analysis?: AnalysisData;
   tags?: string[];
   isPublic?: boolean;
   userEmail?: string;

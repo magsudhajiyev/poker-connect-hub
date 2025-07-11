@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { logError, logInfo } from '@/utils/errorLogger';
 

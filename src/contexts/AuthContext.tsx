@@ -85,7 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             createdAt: userData.createdAt,
           });
         }
-      } catch (error: any) {
+      } catch (error) {
         // If we get a 401, try to refresh the token
         if (error?.response?.status === 401) {
           try {
@@ -130,7 +130,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const syncPayload = {
               email: session.user.email,
               name: session.user.name || '',
-              googleId: (session as any).user?.googleId || (session.user as any).id || '',
+              googleId:
+                (session.user as { googleId?: string; id?: string })?.googleId ||
+                (session.user as { id?: string })?.id ||
+                '',
               picture: session.user.image || '',
             };
 

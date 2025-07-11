@@ -43,7 +43,7 @@ const MobileSidebar = () => {
 const ProfileContent_Internal = () => {
   const params = useParams();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('hands');
+  const [activeTab, setActiveTab] = useState('posts');
   const { isCollapsed } = useSidebar();
 
   // Extract userId from params - it will be an array or undefined

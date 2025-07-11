@@ -146,12 +146,15 @@ export const HandViewCard = ({ hand }: HandViewCardProps) => {
             <div className="min-w-0">
               <span className="text-slate-400">Stakes:</span>
               <span className="text-slate-200 ml-2">
-                {hand.analysis?.smallBlind || 'N/A'}/{hand.analysis?.bigBlind || 'N/A'}
+                {(hand.analysis as any)?.smallBlind || 'N/A'}/
+                {(hand.analysis as any)?.bigBlind || 'N/A'}
               </span>
             </div>
             <div className="min-w-0">
               <span className="text-slate-400">Position:</span>
-              <span className="text-slate-200 ml-2">{hand.positions?.heroPosition || 'N/A'}</span>
+              <span className="text-slate-200 ml-2">
+                {(hand.positions as any)?.heroPosition || 'N/A'}
+              </span>
             </div>
             <div className="min-w-0">
               <span className="text-slate-400">Table Size:</span>

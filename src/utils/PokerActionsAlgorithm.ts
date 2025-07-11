@@ -1,7 +1,14 @@
 // Streamlined Poker Actions Algorithm - Outputs Valid Actions Only
 
+import {
+  AlgorithmPlayer,
+  AlgorithmAction,
+  StreetActions,
+  ValidAction,
+} from '@/types/pokerAlgorithm';
+
 export class PokerActionsAlgorithm {
-  constructor(smallBlind: number, bigBlind: number, players: any[]) {
+  constructor(smallBlind: number, bigBlind: number, players: AlgorithmPlayer[]) {
     this.smallBlind = smallBlind;
     this.bigBlind = bigBlind;
 
@@ -42,12 +49,12 @@ export class PokerActionsAlgorithm {
 
   smallBlind: number;
   bigBlind: number;
-  players: any[];
-  currentStreet: string;
+  players: AlgorithmPlayer[];
+  currentStreet: 'preflop' | 'flop' | 'turn' | 'river';
   pot: number;
   currentBet: number;
-  actionHistory: any[];
-  streetActions: any;
+  actionHistory: AlgorithmAction[];
+  streetActions: StreetActions;
   actionOrder: number[];
   currentActionIndex: number;
 
@@ -151,7 +158,7 @@ export class PokerActionsAlgorithm {
     return this.actionOrder[this.currentActionIndex];
   }
 
-  calculateValidActions(player: any) {
+  calculateValidActions(player: AlgorithmPlayer): ValidAction[] {
     const actions = [];
     const callAmount = this.currentBet - player.currentBet;
     const effectiveCallAmount = Math.min(callAmount, player.stack);
@@ -268,7 +275,7 @@ export class PokerActionsAlgorithm {
     return success;
   }
 
-  processFold(player: any, _playerIndex: number): boolean {
+  processFold(player: AlgorithmPlayer, _playerIndex: number): boolean {
     player.isFolded = true;
     player.isActive = false;
 
@@ -287,7 +294,7 @@ export class PokerActionsAlgorithm {
     return true;
   }
 
-  processCheck(player: any, _playerIndex: number): boolean {
+  processCheck(player: AlgorithmPlayer, _playerIndex: number): boolean {
     const action = {
       playerId: player.id,
       playerName: player.name,
@@ -303,7 +310,7 @@ export class PokerActionsAlgorithm {
     return true;
   }
 
-  processCall(player: any, _playerIndex: number): boolean {
+  processCall(player: AlgorithmPlayer, _playerIndex: number): boolean {
     const callAmount = Math.min(this.currentBet - player.currentBet, player.stack);
 
     player.currentBet += callAmount;
@@ -330,7 +337,12 @@ export class PokerActionsAlgorithm {
     return true;
   }
 
-  processRaise(player: any, playerIndex: number, totalAmount: number, actionType: string): boolean {
+  processRaise(
+    player: AlgorithmPlayer,
+    playerIndex: number,
+    totalAmount: number,
+    actionType: string,
+  ): boolean {
     if (totalAmount > player.stack) {
       return false;
     }
@@ -372,7 +384,7 @@ export class PokerActionsAlgorithm {
     return true;
   }
 
-  processAllIn(player: any, playerIndex: number): boolean {
+  processAllIn(player: AlgorithmPlayer, playerIndex: number): boolean {
     const allInAmount = player.stack;
     const newBetLevel = player.currentBet + allInAmount;
 
@@ -433,7 +445,7 @@ export class PokerActionsAlgorithm {
 
   // NEW METHOD: Get street completion state without causing recursion
   getStreetCompletionState() {
-    const activePlayers = this.players.filter((p: any) => p.isActive && !p.isFolded);
+    const activePlayers = this.players.filter((p) => p.isActive && !p.isFolded);
 
     // Hand complete if only one player left
     if (activePlayers.length <= 1) {
@@ -445,13 +457,13 @@ export class PokerActionsAlgorithm {
       };
     }
 
-    const playersWhoCanAct = activePlayers.filter((p: any) => !p.isAllIn);
+    const playersWhoCanAct = activePlayers.filter((p) => !p.isAllIn);
 
     // Street complete if no one can act OR all have acted and matched bets
     const streetComplete =
       playersWhoCanAct.length === 0 ||
       playersWhoCanAct.every(
-        (p: any) => p.hasActed && (p.currentBet === this.currentBet || p.stack === 0),
+        (p) => p.hasActed && (p.currentBet === this.currentBet || p.stack === 0),
       );
 
     if (streetComplete) {
@@ -483,7 +495,7 @@ export class PokerActionsAlgorithm {
       this.currentStreet = streets[currentIndex + 1];
 
       // Reset for new street
-      this.players.forEach((p: any) => {
+      this.players.forEach((p) => {
         if (p.isActive && !p.isFolded) {
           p.currentBet = 0;
           p.hasActed = false;
@@ -506,7 +518,7 @@ export class PokerActionsAlgorithm {
         street: 'complete',
         handComplete: true,
         finalPot: this.pot,
-        activePlayers: this.players.filter((p: any) => p.isActive && !p.isFolded),
+        activePlayers: this.players.filter((p) => p.isActive && !p.isFolded),
       };
     }
   }
@@ -517,7 +529,7 @@ export class PokerActionsAlgorithm {
       currentStreet: this.currentStreet,
       pot: this.pot,
       currentBet: this.currentBet,
-      players: this.players.map((p: any) => ({
+      players: this.players.map((p) => ({
         name: p.name,
         position: p.position,
         stack: p.stack,
