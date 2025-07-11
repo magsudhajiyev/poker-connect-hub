@@ -44,7 +44,8 @@ export const isProduction = (): boolean => {
 };
 
 export const getApiUrl = (): string => {
-  return getEnvVar('NEXT_PUBLIC_API_URL') || getEnvVar('VITE_API_URL') || 'http://localhost:3001';
+  // No longer needed - using Next.js API routes with relative paths
+  return '/api';
 };
 
 export const getAppUrl = (): string => {

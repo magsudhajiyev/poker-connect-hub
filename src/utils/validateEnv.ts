@@ -6,16 +6,8 @@ export function validateEnvironmentVariables() {
   const errors: string[] = [];
   const isClient = typeof window !== 'undefined';
 
-  // Check NEXT_PUBLIC_API_URL
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-  if (!apiUrl) {
-    errors.push('NEXT_PUBLIC_API_URL is not set. Backend communication will fail.');
-  } else if (apiUrl.includes('localhost') && process.env.NODE_ENV === 'production') {
-    warnings.push(
-      'NEXT_PUBLIC_API_URL contains localhost in production. Make sure backend is deployed.',
-    );
-  }
+  // Note: NEXT_PUBLIC_API_URL is not required since we use Next.js API routes
+  // The API routes are served from the same domain as the frontend
 
   // Only check server-side variables on the server
   if (!isClient) {
@@ -58,9 +50,7 @@ export function validateEnvironmentVariables() {
 
 // Helper to check if backend is properly configured
 export function isBackendConfigured(): boolean {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-
-  return Boolean(
-    apiUrl && (process.env.NODE_ENV === 'development' || !apiUrl.includes('localhost')),
-  );
+  // Since we use Next.js API routes, backend is always configured
+  // API routes are served from the same domain as the frontend
+  return true;
 }

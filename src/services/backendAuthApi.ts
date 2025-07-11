@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// Create axios instance for backend auth
+// Create axios instance for Next.js API routes
 export const backendAuthApi = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+  baseURL: '/api', // Use relative path for Next.js API routes
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
