@@ -91,6 +91,10 @@ export interface ListQueryParams {
   userId?: string;
   tags?: string[];
   search?: string;
+  dateRange?: string;
+  gameType?: string[];
+  positions?: string[];
+  stakes?: string[];
 }
 
 export interface LikeResponse {
@@ -179,6 +183,18 @@ class SharedHandsApiService {
       }
       if (params?.tags && params.tags.length > 0) {
         params.tags.forEach((tag) => queryParams.append('tags', tag));
+      }
+      if (params?.dateRange) {
+        queryParams.append('dateRange', params.dateRange);
+      }
+      if (params?.gameType && params.gameType.length > 0) {
+        params.gameType.forEach((type) => queryParams.append('gameType', type));
+      }
+      if (params?.positions && params.positions.length > 0) {
+        params.positions.forEach((pos) => queryParams.append('positions', pos));
+      }
+      if (params?.stakes && params.stakes.length > 0) {
+        params.stakes.forEach((stake) => queryParams.append('stakes', stake));
       }
 
       const url = `/api/hands/list${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;

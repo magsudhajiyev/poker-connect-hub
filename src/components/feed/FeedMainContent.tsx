@@ -9,6 +9,7 @@ import { FeedPostCard } from '@/components/feed/FeedPostCard';
 import { PostCard } from '@/components/feed/PostCard';
 // import { SamplePostCard } from '@/components/feed/SamplePostCard';
 import { FeedHeader } from '@/components/feed/FeedHeader';
+import { SearchBar, SearchFilters } from '@/components/feed/SearchBar';
 import { sharedHandsApi, SharedHand } from '@/services/sharedHandsApi';
 import { postsApi } from '@/services/postsApi';
 import { Post } from '@/models/post.model';
@@ -28,13 +29,41 @@ export const FeedMainContent = () => {
   const [feedItems, setFeedItems] = useState<
     Array<{ type: 'hand' | 'post'; item: SharedHand | Post; date: Date }>
   >([]);
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    searchQuery: '',
+    contentType: 'all',
+  });
 
   const fetchHands = async (pageNum: number) => {
+    // Skip fetching hands if filtering for posts only
+    if (searchFilters.contentType === 'posts') {
+      return [];
+    }
+
     try {
-      const response = await sharedHandsApi.getSharedHands({
+      const params: any = {
         page: pageNum,
         limit: 10,
-      });
+      };
+
+      // Add search parameters
+      if (searchFilters.searchQuery) {
+        params.search = searchFilters.searchQuery;
+      }
+      if (searchFilters.dateRange) {
+        params.dateRange = searchFilters.dateRange;
+      }
+      if (searchFilters.gameType) {
+        params.gameType = searchFilters.gameType;
+      }
+      if (searchFilters.positions) {
+        params.positions = searchFilters.positions;
+      }
+      if (searchFilters.stakes) {
+        params.stakes = searchFilters.stakes;
+      }
+
+      const response = await sharedHandsApi.getSharedHands(params);
 
       if (response.success && response.data) {
         const { hands } = response.data;
@@ -52,11 +81,26 @@ export const FeedMainContent = () => {
   };
 
   const fetchPosts = async (pageNum: number) => {
+    // Skip fetching posts if filtering for hands only
+    if (searchFilters.contentType === 'hands') {
+      return [];
+    }
+
     try {
-      const response = await postsApi.listPosts({
+      const params: any = {
         page: pageNum,
         pageSize: 10,
-      });
+      };
+
+      // Add search parameters
+      if (searchFilters.searchQuery) {
+        params.search = searchFilters.searchQuery;
+      }
+      if (searchFilters.dateRange) {
+        params.dateRange = searchFilters.dateRange;
+      }
+
+      const response = await postsApi.listPosts(params);
 
       if (response.success && response.data) {
         const { posts } = response.data;
@@ -146,6 +190,15 @@ export const FeedMainContent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Refetch when search filters change
+  useEffect(() => {
+    // Reset pagination
+    setHandsPage(1);
+    setPostsPage(1);
+    fetchFeedData(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchFilters]);
+
   const handleHandClick = (handId: string) => {
     router.push(`/hand-view/${handId}`);
   };
@@ -220,6 +273,9 @@ export const FeedMainContent = () => {
                   Your Poker Feed
                 </h1>
               </div>
+
+              {/* Search Bar */}
+              <SearchBar onSearch={setSearchFilters} initialFilters={searchFilters} />
 
               {/* Post Composer */}
               <PostComposer onPostCreated={handlePostCreated} />

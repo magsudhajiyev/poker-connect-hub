@@ -29,6 +29,8 @@ export const postsApi = {
     page?: number;
     pageSize?: number;
     userId?: string;
+    search?: string;
+    dateRange?: string;
   }): Promise<PostsListResponse> => {
     try {
       const queryParams = new URLSearchParams();
@@ -40,6 +42,12 @@ export const postsApi = {
       }
       if (params?.userId) {
         queryParams.append('userId', params.userId);
+      }
+      if (params?.search) {
+        queryParams.append('search', params.search);
+      }
+      if (params?.dateRange) {
+        queryParams.append('dateRange', params.dateRange);
       }
 
       const response = await backendAuthApi.get(`/posts/list?${queryParams.toString()}`);

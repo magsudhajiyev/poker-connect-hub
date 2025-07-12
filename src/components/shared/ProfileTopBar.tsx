@@ -2,7 +2,6 @@
 
 import { Button } from '@/components/ui/button';
 import { Home, Bell, User, Settings, LogOut, Menu } from 'lucide-react';
-import { SearchBar } from '@/components/shared/SearchBar';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -60,11 +59,6 @@ export const ProfileTopBar = () => {
             <span className="text-xl font-bold bg-gradient-to-r from-emerald-500 via-blue-500 to-pink-500 bg-clip-text text-transparent">
               PokerConnect
             </span>
-          </div>
-
-          {/* Search Bar */}
-          <div className="hidden md:block flex-1 max-w-md mx-4">
-            <SearchBar placeholder="Search players..." />
           </div>
 
           {/* Navigation Icons */}

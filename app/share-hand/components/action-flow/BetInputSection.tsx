@@ -53,11 +53,9 @@ export const BetInputSection = ({
 
   const validateAndFormatInput = (value: string) => {
     const chipAmount = displayValues.parseInputToChips(value);
-    const validation = displayValues.validateBetAmount(chipAmount, currentStackSize);
+    const _validation = displayValues.validateBetAmount(chipAmount, currentStackSize);
 
-    if (!validation.isValid && validation.error) {
-      console.warn('Bet validation:', validation.error);
-    }
+    // Validation error is handled by the UI, no need to log
 
     return value; // Return original value for now, validation can be added later
   };
