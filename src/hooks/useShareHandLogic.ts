@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/hooks/use-toast';
-import { ShareHandFormData } from '@/types/shareHand';
+import { ShareHandFormData, ActionStep } from '@/types/shareHand';
 import { steps, getPositionName } from '@/utils/shareHandConstants';
 import { getAvailableActions, getActionButtonClass } from '@/utils/shareHandActions';
 import { validateCurrentStep } from '@/utils/shareHandValidation';
@@ -10,7 +10,7 @@ import {
   getCurrencySymbol,
   getAllSelectedCards,
 } from '@/utils/shareHandCalculations';
-import { sharedHandsApi } from '@/services/sharedHandsApi';
+import { sharedHandsApi, PlayerPosition, HoleCards, PokerAction } from '@/services/sharedHandsApi';
 import { useActionManagement } from './useActionManagement';
 import { useProfileData } from './useProfileData';
 import { useAuth } from '@/contexts/AuthContext';
@@ -134,31 +134,58 @@ export const useShareHandLogic = () => {
       }
 
       // Prepare data for backend
+      // Convert players array to positions record
+      const positionsRecord: Record<string, PlayerPosition> = {};
+      formData.players?.forEach((player) => {
+        positionsRecord[player.position] = {
+          name: player.name,
+          chips: Array.isArray(player.stackSize) ? player.stackSize[0] : player.stackSize,
+          isHero: player.isHero,
+        };
+      });
+
+      // Convert hole cards to preflopCards record
+      const preflopCardsRecord: Record<string, HoleCards> = {};
+      if (formData.holeCards) {
+        const heroPlayer = formData.players?.find((p) => p.isHero);
+        if (heroPlayer) {
+          preflopCardsRecord[heroPlayer.position] = {
+            card1: formData.holeCards[0] || '',
+            card2: formData.holeCards[1] || '',
+          };
+        }
+      }
+
+      // Helper to convert ActionStep to PokerAction
+      const convertActionsToPokerActions = (actions?: ActionStep[]): PokerAction[] => {
+        if (!actions) {
+          return [];
+        }
+        return actions.map((action) => ({
+          playerId: action.playerId,
+          playerName: action.playerName,
+          action: action.action || '',
+          amount: action.betAmount ? parseFloat(action.betAmount) : undefined,
+          position: action.position,
+          isHero: action.isHero,
+        }));
+      };
+
       const sharedHandData = {
         title: formData.title || 'Untitled Hand',
         description: formData.description || '',
         gameType: formData.gameType,
         gameFormat: formData.gameFormat,
         tableSize: formData.players?.length || 2,
-        positions: {
-          heroPosition: formData.heroPosition,
-          villainPosition: formData.villainPosition,
-          players:
-            formData.players?.map((player) => ({
-              ...player,
-              stackSize: Array.isArray(player.stackSize) ? player.stackSize[0] : player.stackSize,
-            })) || [],
-        },
-        preflopCards: {
-          holeCards: formData.holeCards,
-        },
-        preflopActions: formData.preflopActions,
+        positions: positionsRecord,
+        preflopCards: preflopCardsRecord,
+        preflopActions: convertActionsToPokerActions(formData.preflopActions),
         flopCards: formData.flopCards,
-        flopActions: formData.flopActions,
+        flopActions: convertActionsToPokerActions(formData.flopActions),
         turnCard: formData.turnCard?.[0] || '',
-        turnActions: formData.turnActions,
+        turnActions: convertActionsToPokerActions(formData.turnActions),
         riverCard: formData.riverCard?.[0] || '',
-        riverActions: formData.riverActions,
+        riverActions: convertActionsToPokerActions(formData.riverActions),
         analysis: {
           preflopDescription: formData.preflopDescription,
           flopDescription: formData.flopDescription,

@@ -429,7 +429,7 @@ export const PostCard = ({ post, formatTimeAgo, onPostDeleted }: PostCardProps) 
               };
 
               return (
-                <div key={comment._id || index} className="flex space-x-3">
+                <div key={comment._id?.toString() || index} className="flex space-x-3">
                   <UserAvatar
                     src={(commentUser as any)?.picture || ''}
                     name={commentUserName}

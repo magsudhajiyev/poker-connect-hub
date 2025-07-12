@@ -25,14 +25,14 @@ export interface AlgorithmAction {
   position: string;
   type: string; // 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'allIn' | 'allInRaise'
   amount: number;
-  street: 'preFlop' | 'flop' | 'turn' | 'river';
+  street: 'preflop' | 'flop' | 'turn' | 'river';
   raiseSize?: number;
   newBetLevel?: number;
   timestamp?: Date;
 }
 
 export interface StreetActions {
-  preFlop: AlgorithmAction[];
+  preflop: AlgorithmAction[];
   flop: AlgorithmAction[];
   turn: AlgorithmAction[];
   river: AlgorithmAction[];

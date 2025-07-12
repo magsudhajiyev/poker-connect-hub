@@ -87,7 +87,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       } catch (error) {
         // If we get a 401, try to refresh the token
-        if (error?.response?.status === 401) {
+        if ((error as any)?.response?.status === 401) {
           try {
             const refreshResponse = await authEndpoints.refreshToken();
 

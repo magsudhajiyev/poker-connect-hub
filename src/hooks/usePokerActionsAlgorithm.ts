@@ -29,7 +29,7 @@ export const usePokerActionsAlgorithm = ({
 
       if (!isNaN(sb) && !isNaN(bb) && sb > 0 && bb > 0) {
         try {
-          const newAlgorithm = new PokerActionsAlgorithm(sb, bb, players);
+          const newAlgorithm = new PokerActionsAlgorithm(sb, bb, players as any);
           setAlgorithm(newAlgorithm);
           algorithmRef.current = newAlgorithm;
 
@@ -38,7 +38,7 @@ export const usePokerActionsAlgorithm = ({
 
           // Check if this is a normal player action state
           if (currentState && 'playerId' in currentState && currentState.playerId) {
-            setCurrentPlayerToAct(currentState.playerId);
+            setCurrentPlayerToAct(String(currentState.playerId));
             setAvailableActions(currentState.actions || []);
           } else {
             // Handle other state types
@@ -60,24 +60,24 @@ export const usePokerActionsAlgorithm = ({
   // Update street when it changes
   useEffect(() => {
     if (algorithm && currentStreet) {
-      const streetMapping: { [key: string]: string } = {
-        preflopActions: 'preFlop',
+      const streetMapping: { [key: string]: 'preflop' | 'flop' | 'turn' | 'river' } = {
+        preflopActions: 'preflop',
         flopActions: 'flop',
         turnActions: 'turn',
         riverActions: 'river',
       };
 
-      const algorithmStreet = streetMapping[currentStreet] || 'preFlop';
+      const algorithmStreet = streetMapping[currentStreet] || 'preflop';
 
       if (algorithm.currentStreet !== algorithmStreet) {
-        algorithm.currentStreet = algorithmStreet;
+        algorithm.currentStreet = algorithmStreet as 'preflop' | 'flop' | 'turn' | 'river';
         algorithm.updateActionOrder();
 
         const currentState = algorithm.getCurrentPlayerActions();
 
         // Check if this is a normal player action state
         if (currentState && 'playerId' in currentState && currentState.playerId) {
-          setCurrentPlayerToAct(currentState.playerId);
+          setCurrentPlayerToAct(String(currentState.playerId));
           setAvailableActions(currentState.actions || []);
         } else {
           // Handle other state types
@@ -106,7 +106,7 @@ export const usePokerActionsAlgorithm = ({
 
       // Check if this is a normal player action state
       if (newState && 'playerId' in newState && newState.playerId) {
-        setCurrentPlayerToAct(newState.playerId);
+        setCurrentPlayerToAct(String(newState.playerId));
         setAvailableActions(newState.actions || []);
       } else {
         // No more players to act or hand complete

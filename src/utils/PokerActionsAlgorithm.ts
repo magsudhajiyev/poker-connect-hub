@@ -16,7 +16,9 @@ export class PokerActionsAlgorithm {
     this.players = players.map((player, index) => ({
       id: player.id || index,
       name: player.name || `Player ${index + 1}`,
-      stack: player.stackSize?.[0] || player.stack || 100,
+      stack: Array.isArray(player.stackSize)
+        ? player.stackSize[0]
+        : player.stackSize || player.stack || 100,
       position: this.getPositionName(index, players.length),
       positionIndex: index,
       currentBet: 0,
@@ -27,12 +29,12 @@ export class PokerActionsAlgorithm {
       hasActed: false,
     }));
 
-    this.currentStreet = 'preFlop';
+    this.currentStreet = 'preflop';
     this.pot = smallBlind + bigBlind;
     this.currentBet = bigBlind;
     this.actionHistory = [];
     this.streetActions = {
-      preFlop: [],
+      preflop: [],
       flop: [],
       turn: [],
       river: [],
@@ -104,7 +106,7 @@ export class PokerActionsAlgorithm {
   }
 
   updateActionOrder() {
-    if (this.currentStreet === 'preFlop') {
+    if (this.currentStreet === 'preflop') {
       // Pre-flop: start after big blind
       const startIndex = this.players.length === 2 ? 0 : 3;
       this.actionOrder = this.getActionOrderFromPosition(startIndex);
@@ -488,7 +490,7 @@ export class PokerActionsAlgorithm {
   }
 
   advanceToNextStreet() {
-    const streets = ['preFlop', 'flop', 'turn', 'river'];
+    const streets = ['preflop', 'flop', 'turn', 'river'] as const;
     const currentIndex = streets.indexOf(this.currentStreet);
 
     if (currentIndex < streets.length - 1) {
