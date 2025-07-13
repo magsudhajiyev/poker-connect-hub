@@ -21,6 +21,11 @@ export interface UserDocument extends Omit<User, '_id'> {
 // Query types
 export interface PostQuery {
   userId?: ObjectId;
+  $or?: Array<{
+    content?: { $regex: string; $options: string };
+    'userId.name'?: { $regex: string; $options: string };
+  }>;
+  createdAt?: { $gte: Date };
 }
 
 // Aggregation types
