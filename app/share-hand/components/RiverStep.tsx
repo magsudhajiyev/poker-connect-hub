@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Plus, X } from 'lucide-react';
 import CardInput from '@/components/CardInput';
 import { LazyPokerTable as PokerTable } from './lazy-components';
-import { useShareHandContext } from './ShareHandProvider';
 import SelectedCardsDisplay from './SelectedCardsDisplay';
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';
 import { getAvailablePositions } from '@/utils/positionUtils';
@@ -16,38 +15,31 @@ import { getAvailablePositions } from '@/utils/positionUtils';
 interface RiverStepProps {
   formData: any;
   setFormData: (data: any) => void;
-  showPot: boolean;
   tags: string[];
   addTag: (tag: string) => void;
   removeTag: (tag: string) => void;
-  getPositionName: (position: string) => string;
   getCurrencySymbol: () => string;
-  calculatePotSize: () => number;
   getAvailableActions: (street: string, index: number, allActions: any[]) => string[];
   updateAction: (street: any, index: number, action: string, betAmount?: string) => void;
-  getActionButtonClass: (action: string, isSelected: boolean) => string;
   handleBetSizeSelect: (street: any, index: number, amount: string) => void;
   getAllSelectedCards: () => string[];
+  pot?: number;
 }
 
 const RiverStep = ({
   formData,
   setFormData,
-  showPot: _showPot,
   tags,
   addTag,
   removeTag,
-  getPositionName: _getPositionName,
   getCurrencySymbol,
-  calculatePotSize: _calculatePotSize,
   getAvailableActions,
   updateAction,
-  getActionButtonClass: _getActionButtonClass,
   handleBetSizeSelect,
   getAllSelectedCards,
+  pot,
 }: RiverStepProps) => {
   const { players } = usePlayerManagement(formData, setFormData);
-  const { pokerActions } = useShareHandContext();
 
   // Don't allow player updates in action steps - players should be locked
   const handleUpdatePlayer = (_newPlayer: any) => {
@@ -97,7 +89,7 @@ const RiverStep = ({
           updateAction={updateAction}
           handleBetSizeSelect={handleBetSizeSelect}
           isPositionsStep={false}
-          pokerActions={pokerActions}
+          pot={pot}
         />
       </div>
 

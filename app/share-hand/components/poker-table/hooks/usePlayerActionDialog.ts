@@ -17,6 +17,7 @@ export const usePlayerActionDialog = ({
   currentStreet,
   formData,
   pokerActions,
+  getAvailableActions,
 }: UsePlayerActionDialogProps) => {
   const [selectedAction, setSelectedAction] = useState<string>('');
   const [betAmount, setBetAmount] = useState<string>('');
@@ -40,13 +41,16 @@ export const usePlayerActionDialog = ({
   };
 
   const actionIndex = getCurrentActionIndex();
-  // const actions = formData?.[currentStreet] || [];
+  const actions = formData?.[currentStreet] || [];
 
   // Get available actions from poker game engine if available and player is to act
   let availableActions: string[] = [];
 
-  // ALWAYS use action flow if available and this player can act
-  if (pokerActions && pokerActions.isPlayerToAct && pokerActions.isPlayerToAct(player.id)) {
+  // First, try using the getAvailableActions prop if provided
+  if (getAvailableActions && actionIndex >= 0) {
+    availableActions = getAvailableActions(currentStreet, actionIndex, actions);
+  } else if (pokerActions && pokerActions.isPlayerToAct && pokerActions.isPlayerToAct(player.id)) {
+    // Then try pokerActions if available
     const validActions = pokerActions.getAvailableActions(player.id);
     availableActions = validActions;
   } else {
@@ -54,15 +58,37 @@ export const usePlayerActionDialog = ({
     const street = currentStreet?.replace('Actions', '') || 'preflop';
     if (street === 'preflop') {
       if (player.position === 'bb') {
-        // BB can check if no one raised
-        availableActions = ['fold', 'check', 'raise', 'all-in'];
+        // Check if anyone has raised by looking at previous actions
+        const hasRaise = actions.some(
+          (action: any) =>
+            action.completed &&
+            (action.action === 'raise' ||
+              (action.action === 'bet' &&
+                parseFloat(action.amount) > parseFloat(formData?.bigBlind || '2'))),
+        );
+
+        if (hasRaise) {
+          // BB facing a raise: can fold, call, or re-raise
+          availableActions = ['fold', 'call', 'raise', 'all-in'];
+        } else {
+          // BB with no raise: can check or raise
+          availableActions = ['check', 'raise', 'all-in'];
+        }
       } else {
-        // All other positions must call the BB
+        // All other positions must call the BB or any raises
         availableActions = ['fold', 'call', 'raise', 'all-in'];
       }
     } else {
-      // Post-flop: can check if no bet
-      availableActions = ['fold', 'check', 'bet', 'all-in'];
+      // Post-flop: check if there's a bet
+      const hasBet = actions.some(
+        (action: any) => action.completed && (action.action === 'bet' || action.action === 'raise'),
+      );
+
+      if (hasBet) {
+        availableActions = ['fold', 'call', 'raise', 'all-in'];
+      } else {
+        availableActions = ['fold', 'check', 'bet', 'all-in'];
+      }
     }
   }
 
@@ -70,11 +96,6 @@ export const usePlayerActionDialog = ({
     pokerActions?.pot ||
     (formData ? parseFloat(formData.smallBlind || '1') + parseFloat(formData.bigBlind || '2') : 3);
 
-  // FORCE FIX: If this is preflop and player is not BB, remove check option
-  const street = currentStreet?.replace('Actions', '') || 'preflop';
-  if (street === 'preflop' && player.position !== 'bb') {
-    availableActions = availableActions.filter((action) => action !== 'check');
-  }
   const stackSize = player.stackSize[0];
 
   useEffect(() => {

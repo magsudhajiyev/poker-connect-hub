@@ -3,13 +3,6 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Check } from 'lucide-react';
 
@@ -67,32 +60,38 @@ const GameSetupStep = ({ formData, setFormData }: GameSetupStepProps) => {
         </div>
       </div>
 
+      {/* Game Type Selection with Toggle Buttons */}
       <div>
-        <Label htmlFor="game-type" className="text-slate-300 text-sm">
-          Game Type
-        </Label>
-        <Select
-          value={formData.gameType}
-          onValueChange={(value) => setFormData({ ...formData, gameType: value })}
-        >
-          <SelectTrigger className="bg-slate-900/50 border-slate-700/50 text-slate-200 h-9">
-            <SelectValue placeholder="Select game type" />
-          </SelectTrigger>
-          <SelectContent className="bg-slate-800 border-slate-700">
-            <SelectItem value="nlhe" className="text-white hover:bg-slate-700 focus:bg-slate-700">
-              No Limit Hold'em
-            </SelectItem>
-            <SelectItem value="plo" className="text-white hover:bg-slate-700 focus:bg-slate-700">
-              Pot Limit Omaha
-            </SelectItem>
-            <SelectItem value="stud" className="text-white hover:bg-slate-700 focus:bg-slate-700">
-              Seven Card Stud
-            </SelectItem>
-            <SelectItem value="mixed" className="text-white hover:bg-slate-700 focus:bg-slate-700">
-              Mixed Games
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        <Label className="text-slate-300 mb-2 block text-sm">Game Type</Label>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            variant={formData.gameType === 'nlhe' ? 'default' : 'outline'}
+            onClick={() => setFormData({ ...formData, gameType: 'nlhe' })}
+            className={`h-12 flex flex-col items-center justify-center relative ${
+              formData.gameType === 'nlhe'
+                ? 'bg-emerald-500 text-slate-900 border-emerald-500 hover:bg-emerald-600 hover:text-slate-900'
+                : 'border-slate-700/50 text-white hover:bg-slate-800/50 hover:text-white bg-slate-900/30'
+            }`}
+          >
+            {formData.gameType === 'nlhe' && <Check className="absolute top-1 right-1 w-3 h-3" />}
+            <span className="font-black text-sm">NLHE</span>
+            <span className="text-xs font-bold">No Limit Hold'em</span>
+          </Button>
+
+          <Button
+            variant={formData.gameType === 'plo' ? 'default' : 'outline'}
+            onClick={() => setFormData({ ...formData, gameType: 'plo' })}
+            className={`h-12 flex flex-col items-center justify-center relative ${
+              formData.gameType === 'plo'
+                ? 'bg-emerald-500 text-slate-900 border-emerald-500 hover:bg-emerald-600 hover:text-slate-900'
+                : 'border-slate-700/50 text-white hover:bg-slate-800/50 hover:text-white bg-slate-900/30'
+            }`}
+          >
+            {formData.gameType === 'plo' && <Check className="absolute top-1 right-1 w-3 h-3" />}
+            <span className="font-black text-sm">PLO</span>
+            <span className="text-xs font-bold">Pot Limit Omaha</span>
+          </Button>
+        </div>
       </div>
 
       {/* Blind Levels Section */}

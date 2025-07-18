@@ -11,6 +11,7 @@ import FlopStep from './FlopStep';
 import TurnStep from './TurnStep';
 import RiverStep from './RiverStep';
 import { useState, useEffect } from 'react';
+import { ActionType } from '@/types/poker';
 
 const ShareHandForm = () => {
   const [showValidationErrors, setShowValidationErrors] = useState(false);
@@ -23,16 +24,19 @@ const ShareHandForm = () => {
     tags,
     addTag,
     removeTag,
-    getPositionName,
     getCurrencySymbol,
-    calculatePotSize,
     getAvailableActions,
     updateAction,
-    getActionButtonClass,
     handleBetSizeSelect,
     getAllSelectedCards,
-    gameStateUI,
-    pokerActions,
+    currentPlayer,
+    legalActions,
+    processAction,
+    pot,
+    currentStreet,
+    players,
+    isGameInitialized,
+    engineState,
   } = contextData;
 
   // Reset validation errors when step changes
@@ -41,88 +45,78 @@ const ShareHandForm = () => {
   }, [currentStep]);
 
   const renderStepContent = () => {
-    const showPot = currentStep > 1;
-
     const commonProps = {
-      formData: {
-        ...formData,
-        pokerActions, // Pass poker actions through form data
-      },
+      formData,
       setFormData,
-      getPositionName,
       getCurrencySymbol,
-      calculatePotSize: () => pokerActions.pot || calculatePotSize(),
-      getAvailableActions: (street: string, index: number, allActions: any[]) => {
-        // For positions step, use the original logic
-        if (currentStep === 1) {
-          return getAvailableActions(street, index, allActions);
+      getAvailableActions: (_street: string, index: number, allActions: any[]) => {
+        // For positions step or when game not initialized, use the original logic
+        if (currentStep === 1 || !isGameInitialized) {
+          return getAvailableActions();
         }
 
-        // For action steps, try to get actions from poker algorithm first
-
-        // Find the player that should be acting at this index
+        // For action steps with initialized game, use new engine
         const actionStep = allActions[index];
-        if (actionStep && actionStep.playerId) {
-          if (pokerActions.isPlayerToAct(actionStep.playerId)) {
-            const validActions = pokerActions.getAvailableActions(actionStep.playerId);
-            const actionTypes = validActions.map((action: any) => action.type || action);
-            return actionTypes;
-          }
+        if (actionStep && actionStep.playerId && currentPlayer?.id === actionStep.playerId) {
+          return legalActions.map((action) => action.type);
         }
 
         // Fall back to original logic
-        return getAvailableActions(street, index, allActions);
+        return getAvailableActions();
       },
       updateAction: (street: any, index: number, action: string, betAmount?: string) => {
-        // Execute action using poker algorithm if we're in action steps
-        if (currentStep > 1 && pokerActions) {
-          // Get the action step to find the playerId
+        // For action steps with initialized game
+        if (currentStep > 1 && isGameInitialized) {
           const allActions = (formData as any)[street] || [];
           const actionStep = allActions[index];
 
-          if (actionStep && actionStep.playerId) {
-            const amount = betAmount ? parseFloat(betAmount) : 0;
-            const success = pokerActions.executeAction(actionStep.playerId, action as any, amount);
-
-            if (success) {
-              // Update the form data as well for consistency
-              updateAction(street, index, action as any, betAmount);
-            }
+          if (actionStep && actionStep.playerId && currentPlayer?.id === actionStep.playerId) {
+            const amount = betAmount ? parseFloat(betAmount) : undefined;
+            processAction(actionStep.playerId, action as ActionType, amount);
           }
-        } else {
-          // Fall back to original logic for positions step
-          updateAction(street, index, action as any, betAmount);
         }
+        // Always update form data for UI consistency
+        updateAction(street, index, action as any, betAmount);
       },
-      getActionButtonClass,
       handleBetSizeSelect: (street: any, index: number, amount: string) => {
-        // Use poker algorithm for action steps
-        if (currentStep > 1 && pokerActions) {
-          // Get the action step to find the playerId
+        // For action steps with initialized game
+        if (currentStep > 1 && isGameInitialized) {
           const allActions = (formData as any)[street] || [];
           const actionStep = allActions[index];
 
-          if (actionStep && actionStep.playerId) {
+          if (actionStep && actionStep.playerId && currentPlayer?.id === actionStep.playerId) {
             const numericAmount = parseFloat(amount);
-            const success = pokerActions.executeAction(
-              actionStep.playerId,
-              'bet' as any,
-              numericAmount,
-            );
 
-            if (success) {
-              // Update the form data as well for consistency
-              handleBetSizeSelect(street, index, amount);
+            // Determine correct action type based on betting situation
+            let actionType: ActionType;
+            const currentBet = engineState?.currentState?.betting?.currentBet || 0;
+
+            if (currentBet === 0) {
+              // No current bet - this is a BET
+              actionType = ActionType.BET;
+            } else if (numericAmount === currentBet) {
+              // Matching current bet - this is a CALL
+              actionType = ActionType.CALL;
+            } else if (numericAmount > currentBet) {
+              // Raising the bet - this is a RAISE
+              actionType = ActionType.RAISE;
+            } else {
+              // Fallback to CALL for partial amounts
+              actionType = ActionType.CALL;
             }
+
+            processAction(actionStep.playerId, actionType, numericAmount);
           }
-        } else {
-          // Fall back to original logic
-          handleBetSizeSelect(street, index, amount);
         }
+        // Always update form data for UI consistency
+        handleBetSizeSelect(street, index, amount);
       },
       getAllSelectedCards,
-      gameState: gameStateUI.gameState,
-      pokerActions,
+      gameState: {
+        pot,
+        currentStreet,
+        players,
+      },
     };
 
     switch (currentStep) {
@@ -131,20 +125,14 @@ const ShareHandForm = () => {
       case 1:
         return <PositionsStep {...commonProps} showValidationErrors={showValidationErrors} />;
       case 2:
-        return <PreflopStep {...commonProps} showPot={showPot} />;
+        return <PreflopStep {...commonProps} pot={pot} />;
       case 3:
-        return <FlopStep {...commonProps} showPot={showPot} />;
+        return <FlopStep {...commonProps} pot={pot} />;
       case 4:
-        return <TurnStep {...commonProps} showPot={showPot} />;
+        return <TurnStep {...commonProps} pot={pot} />;
       case 5:
         return (
-          <RiverStep
-            {...commonProps}
-            showPot={showPot}
-            tags={tags}
-            addTag={addTag}
-            removeTag={removeTag}
-          />
+          <RiverStep {...commonProps} pot={pot} tags={tags} addTag={addTag} removeTag={removeTag} />
         );
       default:
         return null;

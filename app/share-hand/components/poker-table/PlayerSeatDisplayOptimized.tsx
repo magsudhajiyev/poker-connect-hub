@@ -1,6 +1,4 @@
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { ChevronRight } from 'lucide-react';
 import { Player } from '@/types/shareHand';
 import { cn } from '@/lib/utils';
 
@@ -35,75 +33,55 @@ interface PlayerSeatDisplayProps {
 // Memoized component with custom comparison
 const PlayerSeatDisplayOptimized = React.memo<PlayerSeatDisplayProps>(
   ({ player, position, isToAct = false }) => {
-    const avatarUrl = `https://avatar.iran.liara.run/public/${(parseInt(player.id.replace(/\D/g, '')) % 100) + 1}`;
-
     const shouldShowPosition =
       position && position.toLowerCase() !== 'unknown' && position.toLowerCase() !== '';
 
     return (
-      <Card
+      <div
         className={cn(
-          'border border-slate-700 bg-gradient-to-br transition-all duration-300',
+          'w-20 h-20 rounded-full flex flex-col items-center justify-center relative',
+          'border-2 bg-gradient-to-br transition-all duration-300',
           isToAct
-            ? 'from-emerald-900/40 to-emerald-800/30 shadow-emerald-500/20 shadow-lg animate-pulse ring-2 ring-emerald-500/50'
+            ? 'border-emerald-500 from-emerald-900/40 to-emerald-800/30 shadow-emerald-500/20 shadow-lg animate-pulse'
             : (player as any).hasFolded
-              ? 'from-slate-900/90 to-slate-800/90 opacity-60'
-              : 'from-slate-900 to-slate-800',
+              ? 'border-slate-700 from-slate-900/90 to-slate-800/90 opacity-60'
+              : 'border-slate-700 from-slate-900 to-slate-800',
         )}
       >
-        <CardContent className="p-2">
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <img
-                src={avatarUrl}
-                alt={player.name}
-                className={cn(
-                  'w-12 h-12 rounded-full',
-                  (player as any).hasFolded && 'grayscale opacity-60',
-                )}
-              />
-              {isToAct && (
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full animate-pulse" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1">
-                <p
-                  className={cn(
-                    'text-sm font-semibold truncate',
-                    (player as any).hasFolded ? 'text-slate-500' : 'text-slate-200',
-                  )}
-                >
-                  {player.name}
-                </p>
-                {isToAct && <ChevronRight className="w-3 h-3 text-emerald-400 animate-pulse" />}
-              </div>
-              <div className="flex items-center gap-2 text-xs">
-                <span
-                  className={cn((player as any).hasFolded ? 'text-slate-600' : 'text-slate-400')}
-                >
-                  {(player as any).isAllIn ? 'All-in' : `$${(player as any).stack}`}
-                </span>
-                {shouldShowPosition && (
-                  <>
-                    <span className="text-slate-600">•</span>
-                    <span className="text-emerald-400 font-medium">
-                      {getPositionLabel(position)}
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-          {(player as any).betAmount > 0 && (
-            <div className="mt-2 text-center">
-              <span className="text-xs font-medium px-2 py-1 bg-slate-800/80 rounded-full text-amber-400">
-                ${(player as any).betAmount}
-              </span>
-            </div>
+        <p
+          className={cn(
+            'text-sm font-semibold text-center',
+            (player as any).hasFolded ? 'text-slate-500' : 'text-slate-200',
           )}
-        </CardContent>
-      </Card>
+        >
+          {player.name}
+        </p>
+        <span
+          className={cn(
+            'text-xs mt-1',
+            (player as any).hasFolded ? 'text-slate-600' : 'text-slate-400',
+          )}
+        >
+          {(player as any).isAllIn
+            ? 'All-in'
+            : `$${player.stackSize?.[0] || player.stackSize || 0}`}
+        </span>
+        {shouldShowPosition && (
+          <span className="text-xs text-emerald-400 font-medium absolute -bottom-5">
+            {getPositionLabel(position)}
+          </span>
+        )}
+        {isToAct && (
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
+        )}
+        {(player as any).betAmount > 0 && (
+          <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
+            <span className="text-xs font-medium px-2 py-1 bg-slate-800/80 rounded-full text-amber-400 whitespace-nowrap">
+              ${(player as any).betAmount}
+            </span>
+          </div>
+        )}
+      </div>
     );
   },
   (prevProps, nextProps) => {

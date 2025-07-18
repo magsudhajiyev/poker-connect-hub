@@ -1,13 +1,11 @@
 'use client';
 
-
 import React from 'react';
 import { Check } from 'lucide-react';
 import { ActionButtons } from './ActionButtons';
 import { BetInputSection } from './BetInputSection';
 import { CallAmountDisplay } from './CallAmountDisplay';
-import { useGameStateUI } from '@/hooks/useGameStateUI';
-import { GameState } from '@/utils/gameState';
+// Removed old imports - using new state machine architecture
 
 interface ActionStepCardProps {
   actionStep: any;
@@ -17,7 +15,7 @@ interface ActionStepCardProps {
   formData: any;
   potSize: number;
   currentStackSize: number;
-  gameState?: GameState | null;
+  // gameState removed - using new state machine architecture
   getPositionName: (position: string) => string;
   getCurrencySymbol: () => string;
   getActionButtonClass: (action: string, isSelected: boolean) => string;
@@ -34,7 +32,7 @@ export const ActionStepCard = ({
   formData,
   potSize,
   currentStackSize,
-  gameState,
+  // gameState removed
   getPositionName,
   getCurrencySymbol,
   getActionButtonClass,
@@ -42,7 +40,7 @@ export const ActionStepCard = ({
   handleBetInputChange,
   handleBetSizeSelect,
 }: ActionStepCardProps) => {
-  const { isPlayerActive } = useGameStateUI(gameState);
+  // Removed old game state logic - using new state machine architecture
 
   // Get position from action step or find the player in formData.players
   let playerPosition = actionStep.position;
@@ -50,31 +48,30 @@ export const ActionStepCard = ({
     const player = formData.players.find((p: any) => p.id === actionStep.playerId);
     playerPosition = player?.position || '';
   }
-  
-  // Check if this player is currently active
-  const isCurrentPlayer = isPlayerActive(playerPosition);
+
+  // For now, we'll consider current player based on action completion status
+  // This will be properly handled by the state machine
+  const isCurrentPlayer = !actionStep.completed;
 
   return (
-    <div 
+    <div
       className={`border rounded-lg p-2 w-full overflow-x-hidden transition-colors ${
-        isCurrentPlayer 
-          ? 'border-emerald-500/50 bg-emerald-950/20' 
-          : 'border-slate-700/50'
+        isCurrentPlayer ? 'border-emerald-500/50 bg-emerald-950/20' : 'border-slate-700/50'
       }`}
       data-position={playerPosition}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className={`font-medium text-xs truncate ${
-          actionStep.isHero ? 'text-emerald-400' : 'text-violet-400'
-        } ${isCurrentPlayer ? 'font-bold' : ''}`}>
+        <span
+          className={`font-medium text-xs truncate ${
+            actionStep.isHero ? 'text-emerald-400' : 'text-violet-400'
+          } ${isCurrentPlayer ? 'font-bold' : ''}`}
+        >
           {actionStep.playerName} ({getPositionName(playerPosition)})
           {isCurrentPlayer && <span className="ml-1 text-emerald-400">●</span>}
         </span>
-        {actionStep.completed && (
-          <Check className="w-3 h-3 text-emerald-400 shrink-0" />
-        )}
+        {actionStep.completed && <Check className="w-3 h-3 text-emerald-400 shrink-0" />}
       </div>
-      
+
       <div className="space-y-2 w-full">
         <ActionButtons
           actionStep={actionStep}
@@ -84,7 +81,7 @@ export const ActionStepCard = ({
           getActionButtonClass={getActionButtonClass}
           handleActionClick={handleActionClick}
         />
-        
+
         {(actionStep.action === 'bet' || actionStep.action === 'raise') && (
           <BetInputSection
             actionStep={actionStep}
