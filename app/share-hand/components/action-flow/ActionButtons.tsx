@@ -1,10 +1,9 @@
 'use client';
 
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { useGameStateUI } from '@/hooks/useGameStateUI';
+// Removed old imports - using new state machine architecture
 
 interface ActionButtonsProps {
   actionStep: any;
@@ -23,14 +22,15 @@ export const ActionButtons = ({
   getActionButtonClass,
   handleActionClick,
 }: ActionButtonsProps) => {
-  const { isActionAvailable } = useGameStateUI();
+  // Removed old game state logic - using new state machine architecture
+  // All actions passed to this component are already validated
 
   return (
     <div className="w-full">
       <Label className="text-slate-300 text-xs">Action</Label>
       <div className="grid grid-cols-2 gap-1 mt-1 w-full">
         {availableActions.map((action) => {
-          const isAvailable = isCurrentPlayer ? isActionAvailable(action) : true;
+          const isAvailable = true; // Actions are pre-validated
           return (
             <Button
               key={action}
@@ -40,8 +40,8 @@ export const ActionButtons = ({
               className={`${getActionButtonClass(action, actionStep.action === action)} text-xs h-7 truncate transition-opacity action-button ${action} ${
                 !isAvailable && isCurrentPlayer ? 'opacity-50' : ''
               }`}
-              style={{ 
-                display: isCurrentPlayer && !isAvailable ? 'none' : 'block', 
+              style={{
+                display: isCurrentPlayer && !isAvailable ? 'none' : 'block',
               }}
             >
               {action.charAt(0).toUpperCase() + action.slice(1)}

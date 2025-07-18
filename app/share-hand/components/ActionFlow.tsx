@@ -2,10 +2,8 @@
 
 import React from 'react';
 import { ActionStepCard } from './action-flow';
-import { useGameStateUI } from '@/hooks/useGameStateUI';
-import { GameState } from '@/utils/gameState';
-import { processAction, removeFoldedPlayerFromFutureStreets } from '@/utils/shareHandActions';
 import { useShareHandContext } from './ShareHandProvider';
+import { ActionType } from '@/types/poker';
 
 interface ActionFlowProps {
   street: 'preflopActions' | 'flopActions' | 'turnActions' | 'riverActions';
@@ -17,7 +15,6 @@ interface ActionFlowProps {
   updateAction: (street: any, index: number, action: string, betAmount?: string) => void;
   getActionButtonClass: (action: string, isSelected: boolean) => string;
   handleBetSizeSelect: (street: any, index: number, amount: string) => void;
-  gameState?: GameState | null;
 }
 
 const ActionFlow = ({
@@ -30,100 +27,69 @@ const ActionFlow = ({
   updateAction,
   getActionButtonClass,
   handleBetSizeSelect,
-  gameState,
 }: ActionFlowProps) => {
   const actions = formData[street];
   const potSize = calculatePotSize();
   const currentStackSize = formData.heroStackSize[0];
 
-  const { isPlayerActive } = useGameStateUI(gameState);
-  const { gameStateUI, setFormData } = useShareHandContext();
+  const {
+    currentPlayer,
+    legalActions,
+    processAction: processEngineAction,
+    isGameInitialized,
+  } = useShareHandContext();
 
   const handleActionClick = (actionStep: any, index: number, action: string) => {
-    // Validate action step and position
-    if (!actionStep || !actionStep.position) {
+    // If game is initialized and this is the current player, use the new engine
+    if (isGameInitialized && currentPlayer && actionStep.playerId === currentPlayer.id) {
+      const actionType = action as ActionType;
+
+      // Check if action is legal
+      const isLegal = legalActions.some((a) => a.type === actionType);
+      if (!isLegal) {
+        return;
+      }
+
+      // For betting actions, we need to get the amount
+      let amount: number | undefined;
+      if (['bet', 'raise'].includes(action)) {
+        const legalAction = legalActions.find((a) => a.type === actionType);
+        if (legalAction && 'minAmount' in legalAction) {
+          amount = legalAction.minAmount;
+        }
+      }
+
+      // Process through new engine
+      processEngineAction(actionStep.playerId, actionType, amount);
+    } else {
+      // Use legacy action processing
       updateAction(street, index, action);
-      return;
     }
-
-    // If we have a game state and this is the current player, process the action through game state
-    if (gameState && isPlayerActive(actionStep.position)) {
-      let amount = 0;
-
-      if (action === 'bet' || action === 'raise') {
-        const betInput = actionStep.betAmount || '';
-        amount = parseFloat(betInput);
-
-        if (isNaN(amount) || amount <= 0) {
-          alert('Please enter a valid bet amount');
-          return;
-        }
-      } else if (action === 'call') {
-        amount = gameState.currentBet || 0;
-      }
-
-      try {
-        // Process action through game state
-        const newState = processAction(gameState, actionStep.position, action, amount);
-
-        // Update the game state in the UI hook
-        if (gameStateUI.updateGameState) {
-          gameStateUI.updateGameState(newState);
-        }
-
-        // If player folded, remove them from future streets
-        if (action === 'fold') {
-          const updatedFormData = removeFoldedPlayerFromFutureStreets(
-            formData,
-            actionStep.playerId,
-          );
-          setFormData(updatedFormData);
-        }
-      } catch {
-        // Silently handle error when updating folded players
-      }
-    }
-
-    // Also update the form data action (existing functionality)
-    updateAction(street, index, action);
-  };
-
-  const handleBetInputChange = (actionStep: any, index: number, value: string) => {
-    // Validate input is numeric
-    const numericValue = parseFloat(value);
-    if (value !== '' && (isNaN(numericValue) || numericValue < 0)) {
-      return;
-    }
-
-    updateAction(street, index, actionStep.action!, value);
   };
 
   return (
-    <div className="space-y-2 w-full overflow-x-hidden">
-      <h4 className="text-sm font-medium text-slate-300">Action Flow</h4>
-      {actions.map((actionStep: any, index: number) => {
-        const availableActions = getAvailableActions(street, index, actions);
-
-        return (
-          <ActionStepCard
-            key={`${actionStep.playerId}-${index}`}
-            actionStep={actionStep}
-            index={index}
-            street={street}
-            availableActions={availableActions}
-            formData={formData}
-            potSize={potSize}
-            currentStackSize={currentStackSize}
-            gameState={gameState}
-            getPositionName={getPositionName}
-            getCurrencySymbol={getCurrencySymbol}
-            getActionButtonClass={getActionButtonClass}
-            handleActionClick={handleActionClick}
-            handleBetInputChange={handleBetInputChange}
-            handleBetSizeSelect={handleBetSizeSelect}
-          />
-        );
-      })}
+    <div className="space-y-4">
+      {actions.map((action: any, index: number) => (
+        <ActionStepCard
+          key={index}
+          actionStep={action}
+          index={index}
+          street={street}
+          availableActions={getAvailableActions(street, index, actions)}
+          formData={formData}
+          potSize={potSize}
+          currentStackSize={currentStackSize}
+          getPositionName={getPositionName}
+          getCurrencySymbol={getCurrencySymbol}
+          getActionButtonClass={getActionButtonClass}
+          handleActionClick={handleActionClick}
+          handleBetInputChange={(_actionStep, index, value) => {
+            // Handle bet input change
+            updateAction(street, index, 'bet', value);
+          }}
+          handleBetSizeSelect={handleBetSizeSelect}
+        />
+      ))}
     </div>
   );
 };

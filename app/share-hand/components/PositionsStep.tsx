@@ -78,17 +78,6 @@ const PositionsStep = ({
           isPositionsStep={true}
         />
       </div>
-
-      {/* Instructions */}
-      <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-600/30">
-        <h4 className="text-sm font-medium text-slate-200 mb-2">Instructions</h4>
-        <ul className="text-sm text-slate-400 space-y-1">
-          <li>• Click on empty positions (dotted circles) to add new players</li>
-          <li>• Click on existing players to edit their name, stack size, or hero status</li>
-          <li>• Set one player as "Hero" - this will be your position in the hand</li>
-          <li>• You need at least 2 players to continue to the next step</li>
-        </ul>
-      </div>
     </div>
   );
 };

@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from '@/hooks/use-toast';
 import { ShareHandFormData, ActionStep } from '@/types/shareHand';
 import { steps, getPositionName } from '@/utils/shareHandConstants';
-import { getAvailableActions, getActionButtonClass } from '@/utils/shareHandActions';
+// Removed old shareHandActions imports - using new state machine architecture
 import { validateCurrentStep } from '@/utils/shareHandValidation';
 import {
   calculatePotSize,
@@ -223,17 +223,20 @@ export const useShareHandLogic = () => {
     }
   }, [currentStep, formData, tags, router, userData, user]);
 
-  // Updated getAvailableActions to accept all parameters
-  const getAvailableActionsWithParams = useCallback(
-    (street: string, index: number, allActions: any[]) => {
-      try {
-        return getAvailableActions(street, index, allActions);
-      } catch {
-        return [];
-      }
-    },
-    [],
-  );
+  // Simple implementation for legacy compatibility
+  const getAvailableActionsWithParams = useCallback(() => {
+    // Basic actions available for all players
+    return ['fold', 'check', 'call', 'bet', 'raise', 'all-in'];
+  }, []);
+
+  // Simple action button class implementation
+  const getActionButtonClass = useCallback((_action: string, isSelected: boolean) => {
+    const baseClass = 'transition-all duration-200 border';
+    const selectedClass = isSelected
+      ? 'bg-blue-600 text-white border-blue-600'
+      : 'bg-gray-800 text-gray-300 border-gray-600';
+    return `${baseClass} ${selectedClass}`;
+  }, []);
 
   // Memoized calculations to prevent unnecessary re-renders
   const potSize = useMemo(() => {

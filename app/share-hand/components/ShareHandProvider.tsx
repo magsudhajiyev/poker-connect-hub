@@ -1,20 +1,55 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useCallback, useMemo } from 'react';
 import { useShareHandLogic } from '@/hooks/useShareHandLogic';
-import { useGameStateUI } from '@/hooks/useGameStateUI';
-import { useActionFlow } from '@/hooks/useActionFlow';
-import { usePokerApiEngine } from '@/hooks/usePokerApiEngine';
+import { useHandBuilder } from '@/poker-engine/hooks/useHandBuilder';
+import { ActionType, Street, GameType, GameFormat } from '@/types/poker';
+import { toast } from '@/hooks/use-toast';
+import { usePokerHandStore } from '@/stores/poker-hand-store';
 
-const ShareHandContext = createContext<
-  | (ReturnType<typeof useShareHandLogic> & {
-      gameStateUI: ReturnType<typeof useGameStateUI>;
-      pokerActions: ReturnType<typeof useActionFlow>;
-      pokerApiEngine: ReturnType<typeof usePokerApiEngine>;
-      useApiEngine: boolean;
-    })
-  | null
->(null);
+interface ShareHandContextType {
+  // From useShareHandLogic
+  formData: ReturnType<typeof useShareHandLogic>['formData'];
+  setFormData: ReturnType<typeof useShareHandLogic>['setFormData'];
+  currentStep: ReturnType<typeof useShareHandLogic>['currentStep'];
+  setCurrentStep: ReturnType<typeof useShareHandLogic>['setCurrentStep'];
+  steps: ReturnType<typeof useShareHandLogic>['steps'];
+  prevStep: ReturnType<typeof useShareHandLogic>['prevStep'];
+  nextStep: ReturnType<typeof useShareHandLogic>['nextStep'];
+  handleSubmit: ReturnType<typeof useShareHandLogic>['handleSubmit'];
+
+  // Tag management
+  tags: ReturnType<typeof useShareHandLogic>['tags'];
+  addTag: ReturnType<typeof useShareHandLogic>['addTag'];
+  removeTag: ReturnType<typeof useShareHandLogic>['removeTag'];
+
+  // Utility methods
+  getPositionName: ReturnType<typeof useShareHandLogic>['getPositionName'];
+  getCurrencySymbol: ReturnType<typeof useShareHandLogic>['getCurrencySymbol'];
+  calculatePotSize: ReturnType<typeof useShareHandLogic>['calculatePotSize'];
+  getAllSelectedCards: ReturnType<typeof useShareHandLogic>['getAllSelectedCards'];
+
+  // Action management
+  getAvailableActions: ReturnType<typeof useShareHandLogic>['getAvailableActions'];
+  updateAction: ReturnType<typeof useShareHandLogic>['updateAction'];
+  getActionButtonClass: ReturnType<typeof useShareHandLogic>['getActionButtonClass'];
+  handleBetSizeSelect: ReturnType<typeof useShareHandLogic>['handleBetSizeSelect'];
+
+  // From new poker engine
+  engineState: ReturnType<typeof useHandBuilder>['state'] | null;
+  currentPlayer: ReturnType<typeof useHandBuilder>['currentPlayer'];
+  legalActions: ReturnType<typeof useHandBuilder>['legalActions'];
+  processAction: (playerId: string, action: ActionType, amount?: number) => void;
+
+  // Helper methods
+  initializeGame: () => void;
+  isGameInitialized: boolean;
+  currentStreet: Street;
+  pot: number;
+  players: Array<any>;
+}
+
+const ShareHandContext = createContext<ShareHandContextType | null>(null);
 
 export const useShareHandContext = () => {
   const context = useContext(ShareHandContext);
@@ -30,142 +65,253 @@ interface ShareHandProviderProps {
 
 export const ShareHandProvider = ({ children }: ShareHandProviderProps) => {
   const shareHandLogic = useShareHandLogic();
-  const gameStateUI = useGameStateUI();
-  const initializeGameRef = useRef(false);
+  const handBuilder = useHandBuilder();
+  const store = usePokerHandStore();
 
-  // Feature flag to use API-based engine (can be controlled via env var or user preference)
-  const useApiEngine = process.env.NEXT_PUBLIC_USE_API_ENGINE === 'true' || false;
+  // Track if game is initialized
+  const [isGameInitialized, setIsGameInitialized] = React.useState(false);
 
-  // Memoize current street calculation to prevent unnecessary re-renders
-  const getCurrentStreet = useCallback(() => {
+  // Calculate current street based on step
+  const currentStreet = useMemo((): Street => {
     if (shareHandLogic.currentStep < 2) {
-      return 'preflopActions';
+      return Street.PREFLOP;
     }
-    const streetMap = ['preflopActions', 'flopActions', 'turnActions', 'riverActions'];
-    return streetMap[shareHandLogic.currentStep - 2] || 'preflopActions';
+    const streetMap: Street[] = [Street.PREFLOP, Street.FLOP, Street.TURN, Street.RIVER];
+    return streetMap[shareHandLogic.currentStep - 2] || Street.PREFLOP;
   }, [shareHandLogic.currentStep]);
 
-  // Memoize current street value
-  const currentStreet = useMemo(() => getCurrentStreet(), [getCurrentStreet]);
+  // Initialize game when players are set up
+  const initializeGame = useCallback(() => {
+    const { players } = shareHandLogic.formData;
+    if (!players || players.length < 2) {
+      toast({
+        title: 'Error',
+        description: 'At least 2 players required to start the game',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-  // Memoize parsed blinds to prevent unnecessary recalculations
-  const blinds = useMemo(
-    () => ({
-      smallBlind: parseFloat(shareHandLogic.formData.smallBlind || '1'),
-      bigBlind: parseFloat(shareHandLogic.formData.bigBlind || '2'),
-    }),
-    [shareHandLogic.formData.smallBlind, shareHandLogic.formData.bigBlind],
-  );
+    // Check if players have positions assigned
+    const hasValidPositions = players.every((p) => p.position && p.position !== '');
 
-  // Memoize players to prevent new array reference on every render
-  const players = useMemo(
-    () => shareHandLogic.formData.players || [],
-    [
-      shareHandLogic.formData.players?.length,
-      shareHandLogic.formData.players?.map((p) => p.id).join(','),
-    ],
-  );
+    if (!hasValidPositions) {
+      return;
+    }
 
-  // Initialize simplified action flow with memoized values
-  const pokerActions = useActionFlow(
-    players,
-    blinds.smallBlind,
-    blinds.bigBlind,
-    currentStreet,
-    shareHandLogic.setFormData,
-    shareHandLogic.currentStep,
-  );
+    // Auto-assign button position if missing
+    let processedPlayers = [...players];
+    const hasButton = players.some((p) => p.position === 'btn');
 
-  // Initialize API-based poker engine only when we have valid player data
-  const pokerApiEngine = usePokerApiEngine({
-    players: shareHandLogic.currentStep > 1 ? players : [], // Only pass players after positions step
-    smallBlind: shareHandLogic.formData.smallBlind || '1',
-    bigBlind: shareHandLogic.formData.bigBlind || '2',
-    currentStreet,
-  });
+    if (!hasButton) {
+      // Find a suitable player to be button (prefer CO > HJ > MP > UTG, avoid blinds)
+      const buttonCandidates = players.filter((p) => !['sb', 'bb'].includes(p.position));
+      const preferredPositions = ['co', 'hj', 'mp', 'utg'];
 
-  // Provider context state management
+      let buttonPlayer = null;
+      for (const pos of preferredPositions) {
+        buttonPlayer = buttonCandidates.find((p) => p.position === pos);
+        if (buttonPlayer) {
+          break;
+        }
+      }
 
-  // Memoize validation checks to prevent unnecessary recalculations
-  const gameValidation = useMemo(() => {
-    const { formData } = shareHandLogic;
-    const hasValidPlayers = formData.players && formData.players.length >= 2;
-    const hasValidBlinds = formData.smallBlind && formData.bigBlind;
-    const allPlayersHavePositions = formData.players?.every(
-      (p) => p.position && p.position.trim() !== '',
-    );
+      // If no preferred position, use the first non-blind player
+      if (!buttonPlayer && buttonCandidates.length > 0) {
+        buttonPlayer = buttonCandidates[0];
+      }
 
-    return {
-      hasValidPlayers,
-      hasValidBlinds,
-      allPlayersHavePositions,
-      playersLength: formData.players?.length || 0,
-    };
-  }, [
-    shareHandLogic.formData.players?.length,
-    shareHandLogic.formData.smallBlind,
-    shareHandLogic.formData.bigBlind,
-    shareHandLogic.formData.players?.map((p) => p.position).join(','),
-  ]);
-
-  // Initialize game when players are set up - use ref to prevent infinite loops
-  useEffect(() => {
-    const { hasValidPlayers, hasValidBlinds, allPlayersHavePositions } = gameValidation;
-
-    if (
-      hasValidPlayers &&
-      hasValidBlinds &&
-      allPlayersHavePositions &&
-      !initializeGameRef.current
-    ) {
-      // Validate numeric values using memoized blinds
-      if (
-        !isNaN(blinds.smallBlind) &&
-        !isNaN(blinds.bigBlind) &&
-        blinds.smallBlind > 0 &&
-        blinds.bigBlind > 0
-      ) {
-        // Debounce initialization to prevent rapid re-initializations
-        const timeoutId = setTimeout(() => {
-          if (!initializeGameRef.current) {
-            // Initialize game with validated memoized players
-            gameStateUI.initializeGame(players, blinds.smallBlind, blinds.bigBlind);
-            initializeGameRef.current = true;
-          }
-        }, 100);
-
-        return () => clearTimeout(timeoutId);
+      if (buttonPlayer) {
+        processedPlayers = processedPlayers.map((p) =>
+          p.id === buttonPlayer.id ? { ...p, position: 'btn' } : p,
+        );
+      } else {
+        return;
       }
     }
 
-    // Reset the ref when players change significantly
-    if (!hasValidPlayers || !hasValidBlinds || !allPlayersHavePositions) {
-      initializeGameRef.current = false;
+    // Use Zustand store for initialization
+    const gameConfig = {
+      gameType: GameType.NLH,
+      gameFormat: GameFormat.CASH,
+      blinds: {
+        small: parseInt(shareHandLogic.formData.smallBlind) || 1,
+        big: parseInt(shareHandLogic.formData.bigBlind) || 2,
+      },
+    };
+
+    store.initializeGame(processedPlayers, gameConfig);
+    setIsGameInitialized(true);
+
+    // Deal hero cards if available
+    const hero = processedPlayers.find((p) => p.isHero);
+    if (hero && shareHandLogic.formData.holeCards.length === 2) {
+      store.dealCards(hero.id, shareHandLogic.formData.holeCards, Street.PREFLOP);
+    }
+
+    // Keep legacy handBuilder for backward compatibility
+    const result = handBuilder.initializeHand(processedPlayers);
+    if (result.isValid) {
+      if (hero && shareHandLogic.formData.holeCards.length === 2) {
+        handBuilder.dealCards(hero.id, shareHandLogic.formData.holeCards, Street.PREFLOP);
+      }
     }
   }, [
-    gameValidation.hasValidPlayers,
-    gameValidation.hasValidBlinds,
-    gameValidation.allPlayersHavePositions,
-    gameValidation.playersLength,
-    blinds.smallBlind,
-    blinds.bigBlind,
-    // Use stable dependencies instead of players array
-    players.length,
-    players.map((p) => p.id).join(','),
-    gameStateUI,
+    shareHandLogic.formData.players,
+    shareHandLogic.formData.holeCards,
+    shareHandLogic.formData.smallBlind,
+    shareHandLogic.formData.bigBlind,
+    handBuilder,
+    store,
   ]);
 
-  // Memoize context value to prevent unnecessary re-renders of children
-  const contextValue = useMemo(
-    () => ({
-      ...shareHandLogic,
-      gameStateUI,
-      pokerActions,
-      pokerApiEngine,
-      useApiEngine,
-    }),
-    [shareHandLogic, gameStateUI, pokerActions, pokerApiEngine, useApiEngine],
+  // Initialize game when moving past positions step
+  useEffect(() => {
+    if (shareHandLogic.currentStep === 2 && !isGameInitialized) {
+      initializeGame();
+    }
+  }, [shareHandLogic.currentStep, isGameInitialized, initializeGame]);
+
+  // Process action wrapper with validation
+  const processAction = useCallback(
+    async (playerId: string, action: ActionType, amount?: number) => {
+      // Use store for action processing if game is initialized
+      if (store.isEngineInitialized) {
+        const currentSlot = store.getCurrentActionSlot();
+        if (currentSlot && currentSlot.playerId === playerId) {
+          const success = await store.processAction(currentSlot.id, action, amount);
+          if (!success) {
+            toast({
+              title: 'Invalid Action',
+              description: 'This action is not allowed',
+              variant: 'destructive',
+            });
+            return;
+          }
+
+          // Update legacy form data for backward compatibility
+          const streetKey = `${currentStreet}Actions` as keyof typeof shareHandLogic.formData;
+          const updatedActions = store.formData[streetKey] || [];
+          shareHandLogic.setFormData({
+            ...shareHandLogic.formData,
+            [streetKey]: updatedActions,
+          });
+
+          return;
+        }
+      }
+
+      // Fallback to legacy handBuilder
+      const result = handBuilder.processAction(playerId, action, amount);
+
+      if (!result.isValid) {
+        toast({
+          title: 'Invalid Action',
+          description: result.error || 'This action is not allowed',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Update form data to reflect the action
+      const streetKey = `${currentStreet}Actions` as keyof typeof shareHandLogic.formData;
+      const currentActions = (shareHandLogic.formData[streetKey] as any[]) || [];
+      const player = handBuilder.state.currentState.players.get(playerId);
+
+      if (player) {
+        const newAction = {
+          playerId,
+          playerName: player.name,
+          isHero: player.isHero,
+          action,
+          betAmount: amount?.toString(),
+          completed: true,
+          position: player.position,
+        };
+
+        shareHandLogic.setFormData({
+          ...shareHandLogic.formData,
+          [streetKey]: [...currentActions, newAction],
+        });
+      }
+    },
+    [handBuilder, currentStreet, shareHandLogic, store],
   );
+
+  // Deal community cards when advancing streets
+  useEffect(() => {
+    if (!isGameInitialized) {
+      return;
+    }
+
+    const dealCommunityCards = () => {
+      const { flopCards, turnCard, riverCard } = shareHandLogic.formData;
+
+      switch (currentStreet) {
+        case Street.FLOP:
+          if (flopCards.length === 3) {
+            handBuilder.dealCards(null, flopCards, Street.FLOP);
+          }
+          break;
+        case Street.TURN:
+          if (turnCard.length === 1) {
+            handBuilder.dealCards(null, turnCard, Street.TURN);
+          }
+          break;
+        case Street.RIVER:
+          if (riverCard.length === 1) {
+            handBuilder.dealCards(null, riverCard, Street.RIVER);
+          }
+          break;
+      }
+    };
+
+    dealCommunityCards();
+  }, [currentStreet, isGameInitialized, shareHandLogic.formData, handBuilder]);
+
+  const contextValue: ShareHandContextType = {
+    // From useShareHandLogic
+    formData: store.isEngineInitialized ? store.formData : shareHandLogic.formData,
+    setFormData: shareHandLogic.setFormData,
+    currentStep: shareHandLogic.currentStep,
+    setCurrentStep: shareHandLogic.setCurrentStep,
+    steps: shareHandLogic.steps,
+    prevStep: shareHandLogic.prevStep,
+    nextStep: shareHandLogic.nextStep,
+    handleSubmit: shareHandLogic.handleSubmit,
+
+    // Tag management
+    tags: shareHandLogic.tags,
+    addTag: shareHandLogic.addTag,
+    removeTag: shareHandLogic.removeTag,
+
+    // Utility methods
+    getPositionName: shareHandLogic.getPositionName,
+    getCurrencySymbol: shareHandLogic.getCurrencySymbol,
+    calculatePotSize: shareHandLogic.calculatePotSize,
+    getAllSelectedCards: shareHandLogic.getAllSelectedCards,
+
+    // Action management
+    getAvailableActions: shareHandLogic.getAvailableActions,
+    updateAction: shareHandLogic.updateAction,
+    getActionButtonClass: shareHandLogic.getActionButtonClass,
+    handleBetSizeSelect: shareHandLogic.handleBetSizeSelect,
+
+    // From new poker engine - use store data when available
+    engineState: store.isEngineInitialized ? store.engineState : handBuilder.state || ({} as any),
+    currentPlayer: store.isEngineInitialized
+      ? (store.getCurrentPlayer() as any)
+      : handBuilder.currentPlayer,
+    legalActions: store.isEngineInitialized ? store.getLegalActions() : handBuilder.legalActions,
+    processAction,
+
+    // Helper methods
+    initializeGame,
+    isGameInitialized: store.isEngineInitialized || isGameInitialized,
+    currentStreet,
+    pot: store.isEngineInitialized ? store.streets[currentStreet]?.pot || 0 : handBuilder.pot,
+    players: store.isEngineInitialized ? store.players : handBuilder.players,
+  };
 
   return <ShareHandContext.Provider value={contextValue}>{children}</ShareHandContext.Provider>;
 };

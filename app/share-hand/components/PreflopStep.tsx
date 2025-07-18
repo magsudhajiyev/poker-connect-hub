@@ -4,7 +4,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import CardInput from '@/components/CardInput';
 import { LazyPokerTable as PokerTable } from './lazy-components';
-import { useShareHandContext } from './ShareHandProvider';
 import SelectedCardsDisplay from './SelectedCardsDisplay';
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';
 import { getAvailablePositions } from '@/utils/positionUtils';
@@ -12,32 +11,25 @@ import { getAvailablePositions } from '@/utils/positionUtils';
 interface PreflopStepProps {
   formData: any;
   setFormData: (data: any) => void;
-  showPot: boolean;
-  getPositionName: (position: string) => string;
   getCurrencySymbol: () => string;
-  calculatePotSize: () => number;
   getAvailableActions: (street: string, index: number, allActions: any[]) => string[];
   updateAction: (street: any, index: number, action: string, betAmount?: string) => void;
-  getActionButtonClass: (action: string, isSelected: boolean) => string;
   handleBetSizeSelect: (street: any, index: number, amount: string) => void;
   getAllSelectedCards: () => string[];
+  pot?: number;
 }
 
 const PreflopStep = ({
   formData,
   setFormData,
-  showPot: _showPot,
-  getPositionName: _getPositionName,
   getCurrencySymbol,
-  calculatePotSize: _calculatePotSize,
   getAvailableActions,
   updateAction,
-  getActionButtonClass: _getActionButtonClass,
   handleBetSizeSelect,
   getAllSelectedCards,
+  pot,
 }: PreflopStepProps) => {
   const { players } = usePlayerManagement(formData, setFormData);
-  const { pokerActions } = useShareHandContext();
 
   // Don't allow player updates in action steps - players should be locked
   const handleUpdatePlayer = (_newPlayer: any) => {
@@ -82,7 +74,7 @@ const PreflopStep = ({
           updateAction={updateAction}
           handleBetSizeSelect={handleBetSizeSelect}
           isPositionsStep={false}
-          pokerActions={pokerActions}
+          pot={pot}
         />
       </div>
 
