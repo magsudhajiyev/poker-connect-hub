@@ -6,6 +6,7 @@ import { CommunityCardsOptimized } from './CommunityCardsOptimized';
 import { PotDisplayOptimized } from './PotDisplayOptimized';
 import { Player } from '@/types/shareHand';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { usePokerHandStore } from '@/stores/poker-hand-store';
 
 interface PokerTableProps {
   players: Player[];
@@ -46,6 +47,7 @@ const PokerTable = React.memo(
     pokerActions,
   }: PokerTableProps & { pokerActions?: any }) => {
     const isMobile = useIsMobile();
+    
 
     // All possible positions around the table in clockwise order starting from top
     const allPositions = useMemo(
@@ -109,59 +111,27 @@ const PokerTable = React.memo(
     // Memoize hero check to prevent recalculation
     const hasHero = useMemo(() => players.some((p) => p.isHero), [players]);
 
-    // Memoize player to act logic to prevent unnecessary recalculations
-    const isPlayerToAct = useCallback(
-      (position: string) => {
-        if (isPositionsStep) {
-          return false;
-        }
+    // Use the store's isPlayerToAct method to ensure consistency
+    const storeIsPlayerToAct = usePokerHandStore((state) => state.isPlayerToAct);
+    const storePot = usePokerHandStore((state) => state.engineState?.currentState?.betting?.pot || 0);
 
-        const player = getPlayerAtPosition(position);
-        if (!player) {
-          return false;
-        }
+    // Simple function to check if a position's player is active
+    const isPlayerToAct = (position: string) => {
+      if (isPositionsStep) {
+        return false;
+      }
 
-        // Use poker actions algorithm if available - this is the key fix
-        if (pokerActions && pokerActions.isPlayerToAct) {
-          // First check if all active players are all-in (no action needed)
-          if (
-            typeof pokerActions.areAllActivePlayersAllIn === 'function' &&
-            pokerActions.areAllActivePlayersAllIn()
-          ) {
-            return false;
-          }
+      const player = getPlayerAtPosition(position);
+      if (!player) {
+        return false;
+      }
 
-          return pokerActions.isPlayerToAct(player.id);
-        }
-
-        // Fall back to original logic
-        if (!currentStreet || !formData) {
-          return false;
-        }
-
-        const actions = formData[currentStreet];
-        if (!actions || actions.length === 0) {
-          // If no actions exist yet, the first player (UTG for preflop) should act
-          if (currentStreet === 'preflopActions') {
-            return position === 'utg';
-          }
-          return position === 'sb'; // For other streets, SB acts first
-        }
-
-        // Find the first incomplete action
-        const nextActionIndex = actions.findIndex((action: any) => !action.completed);
-        if (nextActionIndex === -1) {
-          return false;
-        }
-
-        const nextAction = actions[nextActionIndex];
-        return nextAction.playerId === player.id;
-      },
-      [isPositionsStep, getPlayerAtPosition, pokerActions, currentStreet, formData],
-    );
+      // Use store's method which handles both engine state and action slots
+      return storeIsPlayerToAct(player.id);
+    };
 
     // Memoize pot display to prevent unnecessary recalculations
-    const displayPot = useMemo(() => pokerActions?.pot || pot, [pokerActions?.pot, pot]);
+    const displayPot = useMemo(() => storePot || pokerActions?.pot || pot, [storePot, pokerActions?.pot, pot]);
 
     return (
       <div className="w-full max-w-4xl mx-auto p-4">
@@ -253,6 +223,58 @@ const PokerTable = React.memo(
         </div>
       </div>
     );
+  },
+  // Custom comparison to ensure player stack changes trigger re-render
+  (prevProps, nextProps) => {
+    // First check if player count changed
+    if (prevProps.players.length !== nextProps.players.length) {
+      return false;
+    }
+    
+    // Check if any player's stack changed
+    const stacksChanged = prevProps.players.some((prevPlayer, index) => {
+      const nextPlayer = nextProps.players[index];
+      if (!nextPlayer || prevPlayer.id !== nextPlayer.id) {
+        return true;
+      }
+      
+      const prevStack = Array.isArray(prevPlayer.stackSize) ? prevPlayer.stackSize[0] : prevPlayer.stackSize;
+      const nextStack = Array.isArray(nextPlayer.stackSize) ? nextPlayer.stackSize[0] : nextPlayer.stackSize;
+      
+      if (prevStack !== nextStack) {
+        return true;
+      }
+      
+      // Check bet amounts
+      const prevBet = (prevPlayer as any).betAmount || 0;
+      const nextBet = (nextPlayer as any).betAmount || 0;
+      if (prevBet !== nextBet) {
+        return true;
+      }
+      
+      return false;
+    });
+    
+    if (stacksChanged) {
+      return false; // Re-render needed
+    }
+    
+    // Check other important props
+    if (prevProps.pot !== nextProps.pot ||
+        prevProps.currentStreet !== nextProps.currentStreet ||
+        prevProps.isPositionsStep !== nextProps.isPositionsStep) {
+      return false; // Re-render needed
+    }
+    
+    // Check community cards
+    const prevCards = prevProps.communityCards || [];
+    const nextCards = nextProps.communityCards || [];
+    if (prevCards.length !== nextCards.length || 
+        prevCards.some((card, i) => card !== nextCards[i])) {
+      return false; // Re-render needed
+    }
+    
+    return true; // Skip re-render
   },
 );
 

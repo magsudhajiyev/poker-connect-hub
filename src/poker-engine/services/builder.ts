@@ -43,11 +43,9 @@ export class HandBuilderService {
       return { isValid: false, error: 'At least 2 players required' };
     }
 
-    // Find button position
+    // Find button position - for partial hands, we may not have a button
     const buttonPlayer = players.find((p) => p.position === Position.BTN);
-    if (!buttonPlayer) {
-      return { isValid: false, error: 'Button position required' };
-    }
+    const buttonPosition = buttonPlayer ? Position.BTN : players[0].position; // Use first player's position if no button
 
     const event: HandInitializedEvent = {
       id: uuidv4(),
@@ -63,7 +61,7 @@ export class HandBuilderService {
           ...p,
           seatNumber: index + 1,
         })),
-        buttonPosition: Position.BTN,
+        buttonPosition: buttonPosition as Position,
       },
     };
 
@@ -85,12 +83,18 @@ export class HandBuilderService {
     const sbPlayer = Array.from(state.players.values()).find((p) => p.position === Position.SB);
     const bbPlayer = Array.from(state.players.values()).find((p) => p.position === Position.BB);
 
+    // Always include blind amounts in the pot, even if SB/BB aren't in the hand
+    // This represents dead blinds
+    let deadSmallBlind = this.gameConfig.blinds.small;
+    let deadBigBlind = this.gameConfig.blinds.big;
+
     if (sbPlayer) {
       posts.push({
         playerId: sbPlayer.id,
         type: 'small',
         amount: Math.min(this.gameConfig.blinds.small, sbPlayer.stackSize),
       });
+      deadSmallBlind = 0; // SB is covered by player
     }
 
     if (bbPlayer) {
@@ -99,6 +103,7 @@ export class HandBuilderService {
         type: 'big',
         amount: Math.min(this.gameConfig.blinds.big, bbPlayer.stackSize),
       });
+      deadBigBlind = 0; // BB is covered by player
     }
 
     // Post antes if applicable
@@ -114,13 +119,21 @@ export class HandBuilderService {
       });
     }
 
+    // Add dead blinds to the event data
+    
     const event: BlindsPostedEvent = {
       id: uuidv4(),
       type: 'BLINDS_POSTED',
       timestamp: new Date(),
       version: 1,
-      data: { posts },
+      data: { 
+        posts,
+        deadSmallBlind,
+        deadBigBlind,
+      },
     };
+    
+    
 
     const result = this.engine.applyEvent(event);
     if (result.success) {

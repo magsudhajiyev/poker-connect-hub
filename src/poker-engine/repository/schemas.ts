@@ -127,7 +127,7 @@ const handSchema = new Schema<IPokerHand>(
       showdown: snapshotSchema,
     },
 
-    tags: [{ type: String, index: true }],
+    tags: [{ type: String }],
     viewCount: { type: Number, default: 0 },
     likes: [{ type: String }],
   },
@@ -143,4 +143,4 @@ handSchema.index({ 'gameConfig.gameType': 1 });
 handSchema.index({ tags: 1 });
 handSchema.index({ userId: 1, createdAt: -1 });
 
-export const PokerHand = mongoose.model<IPokerHand>('PokerHand', handSchema);
+export const PokerHand = mongoose.models.PokerHand || mongoose.model<IPokerHand>('PokerHand', handSchema);

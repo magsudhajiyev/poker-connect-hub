@@ -15,6 +15,10 @@ export interface Player {
   position: string;
   stackSize: number[]; // Legacy: use chips in UnifiedPlayer
   isHero?: boolean;
+  holeCards?: string[];
+  betAmount?: number;
+  hasFolded?: boolean;
+  isAllIn?: boolean;
 }
 
 // Re-export unified types for consistency

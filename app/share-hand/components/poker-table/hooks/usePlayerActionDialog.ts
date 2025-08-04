@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Player } from '@/types/shareHand';
+import { usePokerHandStore } from '@/stores/poker-hand-store';
 
 interface UsePlayerActionDialogProps {
   isOpen: boolean;
@@ -92,11 +93,34 @@ export const usePlayerActionDialog = ({
     }
   }
 
+  // Get pot size from store/engine state
+  const store = usePokerHandStore();
+  const enginePot = store.engineState?.currentState?.betting?.pot || 0;
+  const streetPot = store.streets[store.currentStreet]?.pot || 0;
+  
+  // Use engine pot if available, otherwise use street pot, otherwise calculate from blinds
   const potSize =
+    enginePot || 
+    streetPot ||
     pokerActions?.pot ||
     (formData ? parseFloat(formData.smallBlind || '1') + parseFloat(formData.bigBlind || '2') : 3);
 
-  const stackSize = player.stackSize[0];
+  // Get current stack size from engine state
+  const getCurrentStackSize = () => {
+    if (store.engineState?.currentState?.players) {
+      const playersMap = store.engineState.currentState.players instanceof Map 
+        ? store.engineState.currentState.players 
+        : new Map(Object.entries(store.engineState.currentState.players));
+      const enginePlayer = playersMap.get(player.id) as any;
+      if (enginePlayer && typeof enginePlayer.stackSize === 'number') {
+        return enginePlayer.stackSize;
+      }
+    }
+    // Fallback to player's stored stack size
+    return Array.isArray(player.stackSize) ? player.stackSize[0] : player.stackSize || 0;
+  };
+
+  const stackSize = getCurrentStackSize();
 
   useEffect(() => {
     if (isOpen) {

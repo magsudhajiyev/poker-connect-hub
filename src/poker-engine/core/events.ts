@@ -39,6 +39,8 @@ export interface BlindsPostedEvent extends BaseEvent {
       type: 'small' | 'big' | 'ante';
       amount: number;
     }>;
+    deadSmallBlind?: number; // Dead money from missing SB
+    deadBigBlind?: number; // Dead money from missing BB
   };
 }
 

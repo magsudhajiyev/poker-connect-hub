@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import CardDisplay from './card-input/CardDisplay';
@@ -29,6 +29,7 @@ const CardInput = ({ label, cards, onCardsChange, maxCards, placeholder, exclude
   } = useCardInput(cards, excludeCards);
 
   const suggestions = getSuggestions(inputValue);
+  const isSelectingRef = useRef(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -94,7 +95,13 @@ return;
       setInputValue('');
       setShowSuggestions(false);
       setSelectedSuggestionIndex(-1);
+      
+      // Refocus the input after selection
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
     }
+    isSelectingRef.current = false;
   };
 
   const removeCard = (cardToRemove: string) => {
@@ -108,10 +115,16 @@ return;
   };
 
   const handleInputBlur = () => {
-    setTimeout(() => {
-      setShowSuggestions(false);
-      setSelectedSuggestionIndex(-1);
-    }, 200);
+    // Don't hide suggestions if we're in the process of selecting
+    if (!isSelectingRef.current) {
+      // Small delay to allow click events to fire
+      setTimeout(() => {
+        if (!isSelectingRef.current) {
+          setShowSuggestions(false);
+          setSelectedSuggestionIndex(-1);
+        }
+      }, 100);
+    }
   };
 
   useEffect(() => {
@@ -142,7 +155,10 @@ return;
           <CardSuggestions
             suggestions={suggestions}
             selectedIndex={selectedSuggestionIndex}
-            onSelectSuggestion={selectSuggestion}
+            onSelectSuggestion={(card) => {
+              isSelectingRef.current = true;
+              selectSuggestion(card);
+            }}
             show={showSuggestions}
           />
         </div>

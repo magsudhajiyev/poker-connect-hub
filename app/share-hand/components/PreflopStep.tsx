@@ -7,6 +7,7 @@ import { LazyPokerTable as PokerTable } from './lazy-components';
 import SelectedCardsDisplay from './SelectedCardsDisplay';
 import { usePlayerManagement } from '@/hooks/usePlayerManagement';
 import { getAvailablePositions } from '@/utils/positionUtils';
+import { useShareHandContext } from './ShareHandProvider';
 
 interface PreflopStepProps {
   formData: any;
@@ -29,7 +30,22 @@ const PreflopStep = ({
   getAllSelectedCards,
   pot,
 }: PreflopStepProps) => {
-  const { players } = usePlayerManagement(formData, setFormData);
+  // Get players from formData first
+  const { players: managedPlayers } = usePlayerManagement(formData, setFormData);
+  
+  // Try to get players from context if available
+  let contextPlayers: any[] | undefined;
+  try {
+    const context = useShareHandContext();
+    contextPlayers = context.players;
+  } catch {
+    // Context not available (e.g., in tests)
+  }
+  
+  // Use context players if available and has data, otherwise use managed players
+  const players = (contextPlayers && contextPlayers.length > 0) ? contextPlayers : managedPlayers;
+  
+  
 
   // Don't allow player updates in action steps - players should be locked
   const handleUpdatePlayer = (_newPlayer: any) => {
@@ -68,7 +84,7 @@ const PreflopStep = ({
           onUpdatePlayer={handleUpdatePlayer}
           onRemovePlayer={handleRemovePlayer}
           availablePositions={getAvailablePositions(players, '')}
-          currentStreet="preflopActions"
+          currentStreet="preflop"
           formData={formData}
           getAvailableActions={getAvailableActions}
           updateAction={updateAction}

@@ -5,7 +5,6 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import BetSizingButtons from '@/components/BetSizingButtons';
 import { useDisplayValues } from '@/hooks/useDisplayValues';
 
 interface BettingInterfaceProps {
@@ -24,11 +23,11 @@ const BettingInterface = ({
   selectedAction,
   betAmount,
   setBetAmount,
-  potSize,
-  stackSize,
+  potSize: _potSize,
+  stackSize: _stackSize,
   gameFormat = 'cash',
   formData,
-  onBetSizeButtonSelect,
+  onBetSizeButtonSelect: _onBetSizeButtonSelect,
   onBetSubmit,
 }: BettingInterfaceProps) => {
   
@@ -42,32 +41,12 @@ const BettingInterface = ({
     return `Bet Size (${config.symbol})`;
   };
 
-  const handleBetSizeButtonSelect = (amountInChips: string) => {
-    // No conversion needed - everything is in chips now
-    onBetSizeButtonSelect(amountInChips);
-  };
-
   if (selectedAction !== 'bet' && selectedAction !== 'raise') {
     return null;
   }
 
   return (
     <div className="space-y-3">
-      {/* Quick Bet Sizes */}
-      <div>
-        <Label className="text-slate-300 text-xs">Quick Bet Sizes</Label>
-        <div className="mt-1">
-          <BetSizingButtons
-            potSizeInChips={potSize}
-            stackSizeInChips={stackSize}
-            onBetSizeSelect={handleBetSizeButtonSelect}
-            gameFormat={gameFormat}
-            displayMode={displayValues.effectiveDisplayMode}
-            bigBlind={displayValues.bigBlind}
-          />
-        </div>
-      </div>
-
       {/* Manual Bet Input */}
       <div>
         <Label className="text-slate-300 text-xs">{getBetSizeLabel()}</Label>

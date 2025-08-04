@@ -19,7 +19,7 @@ const sharedHandSchema = new mongoose.Schema(
     gameType: {
       type: String,
       required: true,
-      enum: ['nlhe', 'plo', 'plo5', 'plo6', '27sd', 'badugi', 'other'],
+      enum: ['nlh', 'nlhe', 'plo', 'plo5', 'plo6', '27sd', 'badugi', 'other'],
     },
     gameFormat: {
       type: String,
@@ -123,6 +123,31 @@ const sharedHandSchema = new mongoose.Schema(
     isPublic: {
       type: Boolean,
       default: true,
+    },
+    // Event sourcing fields
+    events: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'HandEvent',
+    }],
+    // Track the last event sequence for optimistic concurrency control
+    lastEventSequence: { 
+      type: Number, 
+      default: -1, 
+    },
+    // All new hands use event sourcing
+    isEventSourced: { 
+      type: Boolean, 
+      default: true, 
+    },
+    // Cache the current state for performance (optional)
+    currentStateCache: {
+      type: mongoose.Schema.Types.Mixed,
+      required: false,
+    },
+    // When was the cache last updated
+    cacheUpdatedAt: {
+      type: Date,
+      required: false,
     },
   },
   {

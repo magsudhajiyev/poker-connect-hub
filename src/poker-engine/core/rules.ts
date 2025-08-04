@@ -13,6 +13,7 @@ export class PokerRules {
     if (!player || player.status !== 'active') {
       return [];
     }
+    
 
     const actions: LegalAction[] = [];
     const toCall = state.betting.currentBet - player.currentBet;
@@ -60,10 +61,25 @@ export class PokerRules {
           maxAmount: maxBet,
         });
       } else if (state.betting.currentBet > 0) {
-        // Can raise
+        // Can raise if:
+        // 1. Player hasn't acted yet in this round, OR
+        // 2. Player has acted but someone made a complete raise after them
+        // A player who has acted cannot raise if only facing an incomplete all-in
         const minRaiseTotal = this.calculateMinRaise(state);
         const minRaiseAmount = minRaiseTotal - player.currentBet;
-        if (stack >= minRaiseAmount) {
+        
+        // Check if player is facing an incomplete raise
+        // An incomplete raise is when someone went all-in but couldn't make a full raise
+        // This happens when the current bet increased by less than the last raise size
+        const lastRaiseSize = state.betting.lastRaiseSize || state.gameConfig.blinds.big;
+        const currentRaiseFromPlayerBet = state.betting.currentBet - player.currentBet;
+        const facingIncompleteRaise = player.hasActed && 
+          currentRaiseFromPlayerBet > 0 &&
+          currentRaiseFromPlayerBet < lastRaiseSize;
+        
+        
+        
+        if (stack >= minRaiseAmount && !facingIncompleteRaise) {
           actions.push({
             type: ActionType.RAISE,
             minAmount: minRaiseTotal, // This should be the total amount, not the additional chips
@@ -91,8 +107,12 @@ export class PokerRules {
   }
 
   private calculateMinRaise(state: HandState): number {
-    // Minimum raise is current bet + last raise size
-    // If no previous raise, use big blind as minimum raise size
+    // Use the minRaise from betting state if it's been set
+    // Otherwise calculate it as current bet + last raise size
+    if (state.betting.minRaise > 0) {
+      return state.betting.minRaise;
+    }
+    
     const minRaiseSize =
       state.betting.lastRaiseSize > 0 ? state.betting.lastRaiseSize : state.gameConfig.blinds.big;
 
@@ -121,8 +141,29 @@ export class PokerRules {
       return true;
     }
 
+    // Special handling for heads-up
+    if (activePlayers.length === 2 && state.street === Street.PREFLOP) {
+      // In heads-up preflop, round is complete when:
+      // 1. Both players have acted
+      // 2. Both have the same bet amount
+      // 3. The last action was a call or check
+      const [p1, p2] = activePlayers;
+      const bothActed = p1.hasActed && p2.hasActed;
+      const sameBets = p1.currentBet === p2.currentBet;
+      
+      if (bothActed && sameBets && p1.currentBet > 0) {
+        const lastAction = state.actionHistory[state.actionHistory.length - 1];
+        if (lastAction && (lastAction.action === ActionType.CALL || 
+            (lastAction.action === ActionType.CHECK && state.betting.currentBet === state.gameConfig.blinds.big))) {
+          return true;
+        }
+      }
+    }
+
     // All active players must have acted and matched the current bet
-    return activeNonAllIn.every((p) => p.hasActed && p.currentBet === state.betting.currentBet);
+    const allActedAndMatched = activeNonAllIn.every((p) => p.hasActed && p.currentBet === state.betting.currentBet);
+    
+    return allActedAndMatched;
   }
 
   determineNextPlayer(state: HandState): string | null {
@@ -160,6 +201,26 @@ export class PokerRules {
     players: Array<{ position: Position | string; id: string }>,
     street: Street,
   ): string[] {
+    // Special handling for heads-up
+    if (players.length === 2) {
+      const hasBtn = players.some(p => p.position === Position.BTN || p.position === 'BTN');
+      const hasBB = players.some(p => p.position === Position.BB || p.position === 'BB');
+      
+      if (hasBtn && hasBB) {
+        // Heads-up: BTN is SB and acts first preflop, BB acts first postflop
+        if (street === Street.PREFLOP) {
+          const btnPlayer = players.find(p => p.position === Position.BTN || p.position === 'BTN')!;
+          const bbPlayer = players.find(p => p.position === Position.BB || p.position === 'BB')!;
+          return [btnPlayer.id, bbPlayer.id];
+        } else {
+          // Post-flop: BB acts first
+          const bbPlayer = players.find(p => p.position === Position.BB || p.position === 'BB')!;
+          const btnPlayer = players.find(p => p.position === Position.BTN || p.position === 'BTN')!;
+          return [bbPlayer.id, btnPlayer.id];
+        }
+      }
+    }
+
     // Define position order for post-flop
     const postflopOrder: string[] = [
       Position.SB,

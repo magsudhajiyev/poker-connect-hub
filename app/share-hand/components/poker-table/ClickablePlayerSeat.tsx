@@ -129,7 +129,7 @@ return 'cursor-pointer';
           onOpenChange={setIsActionOpen}
           player={player}
           position={position}
-          currentStreet={currentStreet || 'preflopActions'}
+          currentStreet={currentStreet || 'preflop'}
           formData={formData}
           pokerActions={pokerActions}
           getAvailableActions={getAvailableActions}

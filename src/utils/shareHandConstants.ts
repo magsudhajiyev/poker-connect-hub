@@ -4,13 +4,23 @@ export const positionOrder = ['utg', 'utg1', 'mp', 'lj', 'hj', 'co', 'btn', 'sb'
 export const positionNames: { [key: string]: string } = {
   'utg': 'UTG',
   'utg1': 'UTG+1',
-  'mp': 'Middle Position',
-  'lj': 'Lojack',
-  'hj': 'Hijack',
-  'co': 'Cut Off',
-  'btn': 'Button',
-  'sb': 'Small Blind',
-  'bb': 'Big Blind',
+  'mp': 'MP',
+  'lj': 'LJ',
+  'hj': 'HJ',
+  'co': 'CO',
+  'btn': 'BTN',
+  'sb': 'SB',
+  'bb': 'BB',
+  // Add uppercase versions to handle any case issues
+  'UTG': 'UTG',
+  'UTG1': 'UTG+1',
+  'MP': 'MP',
+  'LJ': 'LJ',
+  'HJ': 'HJ',
+  'CO': 'CO',
+  'BTN': 'BTN',
+  'SB': 'SB',
+  'BB': 'BB',
 };
 
 export const steps = [
@@ -23,5 +33,15 @@ export const steps = [
 ];
 
 export const getPositionName = (position: string): string => {
-  return positionNames[position] || position;
+  if (!position) {
+return '';
+}
+  
+  // Convert to lowercase for lookup
+  const lowerPos = position.toLowerCase();
+  const mapped = positionNames[lowerPos] || positionNames[position];
+  
+  // If no mapping found, return the original position in uppercase
+  // This prevents "utg" from becoming "Dealer" or other strange mappings
+  return mapped || position.toUpperCase();
 };

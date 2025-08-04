@@ -99,7 +99,7 @@ export class HandRepository {
       PokerHand.countDocuments(query),
     ]);
 
-    return { hands: hands as IPokerHandDocument[], total };
+    return { hands: hands as any as IPokerHandDocument[], total };
   }
 
   async incrementViewCount(handId: string): Promise<void> {
