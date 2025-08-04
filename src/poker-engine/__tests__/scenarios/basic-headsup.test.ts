@@ -1,4 +1,3 @@
-import { EventSourcingAdapter } from '../../adapters/EventSourcingAdapter';
 import {
   createTestHand,
   setupTestDB,
@@ -57,9 +56,9 @@ describe('Basic Heads-Up Scenarios', () => {
         console.error('BB fold failed:', result.error);
       }
       expect(result.success).toBe(true);
-      
+
       // Wait for automatic hand completion
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       await expectState(adapter, {
         isHandComplete: true,
@@ -85,7 +84,7 @@ describe('Basic Heads-Up Scenarios', () => {
 
       // Preflop: BTN calls
       await processCommand(adapter, 'player1', ActionType.CALL);
-      
+
       // BB checks
       await processCommand(adapter, 'player2', ActionType.CHECK);
 

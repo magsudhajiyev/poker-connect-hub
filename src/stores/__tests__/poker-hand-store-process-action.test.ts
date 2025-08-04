@@ -12,21 +12,22 @@ describe('Poker Hand Store - Process Action with Map Serialization', () => {
 
   it('should handle processAction when engine state has players as plain object', async () => {
     const { result } = renderHook(() => usePokerHandStore());
-    
+
     const players = [
       { id: 'utg', name: 'Player 1', position: 'utg', stackSize: [100], isHero: false },
       { id: 'sb', name: 'Player 2', position: 'sb', stackSize: [100], isHero: true },
     ];
-    
+
     const gameConfig = {
       gameType: GameType.NLH,
       gameFormat: GameFormat.CASH,
       blinds: { small: 5, big: 10 },
     };
-    
+
     // Mock event adapter that returns state with players as plain object (simulating API serialization)
     const mockEventAdapter = {
-      rebuildState: jest.fn()
+      rebuildState: jest
+        .fn()
         .mockResolvedValueOnce({
           // Initial state
           currentState: {
@@ -60,7 +61,7 @@ describe('Poker Hand Store - Process Action with Map Serialization', () => {
       }),
       getEvents: jest.fn().mockResolvedValue([]),
     };
-    
+
     // Set up store with event adapter
     act(() => {
       usePokerHandStore.setState({
@@ -71,8 +72,8 @@ describe('Poker Hand Store - Process Action with Map Serialization', () => {
         isEngineInitialized: true,
         currentStreet: 'preflop',
         streets: {
-          preflop: { 
-            communityCards: [], 
+          preflop: {
+            communityCards: [],
             actionSlots: [
               {
                 id: 'preflop-utg',
@@ -102,9 +103,9 @@ describe('Poker Hand Store - Process Action with Map Serialization', () => {
                 completed: false,
                 canEdit: false,
               },
-            ], 
-            isComplete: false, 
-            pot: 15 
+            ],
+            isComplete: false,
+            pot: 15,
           },
           flop: { communityCards: [], actionSlots: [], isComplete: false, pot: 0 },
           turn: { communityCards: [], actionSlots: [], isComplete: false, pot: 0 },
@@ -112,22 +113,22 @@ describe('Poker Hand Store - Process Action with Map Serialization', () => {
         },
       });
     });
-    
+
     // Process UTG call action
     let success;
     await act(async () => {
       success = await result.current.processAction('preflop-utg', ActionType.CALL, 10);
     });
-    
+
     // Verify action was processed successfully
     expect(success).toBe(true);
     expect(mockEventAdapter.processCommand).toHaveBeenCalledWith('utg', ActionType.CALL, 10);
-    
+
     // Verify action slots were updated correctly
     const preflopSlots = result.current.streets.preflop.actionSlots;
-    
+
     // UTG slot should be completed and inactive
-    const utgSlot = preflopSlots.find(s => s.playerId === 'utg');
+    const utgSlot = preflopSlots.find((s) => s.playerId === 'utg');
     expect(utgSlot).toMatchObject({
       action: ActionType.CALL,
       amount: 10,
@@ -136,36 +137,37 @@ describe('Poker Hand Store - Process Action with Map Serialization', () => {
       isActive: false,
       stackAfter: 90,
     });
-    
+
     // SB slot should now be active
-    const sbSlot = preflopSlots.find(s => s.playerId === 'sb');
+    const sbSlot = preflopSlots.find((s) => s.playerId === 'sb');
     expect(sbSlot).toMatchObject({
       isActive: true,
       stackAfter: 95,
     });
-    
+
     // Players array should be updated with new stack sizes
-    const utgPlayer = result.current.players.find(p => p.id === 'utg');
+    const utgPlayer = result.current.players.find((p) => p.id === 'utg');
     expect(utgPlayer?.stackSize).toEqual([90]);
   });
 
   it('should handle processAction when engine state has players as Map', async () => {
     const { result } = renderHook(() => usePokerHandStore());
-    
+
     const players = [
       { id: 'co', name: 'Player 1', position: 'co', stackSize: [200], isHero: false },
       { id: 'btn', name: 'Player 2', position: 'btn', stackSize: [200], isHero: true },
     ];
-    
+
     const gameConfig = {
       gameType: GameType.NLH,
       gameFormat: GameFormat.CASH,
       blinds: { small: 1, big: 2 },
     };
-    
+
     // Mock event adapter that returns state with players as Map
     const mockEventAdapter = {
-      rebuildState: jest.fn()
+      rebuildState: jest
+        .fn()
         .mockResolvedValueOnce({
           // Initial state
           currentState: {
@@ -199,7 +201,7 @@ describe('Poker Hand Store - Process Action with Map Serialization', () => {
       }),
       getEvents: jest.fn().mockResolvedValue([]),
     };
-    
+
     // Set up store
     act(() => {
       usePokerHandStore.setState({
@@ -210,8 +212,8 @@ describe('Poker Hand Store - Process Action with Map Serialization', () => {
         isEngineInitialized: true,
         currentStreet: 'preflop',
         streets: {
-          preflop: { 
-            communityCards: [], 
+          preflop: {
+            communityCards: [],
             actionSlots: [
               {
                 id: 'preflop-co',
@@ -241,9 +243,9 @@ describe('Poker Hand Store - Process Action with Map Serialization', () => {
                 completed: false,
                 canEdit: false,
               },
-            ], 
-            isComplete: false, 
-            pot: 0 
+            ],
+            isComplete: false,
+            pot: 0,
           },
           flop: { communityCards: [], actionSlots: [], isComplete: false, pot: 0 },
           turn: { communityCards: [], actionSlots: [], isComplete: false, pot: 0 },
@@ -251,22 +253,22 @@ describe('Poker Hand Store - Process Action with Map Serialization', () => {
         },
       });
     });
-    
+
     // Process CO bet action
     let success;
     await act(async () => {
       success = await result.current.processAction('preflop-co', ActionType.BET, 6);
     });
-    
+
     // Verify action was processed successfully
     expect(success).toBe(true);
     expect(mockEventAdapter.processCommand).toHaveBeenCalledWith('co', ActionType.BET, 6);
-    
+
     // Verify slots were updated correctly even with Map data structure
-    const coSlot = result.current.streets.preflop.actionSlots.find(s => s.playerId === 'co');
+    const coSlot = result.current.streets.preflop.actionSlots.find((s) => s.playerId === 'co');
     expect(coSlot?.stackAfter).toBe(194);
-    
-    const btnSlot = result.current.streets.preflop.actionSlots.find(s => s.playerId === 'btn');
+
+    const btnSlot = result.current.streets.preflop.actionSlots.find((s) => s.playerId === 'btn');
     expect(btnSlot?.isActive).toBe(true);
   });
 });

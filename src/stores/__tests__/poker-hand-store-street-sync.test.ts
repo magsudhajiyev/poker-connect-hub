@@ -13,37 +13,39 @@ describe('PokerHandStore - Street Synchronization', () => {
   describe('Street advancement with event sourcing', () => {
     it('should advance from preflop to flop when all players complete betting', async () => {
       const { result } = renderHook(() => usePokerHandStore());
-      
+
       const players = [
         { id: 'utg', name: 'Player 1', position: 'utg', stackSize: [200], isHero: false },
         { id: 'sb', name: 'Player 2', position: 'sb', stackSize: [200], isHero: true },
       ];
-      
+
       const gameConfig = {
         gameType: GameType.NLH,
         gameFormat: GameFormat.CASH,
         blinds: { small: 5, big: 10 },
       };
-      
+
       // Mock event sourcing adapter
       const mockEventAdapter = {
-        processCommand: jest.fn().mockResolvedValue({ 
+        processCommand: jest.fn().mockResolvedValue({
           success: true,
-          event: { type: 'ACTION_TAKEN', sequenceNumber: 2 }
+          event: { type: 'ACTION_TAKEN', sequenceNumber: 2 },
         }),
         rebuildState: jest.fn(),
         getEvents: jest.fn().mockResolvedValue([]),
-        getValidActions: jest.fn().mockResolvedValue([ActionType.FOLD, ActionType.CALL, ActionType.RAISE]),
+        getValidActions: jest
+          .fn()
+          .mockResolvedValue([ActionType.FOLD, ActionType.CALL, ActionType.RAISE]),
       };
-      
+
       // Initial state - UTG to act preflop
       mockEventAdapter.rebuildState.mockResolvedValueOnce({
         currentState: {
           street: Street.PREFLOP,
-          betting: { 
-            actionOn: 'utg', 
-            pot: 15, 
-            currentBet: 10 
+          betting: {
+            actionOn: 'utg',
+            pot: 15,
+            currentBet: 10,
           },
           players: {
             utg: { id: 'utg', stackSize: 200, status: 'active', currentBet: 0 },
@@ -53,7 +55,7 @@ describe('PokerHandStore - Street Synchronization', () => {
         },
         events: [],
       });
-      
+
       // Setup initial state
       act(() => {
         usePokerHandStore.setState({
@@ -64,8 +66,8 @@ describe('PokerHandStore - Street Synchronization', () => {
           isEngineInitialized: true,
           currentStreet: Street.PREFLOP,
           streets: {
-            preflop: { 
-              communityCards: [], 
+            preflop: {
+              communityCards: [],
               actionSlots: [
                 {
                   id: 'preflop-utg',
@@ -95,9 +97,9 @@ describe('PokerHandStore - Street Synchronization', () => {
                   completed: false,
                   canEdit: false,
                 },
-              ], 
-              isComplete: false, 
-              pot: 15 
+              ],
+              isComplete: false,
+              pot: 15,
             },
             flop: { communityCards: [], actionSlots: [], isComplete: false, pot: 0 },
             turn: { communityCards: [], actionSlots: [], isComplete: false, pot: 0 },
@@ -113,15 +115,15 @@ describe('PokerHandStore - Street Synchronization', () => {
           },
         });
       });
-      
+
       // After UTG calls - SB to act
       mockEventAdapter.rebuildState.mockResolvedValueOnce({
         currentState: {
           street: Street.PREFLOP,
-          betting: { 
-            actionOn: 'sb', 
-            pot: 20, 
-            currentBet: 10 
+          betting: {
+            actionOn: 'sb',
+            pot: 20,
+            currentBet: 10,
           },
           players: {
             utg: { id: 'utg', stackSize: 190, status: 'active', currentBet: 10 },
@@ -131,24 +133,24 @@ describe('PokerHandStore - Street Synchronization', () => {
         },
         events: [],
       });
-      
+
       // Process UTG call
       await act(async () => {
         await result.current.processAction('preflop-utg', ActionType.CALL, 10);
       });
-      
+
       // Verify still on preflop
       expect(result.current.currentStreet).toBe(Street.PREFLOP);
-      
+
       // After SB calls - street advances to flop (simulate two calls to rebuildState)
       mockEventAdapter.rebuildState
         .mockResolvedValueOnce({
           currentState: {
             street: Street.FLOP,
-            betting: { 
-              actionOn: 'sb', 
-              pot: 20, 
-              currentBet: 0 
+            betting: {
+              actionOn: 'sb',
+              pot: 20,
+              currentBet: 0,
             },
             players: {
               utg: { id: 'utg', stackSize: 190, status: 'active', currentBet: 0 },
@@ -162,10 +164,10 @@ describe('PokerHandStore - Street Synchronization', () => {
         .mockResolvedValueOnce({
           currentState: {
             street: Street.FLOP,
-            betting: { 
-              actionOn: 'sb', 
-              pot: 20, 
-              currentBet: 0 
+            betting: {
+              actionOn: 'sb',
+              pot: 20,
+              currentBet: 0,
             },
             players: {
               utg: { id: 'utg', stackSize: 190, status: 'active', currentBet: 0 },
@@ -176,40 +178,42 @@ describe('PokerHandStore - Street Synchronization', () => {
           },
           events: [],
         });
-      
+
       // Process SB call
       await act(async () => {
         await result.current.processAction('preflop-sb', ActionType.CALL, 5);
       });
-      
+
       // Verify street advanced to flop
       expect(result.current.currentStreet).toBe(Street.FLOP);
       expect(result.current.streets.preflop.isComplete).toBe(true);
       expect(result.current.streets.flop.actionSlots).toHaveLength(2);
       expect(result.current.streets.flop.actionSlots[0].playerId).toBe('sb'); // SB acts first post-flop
       expect(result.current.streets.flop.pot).toBe(20);
-      
+
       // Verify community cards were synced to formData
       expect(result.current.formData.flopCards).toEqual(['Ah', '7d', '2c']);
     });
 
     it('should maintain pot size across street transitions', async () => {
       const { result } = renderHook(() => usePokerHandStore());
-      
+
       const players = [
         { id: 'co', name: 'Player 1', position: 'co', stackSize: [1000], isHero: false },
         { id: 'btn', name: 'Player 2', position: 'btn', stackSize: [1000], isHero: true },
         { id: 'bb', name: 'Player 3', position: 'bb', stackSize: [1000], isHero: false },
       ];
-      
+
       // Mock adapter that shows pot growing
       const mockEventAdapter = {
         processCommand: jest.fn().mockResolvedValue({ success: true }),
         rebuildState: jest.fn(),
         getEvents: jest.fn().mockResolvedValue([]),
-        getValidActions: jest.fn().mockResolvedValue([ActionType.FOLD, ActionType.CALL, ActionType.RAISE]),
+        getValidActions: jest
+          .fn()
+          .mockResolvedValue([ActionType.FOLD, ActionType.CALL, ActionType.RAISE]),
       };
-      
+
       // Initial state - CO to act with 15 in pot (blinds)
       mockEventAdapter.rebuildState.mockResolvedValueOnce({
         currentState: {
@@ -224,7 +228,7 @@ describe('PokerHandStore - Street Synchronization', () => {
         },
         events: [],
       });
-      
+
       // Initialize
       act(() => {
         usePokerHandStore.setState({
@@ -239,8 +243,8 @@ describe('PokerHandStore - Street Synchronization', () => {
           isEngineInitialized: true,
           currentStreet: Street.PREFLOP,
           streets: {
-            preflop: { 
-              communityCards: [], 
+            preflop: {
+              communityCards: [],
               actionSlots: players.map((p, i) => ({
                 id: `preflop-${p.id}`,
                 playerId: p.id,
@@ -254,9 +258,9 @@ describe('PokerHandStore - Street Synchronization', () => {
                 isActive: i === 0,
                 completed: false,
                 canEdit: false,
-              })), 
-              isComplete: false, 
-              pot: 15 
+              })),
+              isComplete: false,
+              pot: 15,
             },
             flop: { communityCards: [], actionSlots: [], isComplete: false, pot: 0 },
             turn: { communityCards: [], actionSlots: [], isComplete: false, pot: 0 },
@@ -264,7 +268,7 @@ describe('PokerHandStore - Street Synchronization', () => {
           },
         });
       });
-      
+
       // After CO raises to 30
       mockEventAdapter.rebuildState.mockResolvedValueOnce({
         currentState: {
@@ -279,31 +283,31 @@ describe('PokerHandStore - Street Synchronization', () => {
         },
         events: [],
       });
-      
+
       await act(async () => {
         await result.current.processAction('preflop-co', ActionType.RAISE, 30);
       });
-      
+
       expect(result.current.streets.preflop.pot).toBe(45);
-      
+
       // Continue with more actions and verify pot carries over...
     });
 
     it('should sync formData with engine state when streets advance', async () => {
       const { result } = renderHook(() => usePokerHandStore());
-      
+
       const players = [
         { id: 'utg', name: 'Player 1', position: 'utg', stackSize: [500], isHero: true },
         { id: 'bb', name: 'Player 2', position: 'bb', stackSize: [500], isHero: false },
       ];
-      
+
       const mockEventAdapter = {
         processCommand: jest.fn().mockResolvedValue({ success: true }),
         rebuildState: jest.fn(),
         getEvents: jest.fn().mockResolvedValue([]),
         getValidActions: jest.fn().mockResolvedValue([]),
       };
-      
+
       // Setup for flop with community cards
       mockEventAdapter.rebuildState.mockResolvedValueOnce({
         currentState: {
@@ -318,7 +322,7 @@ describe('PokerHandStore - Street Synchronization', () => {
         },
         events: [],
       });
-      
+
       // Initialize on flop
       act(() => {
         usePokerHandStore.setState({
@@ -353,11 +357,11 @@ describe('PokerHandStore - Street Synchronization', () => {
           },
         });
       });
-      
+
       // The formData should already have the flop cards from initialization
       expect(result.current.formData.flopCards).toEqual(['Ks', 'Qh', '9d']);
       expect(result.current.currentStreet).toBe(Street.FLOP);
-      
+
       // Update engine state for turn
       act(() => {
         usePokerHandStore.setState({
@@ -376,12 +380,12 @@ describe('PokerHandStore - Street Synchronization', () => {
           },
         });
       });
-      
+
       // Advance to turn
       act(() => {
         result.current.advanceToNextStreet();
       });
-      
+
       // Verify turn card was added
       expect(result.current.formData.turnCard).toEqual(['3c']);
       expect(result.current.currentStreet).toBe(Street.TURN);

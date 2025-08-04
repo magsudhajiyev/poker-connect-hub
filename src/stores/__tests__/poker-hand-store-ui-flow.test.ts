@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { usePokerHandStore } from '../poker-hand-store';
-import { ActionType, Position, Street } from '@/types/poker';
+import { Position, Street } from '@/types/poker';
 import { Player } from '@/types/shareHand';
 
 // Mock the HandBuilderService
@@ -11,10 +11,10 @@ jest.mock('@/poker-engine/services/builder', () => {
       postBlinds: jest.fn().mockReturnValue({ isValid: true }),
       getCurrentState: jest.fn().mockReturnValue({
         currentState: {
-          betting: { 
+          betting: {
             actionOn: 'utg',
             pot: 15,
-            currentBet: 10
+            currentBet: 10,
           },
           street: Street.PREFLOP,
           players: new Map([
@@ -60,7 +60,7 @@ describe('Poker Hand Store UI Flow', () => {
 
     it('should correctly update action slots when no event adapter is present', async () => {
       const { result } = renderHook(() => usePokerHandStore());
-      
+
       await act(async () => {
         // Initialize game
         await result.current.initializeGame(testPlayers, {
@@ -73,17 +73,17 @@ describe('Poker Hand Store UI Flow', () => {
       // Check initial action slots
       const preflopSlots = result.current.streets[Street.PREFLOP].actionSlots;
       expect(preflopSlots).toHaveLength(2);
-      
-      const utgSlot = preflopSlots.find(s => s.playerId === 'utg');
-      const sbSlot = preflopSlots.find(s => s.playerId === 'sb');
-      
+
+      const utgSlot = preflopSlots.find((s) => s.playerId === 'utg');
+      const sbSlot = preflopSlots.find((s) => s.playerId === 'sb');
+
       expect(utgSlot?.isActive).toBe(true);
       expect(sbSlot?.isActive).toBe(false);
     });
 
     it('should track isPlayerToAct correctly', async () => {
       const { result } = renderHook(() => usePokerHandStore());
-      
+
       await act(async () => {
         // Initialize game
         await result.current.initializeGame(testPlayers, {
@@ -99,14 +99,14 @@ describe('Poker Hand Store UI Flow', () => {
 
       // Manually update engine state to simulate SB's turn
       act(() => {
-        const mockEngine = (result.current.engine as any);
+        const mockEngine = result.current.engine as any;
         if (mockEngine) {
           mockEngine.getCurrentState.mockReturnValue({
             currentState: {
-              betting: { 
+              betting: {
                 actionOn: 'sb',
                 pot: 25,
-                currentBet: 10
+                currentBet: 10,
               },
               street: Street.PREFLOP,
               players: new Map([
@@ -117,7 +117,7 @@ describe('Poker Hand Store UI Flow', () => {
             events: [],
             isComplete: false,
           });
-          
+
           // Update engine state in store
           result.current.engineState = mockEngine.getCurrentState();
         }

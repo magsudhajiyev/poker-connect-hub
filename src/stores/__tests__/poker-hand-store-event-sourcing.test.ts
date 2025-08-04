@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react';
 import { usePokerHandStore } from '../poker-hand-store';
-import { Position, GameType, GameFormat, Street, ActionType } from '@/types/poker';
+import { Position, GameType, GameFormat } from '@/types/poker';
 
 // Mock the EventSourcingAdapter module to avoid MongoDB imports
 jest.mock('@/poker-engine/adapters/EventSourcingAdapter', () => ({
@@ -16,13 +16,13 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
   beforeEach(() => {
     // Mock console.error to suppress expected errors in tests
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     // Reset store before each test
     const { result } = renderHook(() => usePokerHandStore());
     act(() => {
       result.current.reset();
     });
-    
+
     // Clear mocks
     jest.clearAllMocks();
     (fetch as jest.Mock).mockClear();
@@ -36,12 +36,12 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
   describe('initializeGame with event sourcing', () => {
     it('should handle undefined engineState when initializing with event sourcing', async () => {
       const { result } = renderHook(() => usePokerHandStore());
-      
+
       const players = [
         { id: 'utg', name: 'UTG Player', position: Position.UTG, stackSize: [1000], isHero: true },
         { id: 'sb', name: 'SB Player', position: Position.SB, stackSize: [1000] },
       ];
-      
+
       const gameConfig = {
         gameType: GameType.NLH,
         gameFormat: GameFormat.CASH,
@@ -53,17 +53,17 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
         // save-engine API call
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ 
-            success: true, 
+          json: async () => ({
+            success: true,
             hand: {
-              id: 'test-hand-id'
-            }
+              id: 'test-hand-id',
+            },
           }),
         })
         // getEvents API call from initializeWithEventSourcing
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ 
+          json: async () => ({
             events: [],
             currentState: undefined,
           }),
@@ -71,7 +71,7 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
         // rebuildState API call from initializeWithEventSourcing
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ 
+          json: async () => ({
             events: [],
             currentState: undefined,
           }),
@@ -83,8 +83,11 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
         events: [],
         isComplete: false,
       });
-      
-      const { EventSourcingAdapter } = require('@/poker-engine/adapters/EventSourcingAdapter');
+
+      const EventSourcingAdapterModule = jest.requireMock<
+        typeof import('@/poker-engine/adapters/EventSourcingAdapter')
+      >('@/poker-engine/adapters/EventSourcingAdapter');
+      const { EventSourcingAdapter } = EventSourcingAdapterModule;
       (EventSourcingAdapter as jest.Mock).mockImplementation(() => ({
         rebuildState: mockRebuildState,
       }));
@@ -99,14 +102,14 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
       (fetch as jest.Mock)
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ 
+          json: async () => ({
             events: [],
             currentState: undefined,
           }),
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ 
+          json: async () => ({
             events: [],
             currentState: undefined,
           }),
@@ -136,12 +139,12 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
 
     it('should handle missing betting property in engineState', async () => {
       const { result } = renderHook(() => usePokerHandStore());
-      
+
       const players = [
         { id: '1', name: 'Player 1', position: Position.BTN, stackSize: [100], isHero: true },
         { id: '2', name: 'Player 2', position: Position.BB, stackSize: [100] },
       ];
-      
+
       const gameConfig = {
         gameType: GameType.NLH,
         gameFormat: GameFormat.CASH,
@@ -153,17 +156,17 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
         // save-engine API call
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ 
-            success: true, 
+          json: async () => ({
+            success: true,
             hand: {
-              id: 'test-hand-id-2'
-            }
+              id: 'test-hand-id-2',
+            },
           }),
         })
         // getEvents API call
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ 
+          json: async () => ({
             events: [],
             currentState: { players: new Map() },
           }),
@@ -171,7 +174,7 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
         // rebuildState API call
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ 
+          json: async () => ({
             events: [],
             currentState: { players: new Map() },
           }),
@@ -186,8 +189,11 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
         events: [],
         isComplete: false,
       });
-      
-      const { EventSourcingAdapter } = require('@/poker-engine/adapters/EventSourcingAdapter');
+
+      const EventSourcingAdapterModule = jest.requireMock<
+        typeof import('@/poker-engine/adapters/EventSourcingAdapter')
+      >('@/poker-engine/adapters/EventSourcingAdapter');
+      const { EventSourcingAdapter } = EventSourcingAdapterModule;
       (EventSourcingAdapter as jest.Mock).mockImplementation(() => ({
         rebuildState: mockRebuildState,
       }));
@@ -201,14 +207,14 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
       (fetch as jest.Mock)
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ 
+          json: async () => ({
             events: [],
             currentState: { players: new Map() },
           }),
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ 
+          json: async () => ({
             events: [],
             currentState: { players: new Map() },
           }),
@@ -225,7 +231,7 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
         };
         result.current.handId = 'test-hand-id-2';
       });
-      
+
       // Initialize game
       await act(async () => {
         await expect(result.current.initializeGame(players, gameConfig)).resolves.not.toThrow();
@@ -234,17 +240,17 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
       // Check that action slots were created with no active player
       const preflopSlots = result.current.streets.preflop.actionSlots;
       expect(preflopSlots).toHaveLength(2);
-      expect(preflopSlots.every(slot => !slot.isActive)).toBe(true);
+      expect(preflopSlots.every((slot) => !slot.isActive)).toBe(true);
     });
 
     it('should properly set active player when engineState is valid', async () => {
       const { result } = renderHook(() => usePokerHandStore());
-      
+
       const players = [
         { id: 'utg', name: 'UTG Player', position: Position.UTG, stackSize: [1000] },
         { id: 'sb', name: 'SB Player', position: Position.SB, stackSize: [1000], isHero: true },
       ];
-      
+
       const gameConfig = {
         gameType: GameType.NLH,
         gameFormat: GameFormat.CASH,
@@ -256,17 +262,17 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
         // save-engine API call
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ 
-            success: true, 
+          json: async () => ({
+            success: true,
             hand: {
-              id: 'test-hand-id-3'
-            }
+              id: 'test-hand-id-3',
+            },
           }),
         })
         // getEvents API call
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ 
+          json: async () => ({
             events: [],
             currentState: {
               betting: {
@@ -281,10 +287,10 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
             },
           }),
         })
-        // rebuildState API call  
+        // rebuildState API call
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ 
+          json: async () => ({
             events: [],
             currentState: {
               betting: {
@@ -316,8 +322,11 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
         events: [],
         isComplete: false,
       });
-      
-      const { EventSourcingAdapter } = require('@/poker-engine/adapters/EventSourcingAdapter');
+
+      const EventSourcingAdapterModule = jest.requireMock<
+        typeof import('@/poker-engine/adapters/EventSourcingAdapter')
+      >('@/poker-engine/adapters/EventSourcingAdapter');
+      const { EventSourcingAdapter } = EventSourcingAdapterModule;
       (EventSourcingAdapter as jest.Mock).mockImplementation(() => ({
         rebuildState: mockRebuildState,
       }));
@@ -331,7 +340,7 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
       (fetch as jest.Mock)
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ 
+          json: async () => ({
             events: [],
             currentState: {
               betting: {
@@ -348,7 +357,7 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ 
+          json: async () => ({
             events: [],
             currentState: {
               betting: {
@@ -375,7 +384,7 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
         };
         result.current.handId = 'test-hand-id-3';
       });
-      
+
       // Initialize game
       await act(async () => {
         await result.current.initializeGame(players, gameConfig);
@@ -383,9 +392,9 @@ describe('Poker Hand Store - Event Sourcing Integration', () => {
 
       // Verify the active player is set correctly
       const preflopSlots = result.current.streets.preflop.actionSlots;
-      const utgSlot = preflopSlots.find(s => s.playerId === 'utg');
-      const sbSlot = preflopSlots.find(s => s.playerId === 'sb');
-      
+      const utgSlot = preflopSlots.find((s) => s.playerId === 'utg');
+      const sbSlot = preflopSlots.find((s) => s.playerId === 'sb');
+
       expect(utgSlot?.isActive).toBe(true);
       expect(sbSlot?.isActive).toBe(false);
       expect(result.current.streets.preflop.pot).toBe(15);

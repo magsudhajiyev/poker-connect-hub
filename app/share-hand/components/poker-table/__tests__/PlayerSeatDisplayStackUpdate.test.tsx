@@ -15,7 +15,9 @@ jest.mock('@/components/ui/playing-card', () => ({
 }));
 
 describe('PlayerSeatDisplayOptimized - Stack Updates', () => {
-  const createPlayer = (overrides: Partial<Player> = {}): Player & { betAmount?: number; hasFolded?: boolean; isAllIn?: boolean } => ({
+  const createPlayer = (
+    overrides: Partial<Player> = {},
+  ): Player & { betAmount?: number; hasFolded?: boolean; isAllIn?: boolean } => ({
     id: 'test-player',
     name: 'Test Player',
     position: 'utg',
@@ -35,14 +37,14 @@ describe('PlayerSeatDisplayOptimized - Stack Updates', () => {
 
   it('displays initial stack size correctly', () => {
     const player = createPlayer({ stackSize: [100] });
-    
+
     render(
       <PlayerSeatDisplayOptimized
         player={player}
         position="utg"
         gameFormat="cash"
         isToAct={false}
-      />
+      />,
     );
 
     expect(screen.getByText('$100')).toBeInTheDocument();
@@ -50,28 +52,28 @@ describe('PlayerSeatDisplayOptimized - Stack Updates', () => {
 
   it('updates display when stack size changes', () => {
     const player = createPlayer({ stackSize: [100] });
-    
+
     const { rerender } = render(
       <PlayerSeatDisplayOptimized
         player={player}
         position="utg"
         gameFormat="cash"
         isToAct={false}
-      />
+      />,
     );
 
     expect(screen.getByText('$100')).toBeInTheDocument();
 
     // Update stack size
     const updatedPlayer = createPlayer({ stackSize: [75] });
-    
+
     rerender(
       <PlayerSeatDisplayOptimized
         player={updatedPlayer}
         position="utg"
         gameFormat="cash"
         isToAct={false}
-      />
+      />,
     );
 
     expect(screen.queryByText('$100')).not.toBeInTheDocument();
@@ -79,18 +81,18 @@ describe('PlayerSeatDisplayOptimized - Stack Updates', () => {
   });
 
   it('displays "All-in" when player is all-in', () => {
-    const player = createPlayer({ 
+    const player = createPlayer({
       stackSize: [0],
       isAllIn: true,
     });
-    
+
     render(
       <PlayerSeatDisplayOptimized
         player={player}
         position="utg"
         gameFormat="cash"
         isToAct={false}
-      />
+      />,
     );
 
     expect(screen.getByText('All-in')).toBeInTheDocument();
@@ -99,31 +101,31 @@ describe('PlayerSeatDisplayOptimized - Stack Updates', () => {
 
   it('updates from normal stack to all-in', () => {
     const player = createPlayer({ stackSize: [100] });
-    
+
     const { rerender } = render(
       <PlayerSeatDisplayOptimized
         player={player}
         position="utg"
         gameFormat="cash"
         isToAct={false}
-      />
+      />,
     );
 
     expect(screen.getByText('$100')).toBeInTheDocument();
 
     // Update to all-in
-    const allInPlayer = createPlayer({ 
+    const allInPlayer = createPlayer({
       stackSize: [0],
       isAllIn: true,
     });
-    
+
     rerender(
       <PlayerSeatDisplayOptimized
         player={allInPlayer}
         position="utg"
         gameFormat="cash"
         isToAct={false}
-      />
+      />,
     );
 
     expect(screen.queryByText('$100')).not.toBeInTheDocument();
@@ -131,18 +133,18 @@ describe('PlayerSeatDisplayOptimized - Stack Updates', () => {
   });
 
   it('displays bet amount when player has bet', () => {
-    const player = createPlayer({ 
+    const player = createPlayer({
       stackSize: [75],
       betAmount: 25,
     });
-    
+
     render(
       <PlayerSeatDisplayOptimized
         player={player}
         position="utg"
         gameFormat="cash"
         isToAct={false}
-      />
+      />,
     );
 
     expect(screen.getByText('$75')).toBeInTheDocument();
@@ -150,36 +152,36 @@ describe('PlayerSeatDisplayOptimized - Stack Updates', () => {
   });
 
   it('updates bet amount correctly', () => {
-    const player = createPlayer({ 
+    const player = createPlayer({
       stackSize: [100],
       betAmount: 0,
     });
-    
+
     const { rerender } = render(
       <PlayerSeatDisplayOptimized
         player={player}
         position="utg"
         gameFormat="cash"
         isToAct={false}
-      />
+      />,
     );
 
     expect(screen.getByText('$100')).toBeInTheDocument();
     expect(screen.queryByText('$0')).not.toBeInTheDocument(); // Bet amount 0 should not display
 
     // Update with bet
-    const playerWithBet = createPlayer({ 
+    const playerWithBet = createPlayer({
       stackSize: [50],
       betAmount: 50,
     });
-    
+
     rerender(
       <PlayerSeatDisplayOptimized
         player={playerWithBet}
         position="utg"
         gameFormat="cash"
         isToAct={false}
-      />
+      />,
     );
 
     // Both stack and bet are $50, so we should have 2 elements
@@ -189,47 +191,42 @@ describe('PlayerSeatDisplayOptimized - Stack Updates', () => {
   it('handles array and non-array stack sizes', () => {
     // Test with array stack size
     const playerWithArray = createPlayer({ stackSize: [150] });
-    
+
     const { rerender } = render(
       <PlayerSeatDisplayOptimized
         player={playerWithArray}
         position="utg"
         gameFormat="cash"
         isToAct={false}
-      />
+      />,
     );
 
     expect(screen.getByText('$150')).toBeInTheDocument();
 
     // Test with non-array stack size (edge case)
     const playerWithNumber = createPlayer({ stackSize: 200 as any });
-    
+
     rerender(
       <PlayerSeatDisplayOptimized
         player={playerWithNumber}
         position="utg"
         gameFormat="cash"
         isToAct={false}
-      />
+      />,
     );
 
     expect(screen.getByText('$200')).toBeInTheDocument();
   });
 
   it('displays hole cards for hero player', () => {
-    const hero = createPlayer({ 
+    const hero = createPlayer({
       isHero: true,
       holeCards: ['As', 'Kh'],
       stackSize: [100],
     });
-    
+
     render(
-      <PlayerSeatDisplayOptimized
-        player={hero}
-        position="utg"
-        gameFormat="cash"
-        isToAct={false}
-      />
+      <PlayerSeatDisplayOptimized player={hero} position="utg" gameFormat="cash" isToAct={false} />,
     );
 
     expect(screen.getByTestId('card-As')).toBeInTheDocument();
@@ -237,19 +234,19 @@ describe('PlayerSeatDisplayOptimized - Stack Updates', () => {
   });
 
   it('does not display hole cards for non-hero player', () => {
-    const villain = createPlayer({ 
+    const villain = createPlayer({
       isHero: false,
       holeCards: ['As', 'Kh'],
       stackSize: [100],
     });
-    
+
     render(
       <PlayerSeatDisplayOptimized
         player={villain}
         position="utg"
         gameFormat="cash"
         isToAct={false}
-      />
+      />,
     );
 
     expect(screen.queryByTestId('card-As')).not.toBeInTheDocument();
@@ -258,34 +255,34 @@ describe('PlayerSeatDisplayOptimized - Stack Updates', () => {
 
   it('handles rapid stack updates', () => {
     const player = createPlayer({ stackSize: [100] });
-    
+
     const { rerender } = render(
       <PlayerSeatDisplayOptimized
         player={player}
         position="utg"
         gameFormat="cash"
         isToAct={false}
-      />
+      />,
     );
 
     // Rapid updates simulating multiple actions
     const stackSizes = [90, 70, 40, 0];
-    
+
     stackSizes.forEach((size) => {
-      const updatedPlayer = createPlayer({ 
+      const updatedPlayer = createPlayer({
         stackSize: [size],
         isAllIn: size === 0,
       });
-      
+
       rerender(
         <PlayerSeatDisplayOptimized
           player={updatedPlayer}
           position="utg"
           gameFormat="cash"
           isToAct={false}
-        />
+        />,
       );
-      
+
       if (size === 0) {
         expect(screen.getByText('All-in')).toBeInTheDocument();
       } else {
@@ -296,16 +293,16 @@ describe('PlayerSeatDisplayOptimized - Stack Updates', () => {
 
   it('correctly identifies when re-render is needed', () => {
     const consoleSpy = jest.spyOn(console, 'log');
-    
+
     const player = createPlayer({ stackSize: [100] });
-    
+
     const { rerender } = render(
       <PlayerSeatDisplayOptimized
         player={player}
         position="utg"
         gameFormat="cash"
         isToAct={false}
-      />
+      />,
     );
 
     // Clear initial render logs
@@ -318,25 +315,25 @@ describe('PlayerSeatDisplayOptimized - Stack Updates', () => {
         position="utg"
         gameFormat="cash"
         isToAct={false}
-      />
+      />,
     );
 
     // Should not log stack change
     expect(consoleSpy).not.toHaveBeenCalledWith(
       expect.stringContaining('Stack changed'),
-      expect.anything()
+      expect.anything(),
     );
 
     // Different stack - should re-render
     const updatedPlayer = createPlayer({ stackSize: [75] });
-    
+
     rerender(
       <PlayerSeatDisplayOptimized
         player={updatedPlayer}
         position="utg"
         gameFormat="cash"
         isToAct={false}
-      />
+      />,
     );
 
     // Should log the render with new stack
@@ -344,7 +341,7 @@ describe('PlayerSeatDisplayOptimized - Stack Updates', () => {
       expect.stringContaining('[PlayerSeat] Rendering'),
       expect.objectContaining({
         stack: 75,
-      })
+      }),
     );
   });
 });

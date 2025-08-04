@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { ShareHandProvider } from '../ShareHandProvider';
 import PreflopStep from '../PreflopStep';
@@ -46,23 +46,23 @@ jest.mock('@/poker-engine/hooks/useHandBuilder', () => ({
 
 // Mock the lazy-loaded PokerTable to use store data
 jest.mock('../lazy-components', () => ({
-  LazyPokerTable: ({ pot, ...props }: any) => {
+  LazyPokerTable: ({ pot }: { pot: number }) => {
     // Get players from the store directly
-    const { usePokerHandStore } = require('@/stores/poker-hand-store');
-    const players = usePokerHandStore((state: any) => state.players);
-    
+    const storeModule = jest.requireMock<typeof import('@/stores/poker-hand-store')>(
+      '@/stores/poker-hand-store',
+    );
+    const players = storeModule.usePokerHandStore((state) => state.players);
+
     return (
       <div data-testid="poker-table">
         <div data-testid="pot-display">Pot: ${pot || 0}</div>
-        {players.map((player: any) => (
+        {players.map((player) => (
           <div key={player.id} data-testid={`player-${player.id}`}>
             <span data-testid={`player-name-${player.id}`}>{player.name}</span>
             <span data-testid={`player-stack-${player.id}`}>
               Stack: ${Array.isArray(player.stackSize) ? player.stackSize[0] : player.stackSize}
             </span>
-            <span data-testid={`player-bet-${player.id}`}>
-              Bet: ${player.betAmount || 0}
-            </span>
+            <span data-testid={`player-bet-${player.id}`}>Bet: ${player.betAmount || 0}</span>
           </div>
         ))}
         {props.children}
@@ -74,10 +74,20 @@ jest.mock('../lazy-components', () => ({
 // Mock CardInput component
 jest.mock('@/components/CardInput', () => ({
   __esModule: true,
-  default: ({ label, cards, onCardsChange, placeholder }: any) => (
+  default: ({
+    label,
+    cards,
+    onCardsChange,
+    placeholder,
+  }: {
+    label: string;
+    cards?: string[];
+    onCardsChange: (cards: string[]) => void;
+    placeholder?: string;
+  }) => (
     <div>
       <label>{label}</label>
-      <input 
+      <input
         placeholder={placeholder}
         value={cards?.join(' ') || ''}
         onChange={(e) => {
@@ -97,7 +107,7 @@ jest.mock('@/components/CardInput', () => ({
 // Mock SelectedCardsDisplay
 jest.mock('../SelectedCardsDisplay', () => ({
   __esModule: true,
-  default: ({ cards, label }: any) => null,
+  default: () => null,
 }));
 
 // Mock hooks
@@ -158,25 +168,38 @@ describe('Stack Update Flow', () => {
             currentBet: 10,
           },
           players: new Map([
-            ['utg', { 
-              id: 'utg', 
-              name: 'Player 1', 
-              stackSize: 90, // Started with 100, posted 10
-              currentBet: 10,
-              status: 'active' 
-            }],
-            ['sb', { 
-              id: 'sb', 
-              name: 'Player 2', 
-              stackSize: 95, // Started with 100, posted 5
-              currentBet: 5,
-              status: 'active' 
-            }],
+            [
+              'utg',
+              {
+                id: 'utg',
+                name: 'Player 1',
+                stackSize: 90, // Started with 100, posted 10
+                currentBet: 10,
+                status: 'active',
+              },
+            ],
+            [
+              'sb',
+              {
+                id: 'sb',
+                name: 'Player 2',
+                stackSize: 95, // Started with 100, posted 5
+                currentBet: 5,
+                status: 'active',
+              },
+            ],
           ]),
         },
       },
       players: [
-        { id: 'utg', name: 'Player 1', position: 'utg', stackSize: [90], isHero: false, betAmount: 10 },
+        {
+          id: 'utg',
+          name: 'Player 1',
+          position: 'utg',
+          stackSize: [90],
+          isHero: false,
+          betAmount: 10,
+        },
         { id: 'sb', name: 'Player 2', position: 'sb', stackSize: [95], isHero: true, betAmount: 5 },
       ],
       formData: {
@@ -208,7 +231,9 @@ describe('Stack Update Flow', () => {
       isPlayerToAct: (playerId: string) => playerId === 'utg',
       createHandWithEventSourcing: jest.fn().mockResolvedValue('test-hand-id'),
       initializeWithEventSourcing: jest.fn(),
-      getValidActionsForCurrentPlayer: jest.fn().mockResolvedValue([ActionType.FOLD, ActionType.CALL, ActionType.RAISE]),
+      getValidActionsForCurrentPlayer: jest
+        .fn()
+        .mockResolvedValue([ActionType.FOLD, ActionType.CALL, ActionType.RAISE]),
     };
 
     // Make usePokerHandStore return a function when called as a hook
@@ -235,13 +260,13 @@ describe('Stack Update Flow', () => {
           getAllSelectedCards={() => []}
           pot={15}
         />
-      </ShareHandProvider>
+      </ShareHandProvider>,
     );
 
     // Check initial stacks after blinds
     expect(screen.getByTestId('player-stack-utg')).toHaveTextContent('Stack: $90');
     expect(screen.getByTestId('player-stack-sb')).toHaveTextContent('Stack: $95');
-    
+
     // Check bet amounts
     expect(screen.getByTestId('player-bet-utg')).toHaveTextContent('Bet: $10');
     expect(screen.getByTestId('player-bet-sb')).toHaveTextContent('Bet: $5');
@@ -249,12 +274,26 @@ describe('Stack Update Flow', () => {
 
   it('updates stack sizes after a raise action', async () => {
     // Mock the processAction to update players with new stack
-    mockProcessAction.mockImplementation(async (slotId, action, amount) => {
+    mockProcessAction.mockImplementation(async () => {
       if (slotId === 'preflop-utg' && action === ActionType.RAISE && amount === 30) {
         // Update the store to reflect the raise
         mockStore.players = [
-          { id: 'utg', name: 'Player 1', position: 'utg', stackSize: [70], isHero: false, betAmount: 30 }, // 100 - 30
-          { id: 'sb', name: 'Player 2', position: 'sb', stackSize: [95], isHero: true, betAmount: 5 },
+          {
+            id: 'utg',
+            name: 'Player 1',
+            position: 'utg',
+            stackSize: [70],
+            isHero: false,
+            betAmount: 30,
+          }, // 100 - 30
+          {
+            id: 'sb',
+            name: 'Player 2',
+            position: 'sb',
+            stackSize: [95],
+            isHero: true,
+            betAmount: 5,
+          },
         ];
         mockStore.engineState.currentState.players.set('utg', {
           id: 'utg',
@@ -283,7 +322,7 @@ describe('Stack Update Flow', () => {
           getAllSelectedCards={() => []}
           pot={15}
         />
-      </ShareHandProvider>
+      </ShareHandProvider>,
     );
 
     // Simulate UTG raising to 30
@@ -304,13 +343,13 @@ describe('Stack Update Flow', () => {
           getAllSelectedCards={() => []}
           pot={35}
         />
-      </ShareHandProvider>
+      </ShareHandProvider>,
     );
 
     // Check updated stacks
     expect(screen.getByTestId('player-stack-utg')).toHaveTextContent('Stack: $70');
     expect(screen.getByTestId('player-stack-sb')).toHaveTextContent('Stack: $95');
-    
+
     // Check updated bet amounts
     expect(screen.getByTestId('player-bet-utg')).toHaveTextContent('Bet: $30');
   });
@@ -321,8 +360,23 @@ describe('Stack Update Flow', () => {
       if (slotId === 'preflop-sb' && action === ActionType.ALL_IN) {
         // Update the store to reflect the all-in
         mockStore.players = [
-          { id: 'utg', name: 'Player 1', position: 'utg', stackSize: [90], isHero: false, betAmount: 10 },
-          { id: 'sb', name: 'Player 2', position: 'sb', stackSize: [0], isHero: true, betAmount: 95, isAllIn: true }, // All-in
+          {
+            id: 'utg',
+            name: 'Player 1',
+            position: 'utg',
+            stackSize: [90],
+            isHero: false,
+            betAmount: 10,
+          },
+          {
+            id: 'sb',
+            name: 'Player 2',
+            position: 'sb',
+            stackSize: [0],
+            isHero: true,
+            betAmount: 95,
+            isAllIn: true,
+          }, // All-in
         ];
         mockStore.engineState.currentState.players.set('sb', {
           id: 'sb',
@@ -349,7 +403,7 @@ describe('Stack Update Flow', () => {
           getAllSelectedCards={() => []}
           pot={15}
         />
-      </ShareHandProvider>
+      </ShareHandProvider>,
     );
 
     // Change active player to SB
@@ -374,13 +428,13 @@ describe('Stack Update Flow', () => {
           getAllSelectedCards={() => []}
           pot={105}
         />
-      </ShareHandProvider>
+      </ShareHandProvider>,
     );
 
     // Check updated stacks
     expect(screen.getByTestId('player-stack-utg')).toHaveTextContent('Stack: $90');
     expect(screen.getByTestId('player-stack-sb')).toHaveTextContent('Stack: $0');
-    
+
     // Check bet amounts
     expect(screen.getByTestId('player-bet-sb')).toHaveTextContent('Bet: $95');
   });
@@ -388,7 +442,14 @@ describe('Stack Update Flow', () => {
   it('preserves stack sizes when advancing streets', async () => {
     // Set up players after some preflop action
     mockStore.players = [
-      { id: 'utg', name: 'Player 1', position: 'utg', stackSize: [70], isHero: false, betAmount: 0 },
+      {
+        id: 'utg',
+        name: 'Player 1',
+        position: 'utg',
+        stackSize: [70],
+        isHero: false,
+        betAmount: 0,
+      },
       { id: 'sb', name: 'Player 2', position: 'sb', stackSize: [70], isHero: true, betAmount: 0 },
     ];
     mockStore.currentStreet = 'flop';
@@ -407,13 +468,13 @@ describe('Stack Update Flow', () => {
           getAllSelectedCards={() => []}
           pot={60}
         />
-      </ShareHandProvider>
+      </ShareHandProvider>,
     );
 
     // Check that stacks are preserved
     expect(screen.getByTestId('player-stack-utg')).toHaveTextContent('Stack: $70');
     expect(screen.getByTestId('player-stack-sb')).toHaveTextContent('Stack: $70');
-    
+
     // Bet amounts should be reset for new street
     expect(screen.getByTestId('player-bet-utg')).toHaveTextContent('Bet: $0');
     expect(screen.getByTestId('player-bet-sb')).toHaveTextContent('Bet: $0');
@@ -421,29 +482,57 @@ describe('Stack Update Flow', () => {
 
   it('handles multiple actions in sequence correctly', async () => {
     let actionCount = 0;
-    
+
     // Mock processAction to simulate a sequence of actions
-    mockProcessAction.mockImplementation(async (slotId, action, amount) => {
+    mockProcessAction.mockImplementation(async () => {
       actionCount++;
-      
+
       if (actionCount === 1) {
         // UTG raises to 30
         mockStore.players = [
-          { id: 'utg', name: 'Player 1', position: 'utg', stackSize: [70], isHero: false, betAmount: 30 },
-          { id: 'sb', name: 'Player 2', position: 'sb', stackSize: [95], isHero: true, betAmount: 5 },
+          {
+            id: 'utg',
+            name: 'Player 1',
+            position: 'utg',
+            stackSize: [70],
+            isHero: false,
+            betAmount: 30,
+          },
+          {
+            id: 'sb',
+            name: 'Player 2',
+            position: 'sb',
+            stackSize: [95],
+            isHero: true,
+            betAmount: 5,
+          },
         ];
         mockStore.engineState.currentState.betting.pot = 35;
         mockStore.engineState.currentState.betting.actionOn = 'sb';
       } else if (actionCount === 2) {
         // SB calls 30
         mockStore.players = [
-          { id: 'utg', name: 'Player 1', position: 'utg', stackSize: [70], isHero: false, betAmount: 30 },
-          { id: 'sb', name: 'Player 2', position: 'sb', stackSize: [70], isHero: true, betAmount: 30 },
+          {
+            id: 'utg',
+            name: 'Player 1',
+            position: 'utg',
+            stackSize: [70],
+            isHero: false,
+            betAmount: 30,
+          },
+          {
+            id: 'sb',
+            name: 'Player 2',
+            position: 'sb',
+            stackSize: [70],
+            isHero: true,
+            betAmount: 30,
+          },
         ];
         mockStore.engineState.currentState.betting.pot = 60;
         mockStore.isBettingRoundComplete = true;
       }
-      
+
       return true;
     });
 
@@ -459,7 +548,7 @@ describe('Stack Update Flow', () => {
           getAllSelectedCards={() => []}
           pot={15}
         />
-      </ShareHandProvider>
+      </ShareHandProvider>,
     );
 
     // UTG raises
@@ -479,7 +568,7 @@ describe('Stack Update Flow', () => {
           getAllSelectedCards={() => []}
           pot={35}
         />
-      </ShareHandProvider>
+      </ShareHandProvider>,
     );
 
     // Check after first action
@@ -503,7 +592,7 @@ describe('Stack Update Flow', () => {
           getAllSelectedCards={() => []}
           pot={60}
         />
-      </ShareHandProvider>
+      </ShareHandProvider>,
     );
 
     // Check after second action

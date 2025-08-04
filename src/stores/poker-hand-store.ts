@@ -53,11 +53,14 @@ interface PokerHandState {
 
   // Engine State
   engine: HandBuilderService | null;
-  engineState: ReturnType<HandBuilderService['getCurrentState']> | {
-    currentState: HandState;
-    events: IHandEvent[];
-    lastSequence?: number;
-  } | null;
+  engineState:
+    | ReturnType<HandBuilderService['getCurrentState']>
+    | {
+        currentState: HandState;
+        events: IHandEvent[];
+        lastSequence?: number;
+      }
+    | null;
 
   // Event Sourcing
   eventAdapter: IEventSourcingAdapter | null;
@@ -80,7 +83,7 @@ interface PokerHandState {
 
   // Current Street
   currentStreet: Street;
-  
+
   // Track if betting round is complete but street hasn't advanced yet
   isBettingRoundComplete: boolean;
 
@@ -129,7 +132,10 @@ interface PokerHandState {
   reset: () => void;
 
   // Event Sourcing Actions
-  createHandWithEventSourcing: (players: Player[], gameConfig: GameConfig) => Promise<string | null>;
+  createHandWithEventSourcing: (
+    players: Player[],
+    gameConfig: GameConfig,
+  ) => Promise<string | null>;
   initializeWithEventSourcing: (handId: string) => Promise<void>;
   getValidActionsForCurrentPlayer: () => Promise<ActionType[]>;
   loadEventsForReplay: () => Promise<void>;
@@ -224,7 +230,7 @@ export const usePokerHandStore = create<PokerHandState>()(
       engineState: null,
       currentStep: 0,
       isEngineInitialized: false,
-      
+
       // Event Sourcing State
       eventAdapter: null,
       handEvents: [],
@@ -307,25 +313,23 @@ export const usePokerHandStore = create<PokerHandState>()(
         try {
           // If we already have a handId, use event sourcing
           const { handId, eventAdapter } = get();
-          
+
           if (handId && eventAdapter) {
             // Initialize through event sourcing
             const state = await eventAdapter.rebuildState();
-            
-            
+
             // Generate preflop action slots based on engine state
             let activePlayerId = state?.currentState?.betting?.actionOn || null;
-            
+
             // If no actionOn player set yet (initial state), determine who should act first
             if (!activePlayerId && state?.currentState) {
               // Find first active player in position order
               const playerOrder = state.currentState.playerOrder || [];
               const playersData = state.currentState.players;
-              
+
               // Convert players to Map if it's not already
               const playersMap = ensurePlayersMap(playersData);
-              
-              
+
               for (const playerId of playerOrder) {
                 const player = playersMap.get(playerId);
                 if (player && player.status === 'active') {
@@ -334,19 +338,16 @@ export const usePokerHandStore = create<PokerHandState>()(
                 }
               }
             }
-            
+
             const orderedPlayers = getActionOrder(players, Street.PREFLOP);
-            
+
             const preflopSlots = orderedPlayers.map((player) => {
               // Get player state, handling both Map and plain object cases
               const playersMap = ensurePlayersMap(state?.currentState?.players);
               const playerState = playersMap.get(player.id);
-              
+
               const isActive = player.id === activePlayerId;
-              
-              if (isActive) {
-              }
-              
+
               return {
                 id: generateSlotId(Street.PREFLOP, player.id),
                 playerId: player.id,
@@ -380,7 +381,7 @@ export const usePokerHandStore = create<PokerHandState>()(
             });
 
             set({
-              players: updatedPlayers.map(p => ({ ...p })), // Deep clone for initial update
+              players: updatedPlayers.map((p) => ({ ...p })), // Deep clone for initial update
               gameConfig,
               engine: null, // No legacy engine when using event sourcing
               engineState: state,
@@ -396,7 +397,7 @@ export const usePokerHandStore = create<PokerHandState>()(
               },
               formData: {
                 ...get().formData,
-                players: updatedPlayers.map(p => ({ ...p })), // Deep clone here too
+                players: updatedPlayers.map((p) => ({ ...p })), // Deep clone here too
                 preflopActions: preflopSlots,
               },
             });
@@ -428,7 +429,11 @@ export const usePokerHandStore = create<PokerHandState>()(
             }
 
             // Generate preflop action slots
-            const preflopSlots = get().generateActionSlotsForStreet(players, Street.PREFLOP, engine);
+            const preflopSlots = get().generateActionSlotsForStreet(
+              players,
+              Street.PREFLOP,
+              engine,
+            );
 
             // Update players with current stack sizes from engine after blinds
             const engineState = engine.getCurrentState();
@@ -447,7 +452,7 @@ export const usePokerHandStore = create<PokerHandState>()(
             });
 
             set({
-              players: updatedPlayers.map(p => ({ ...p })), // Deep clone for consistency
+              players: updatedPlayers.map((p) => ({ ...p })), // Deep clone for consistency
               gameConfig,
               engine,
               engineState: engine.getCurrentState(),
@@ -463,7 +468,7 @@ export const usePokerHandStore = create<PokerHandState>()(
               },
               formData: {
                 ...get().formData,
-                players: updatedPlayers.map(p => ({ ...p })), // Deep clone here too
+                players: updatedPlayers.map((p) => ({ ...p })), // Deep clone here too
                 preflopActions: preflopSlots,
               },
             });
@@ -477,17 +482,16 @@ export const usePokerHandStore = create<PokerHandState>()(
       processAction: async (slotId, action, amount) => {
         const state = get();
         const { engine, currentStreet, eventAdapter } = state;
-        
-        
+
         // Use event sourcing if available
         if (eventAdapter) {
           // Find the action slot
           const slot = state.streets[currentStreet].actionSlots.find((s) => s.id === slotId);
           if (!slot) {
-            console.error('Action slot not found:', { 
-              slotId, 
+            console.error('Action slot not found:', {
+              slotId,
               currentStreet,
-              availableSlots: state.streets[currentStreet].actionSlots.map(s => s.id)
+              availableSlots: state.streets[currentStreet].actionSlots.map((s) => s.id),
             });
             return false;
           }
@@ -495,27 +499,23 @@ export const usePokerHandStore = create<PokerHandState>()(
           // Get current engine state from event sourcing
           const engineState = await eventAdapter.rebuildState();
           const currentPlayerId = engineState?.currentState?.betting?.actionOn || null;
-          
+
           // Allow action if this is the active slot OR if the slot matches the active player
           const isCurrentPlayer = slot.playerId === currentPlayerId;
           if (!slot.isActive && !isCurrentPlayer) {
-            console.error('Action slot not active:', { 
-              slotId, 
-              slot, 
+            console.error('Action slot not active:', {
+              slotId,
+              slot,
               slotStreet: currentStreet,
               currentStreet: engineState.currentState.street,
-              activeSlot: state.streets[currentStreet].actionSlots.find(s => s.isActive)?.id,
+              activeSlot: state.streets[currentStreet].actionSlots.find((s) => s.isActive)?.id,
               engineActionOn: currentPlayerId,
             });
             return false;
           }
 
           // Process through event sourcing adapter
-          const result = await eventAdapter.processCommand(
-            slot.playerId,
-            action,
-            amount,
-          );
+          const result = await eventAdapter.processCommand(slot.playerId, action, amount);
 
           if (!result.success) {
             console.error('Action failed:', result.error);
@@ -523,15 +523,14 @@ export const usePokerHandStore = create<PokerHandState>()(
           }
 
           // Wait a bit for automatic events (like STREET_COMPLETED) to be persisted
-          await new Promise(resolve => setTimeout(resolve, 150));
+          await new Promise((resolve) => setTimeout(resolve, 150));
 
           // Refetch events and rebuild state to get the latest data
           const events = await eventAdapter.getEvents();
           const newState = await eventAdapter.rebuildState();
-          
-          
+
           // Update store with new state
-          set({ 
+          set({
             engineState: newState,
             handEvents: events,
           });
@@ -539,8 +538,7 @@ export const usePokerHandStore = create<PokerHandState>()(
           // Continue with UI updates below...
           const newEngineState = newState;
           const nextPlayerId = newEngineState?.currentState?.betting?.actionOn || null;
-          
-          
+
           // Update the action slot
           const updatedSlots = state.streets[currentStreet].actionSlots.map((s) => {
             // Get player state, handling both Map and plain object cases
@@ -586,7 +584,6 @@ export const usePokerHandStore = create<PokerHandState>()(
               const playersMap = ensurePlayersMap(newEngineState.currentState.players);
               const enginePlayer = playersMap.get(player.id);
               if (enginePlayer) {
-                
                 const updatedPlayer = {
                   ...player,
                   stackSize: [enginePlayer.stackSize],
@@ -595,14 +592,12 @@ export const usePokerHandStore = create<PokerHandState>()(
                   isAllIn: enginePlayer.status === 'allIn',
                   holeCards: player.holeCards || enginePlayer.holeCards || [],
                 };
-                
-                
+
                 return updatedPlayer;
               }
             }
             return player;
           });
-
 
           // Simple update - UI components read directly from engineState
           set((state) => ({
@@ -629,7 +624,7 @@ export const usePokerHandStore = create<PokerHandState>()(
           if (isStreetComplete) {
             // Mark betting round as complete
             set({ isBettingRoundComplete: true });
-            
+
             // In test environment, still advance synchronously for tests to pass
             if (process.env.NODE_ENV === 'test') {
               get().advanceToNextStreet();
@@ -640,7 +635,7 @@ export const usePokerHandStore = create<PokerHandState>()(
 
           return true;
         }
-        
+
         // Fallback to legacy engine if no event sourcing
         if (!engine) {
           return false;
@@ -722,7 +717,7 @@ export const usePokerHandStore = create<PokerHandState>()(
 
         set((state) => ({
           engineState: newEngineState,
-          players: updatedPlayers.map(p => ({ ...p })), // Deep clone players
+          players: updatedPlayers.map((p) => ({ ...p })), // Deep clone players
           streets: {
             ...state.streets,
             [currentStreet]: {
@@ -735,7 +730,7 @@ export const usePokerHandStore = create<PokerHandState>()(
           formData: {
             ...state.formData,
             [streetKey]: updatedSlots,
-            players: updatedPlayers.map(p => ({ ...p })), // Deep clone formData players too
+            players: updatedPlayers.map((p) => ({ ...p })), // Deep clone formData players too
           },
         }));
 
@@ -750,24 +745,26 @@ export const usePokerHandStore = create<PokerHandState>()(
       // Deal Cards
       dealCards: (playerId, cards, street) => {
         const { engine } = get();
-        
+
         // If we have a legacy engine, use it
         if (engine) {
           engine.dealCards(playerId, cards, street);
           const newEngineState = engine.getCurrentState();
-          
+
           set((state) => ({
             engineState: newEngineState,
             // Update players with hole cards if dealing to a specific player
-            players: playerId ? state.players.map(player => {
-              if (player.id === playerId) {
-                return {
-                  ...player,
-                  holeCards: [...cards] // Clone the cards array
-                };
-              }
-              return { ...player }; // Clone other players too
-            }) : [...state.players],
+            players: playerId
+              ? state.players.map((player) => {
+                  if (player.id === playerId) {
+                    return {
+                      ...player,
+                      holeCards: [...cards], // Clone the cards array
+                    };
+                  }
+                  return { ...player }; // Clone other players too
+                })
+              : [...state.players],
             streets: {
               ...state.streets,
               [street]: {
@@ -780,15 +777,17 @@ export const usePokerHandStore = create<PokerHandState>()(
           // Event sourcing mode - just update local state
           set((state) => ({
             // Update players with hole cards if dealing to a specific player
-            players: playerId ? state.players.map(player => {
-              if (player.id === playerId) {
-                return {
-                  ...player,
-                  holeCards: [...cards] // Clone the cards array
-                };
-              }
-              return { ...player }; // Clone other players too
-            }) : [...state.players],
+            players: playerId
+              ? state.players.map((player) => {
+                  if (player.id === playerId) {
+                    return {
+                      ...player,
+                      holeCards: [...cards], // Clone the cards array
+                    };
+                  }
+                  return { ...player }; // Clone other players too
+                })
+              : [...state.players],
             streets: {
               ...state.streets,
               [street]: {
@@ -823,7 +822,7 @@ export const usePokerHandStore = create<PokerHandState>()(
       // Advance to Next Street
       advanceToNextStreet: () => {
         const { currentStreet, players, engine, eventAdapter, engineState } = get();
-        
+
         // We need either engine or event sourcing to advance
         if (!engine && !eventAdapter) {
           return;
@@ -837,16 +836,16 @@ export const usePokerHandStore = create<PokerHandState>()(
 
           // Generate action slots for next street
           let slots: ActionSlot[] = [];
-          
+
           if (eventAdapter && engineState) {
             // For event sourcing, generate slots based on engine state
             const orderedPlayers = getActionOrder(players, nextStreet);
             const currentPlayerId = engineState.currentState?.betting?.actionOn || null;
-            
+
             slots = orderedPlayers.map((player) => {
               const playersMap = ensurePlayersMap(engineState.currentState?.players);
               const playerState = playersMap.get(player.id);
-              
+
               return {
                 id: generateSlotId(nextStreet, player.id),
                 playerId: player.id,
@@ -872,7 +871,7 @@ export const usePokerHandStore = create<PokerHandState>()(
           if (engineState && (engineState.currentState as any)?.board) {
             communityCards = [...(engineState.currentState as any).board];
           }
-          
+
           // Update formData with community cards based on the new street
           const formDataUpdate: any = {};
           if (nextStreet === Street.FLOP && communityCards.length >= 3) {
@@ -905,22 +904,27 @@ export const usePokerHandStore = create<PokerHandState>()(
           set((state) => ({
             currentStreet: nextStreet,
             isBettingRoundComplete: false,
-            players: updatedPlayers.map(p => ({ ...p })), // Deep clone players
+            players: updatedPlayers.map((p) => ({ ...p })), // Deep clone players
             streets: {
               ...state.streets,
               [nextStreet]: {
                 ...state.streets[nextStreet],
                 actionSlots: slots,
                 pot: state.engineState?.currentState.betting.pot || 0,
-                communityCards: nextStreet === Street.FLOP ? communityCards.slice(0, 3) :
-                               nextStreet === Street.TURN ? communityCards.slice(0, 4) :
-                               nextStreet === Street.RIVER ? communityCards : [],
+                communityCards:
+                  nextStreet === Street.FLOP
+                    ? communityCards.slice(0, 3)
+                    : nextStreet === Street.TURN
+                      ? communityCards.slice(0, 4)
+                      : nextStreet === Street.RIVER
+                        ? communityCards
+                        : [],
               },
             },
             formData: {
               ...state.formData,
               ...formDataUpdate,
-              players: updatedPlayers.map(p => ({ ...p })), // Deep clone formData players too
+              players: updatedPlayers.map((p) => ({ ...p })), // Deep clone formData players too
             },
           }));
         } else {
@@ -933,16 +937,16 @@ export const usePokerHandStore = create<PokerHandState>()(
 
             // Generate action slots for next street
             let slots: ActionSlot[] = [];
-            
+
             if (eventAdapter && engineState) {
               // For event sourcing, generate slots based on engine state
               const orderedPlayers = getActionOrder(players, nextStreet);
               const currentPlayerId = engineState.currentState?.betting?.actionOn || null;
-              
+
               slots = orderedPlayers.map((player) => {
                 const playersMap = ensurePlayersMap(engineState.currentState?.players);
                 const playerState = playersMap.get(player.id);
-                
+
                 return {
                   id: generateSlotId(nextStreet, player.id),
                   playerId: player.id,
@@ -968,7 +972,7 @@ export const usePokerHandStore = create<PokerHandState>()(
             if ((engineState?.currentState as any)?.board) {
               communityCards = [...(engineState?.currentState as any).board];
             }
-            
+
             // Update formData with community cards based on the new street
             const formDataUpdate: any = {};
             if (nextStreet === Street.FLOP && communityCards.length >= 3) {
@@ -988,9 +992,14 @@ export const usePokerHandStore = create<PokerHandState>()(
                   ...state.streets[nextStreet],
                   actionSlots: slots,
                   pot: state.engineState?.currentState.betting.pot || 0,
-                  communityCards: nextStreet === Street.FLOP ? communityCards.slice(0, 3) :
-                                 nextStreet === Street.TURN ? communityCards.slice(0, 4) :
-                                 nextStreet === Street.RIVER ? communityCards : [],
+                  communityCards:
+                    nextStreet === Street.FLOP
+                      ? communityCards.slice(0, 3)
+                      : nextStreet === Street.TURN
+                        ? communityCards.slice(0, 4)
+                        : nextStreet === Street.RIVER
+                          ? communityCards
+                          : [],
                 },
               },
               formData: {
@@ -1102,25 +1111,25 @@ export const usePokerHandStore = create<PokerHandState>()(
       getCurrentActionSlot: () => {
         const { currentStreet, streets } = get();
         const currentSlot = streets[currentStreet].actionSlots.find((s) => s.isActive) || null;
-        
+
         return currentSlot;
       },
 
       isPlayerToAct: (playerId: string) => {
         const { engineState, currentStreet, streets, isBettingRoundComplete } = get();
-        
+
         // If betting round is complete, no one is to act
         if (isBettingRoundComplete) {
           return false;
         }
-        
+
         // First check if we have engine state
         if (engineState && engineState.currentState) {
           // The engine is the source of truth
           const isActive = engineState?.currentState?.betting?.actionOn === playerId;
           return isActive;
         }
-        
+
         // Fallback to checking action slots
         const slot = streets[currentStreet].actionSlots.find((s) => s.playerId === playerId);
         const isActive = slot?.isActive || false;
@@ -1134,10 +1143,10 @@ export const usePokerHandStore = create<PokerHandState>()(
       getSlotById: (slotId) => {
         const { streets } = get();
         for (const street of Object.values(streets)) {
-          const slot = street.actionSlots.find(s => s.id === slotId);
+          const slot = street.actionSlots.find((s) => s.id === slotId);
           if (slot) {
-return slot;
-}
+            return slot;
+          }
         }
         return null;
       },
@@ -1147,7 +1156,7 @@ return slot;
         try {
           // Create a temporary hand builder to generate initial events
           const tempEngine = new HandBuilderService(gameConfig);
-          
+
           // Initialize hand
           const initResult = tempEngine.initializeHand(
             players.map((p) => ({
@@ -1158,23 +1167,22 @@ return slot;
               isHero: p.isHero || false,
             })),
           );
-          
+
           if (!initResult.isValid) {
             console.error('Failed to initialize hand:', initResult.error);
             return null;
           }
-          
+
           // Post blinds
           const blindsResult = tempEngine.postBlinds();
           if (!blindsResult.isValid) {
             console.error('Failed to post blinds:', blindsResult.error);
             return null;
           }
-          
+
           // Get the events from the engine
           const events = tempEngine.getEvents();
-          
-          
+
           // Create hand in database with events
           const response = await fetch('/api/hands/save-engine', {
             method: 'POST',
@@ -1187,30 +1195,29 @@ return slot;
               events,
             }),
           });
-          
+
           if (!response.ok) {
             console.error('Failed to create hand');
             return null;
           }
-          
+
           const data = await response.json();
           const handId = data.hand.id;
-          
+
           // Initialize event sourcing with the new hand
           await get().initializeWithEventSourcing(handId);
-          
+
           return handId;
         } catch (error) {
           console.error('Error creating hand with event sourcing:', error);
           return null;
         }
       },
-      
+
       initializeWithEventSourcing: async (handId) => {
-        
         // Add a small delay to ensure events are fully persisted
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
         // Create a client-side adapter that makes API calls
         const clientAdapter: IEventSourcingAdapter = {
           processCommand: async (playerId: string, action: ActionType, amount?: number) => {
@@ -1221,11 +1228,10 @@ return slot;
               body: JSON.stringify({ playerId, action, amount }),
             });
             const data = await response.json();
-            
-            
+
             return data;
           },
-          
+
           getEvents: async () => {
             const response = await fetch(`/api/hands/${handId}/events`, {
               credentials: 'include',
@@ -1233,7 +1239,7 @@ return slot;
             const data = await response.json();
             return data.events || [];
           },
-          
+
           getValidActions: async () => {
             const response = await fetch(`/api/hands/${handId}/valid-actions`, {
               credentials: 'include',
@@ -1241,33 +1247,32 @@ return slot;
             const data = await response.json();
             return data.validActions || [];
           },
-          
+
           rebuildState: async () => {
             const response = await fetch(`/api/hands/${handId}/events`, {
               credentials: 'include',
             });
             const data = await response.json();
-            
-            
+
             return {
-              currentState: data.currentState || {} as HandState,
+              currentState: data.currentState || ({} as HandState),
               events: data.events || [],
               lastSequence: data.lastSequence || -1,
             };
           },
-          
+
           replayToSequence: async (sequenceNumber: number) => {
             const response = await fetch(`/api/hands/${handId}/replay/${sequenceNumber}`, {
               credentials: 'include',
             });
             const data = await response.json();
             return {
-              currentState: data.currentState || {} as HandState,
+              currentState: data.currentState || ({} as HandState),
               events: data.events || [],
             };
           },
         };
-        
+
         // Set up event listener on engine
         const { engine } = get();
         if (engine) {
@@ -1279,39 +1284,39 @@ return slot;
             });
           }
         }
-        
+
         // Load existing events with retry logic
         let events: any[] = [];
         let state = null;
         let retries = 3;
-        
+
         while (retries > 0) {
           try {
             events = await clientAdapter.getEvents();
             state = await clientAdapter.rebuildState();
-            
+
             // If we got events, break out of retry loop
             if (events.length > 0) {
               break;
             }
-            
+
             // No events found, retry after a delay
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
             retries--;
           } catch (error) {
             console.error('Error loading events:', error);
             retries--;
             if (retries > 0) {
-              await new Promise(resolve => setTimeout(resolve, 1000));
+              await new Promise((resolve) => setTimeout(resolve, 1000));
             }
           }
         }
-        
+
         if (events.length === 0) {
           console.error('Failed to load events after retries');
         }
-        
-        set({ 
+
+        set({
           eventAdapter: clientAdapter,
           handEvents: events,
           engineState: state,
@@ -1322,7 +1327,7 @@ return slot;
 
       getValidActionsForCurrentPlayer: async () => {
         const { eventAdapter } = get();
-        
+
         if (!eventAdapter) {
           return [];
         }
@@ -1337,7 +1342,7 @@ return slot;
         }
 
         const events = await eventAdapter.getEvents();
-        set({ 
+        set({
           handEvents: events,
           isReplaying: true,
           currentEventIndex: 0,
@@ -1351,8 +1356,8 @@ return slot;
         }
 
         const state = await eventAdapter.replayToSequence(handEvents[eventIndex].sequenceNumber);
-        
-        set({ 
+
+        set({
           engineState: state,
           currentEventIndex: eventIndex,
         });
@@ -1390,6 +1395,7 @@ export const useTags = () => usePokerHandStore((state) => state.tags);
 export const usePot = () => usePokerHandStore((state) => state.streets[state.currentStreet].pot);
 export const useCurrentStreet = () => usePokerHandStore((state) => state.currentStreet);
 export const usePlayers = () => usePokerHandStore((state) => state.players);
-export const useIsPlayerToAct = (playerId: string) => usePokerHandStore((state) => {
-  return state.isPlayerToAct(playerId);
-});
+export const useIsPlayerToAct = (playerId: string) =>
+  usePokerHandStore((state) => {
+    return state.isPlayerToAct(playerId);
+  });

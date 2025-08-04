@@ -42,15 +42,11 @@ describe('PokerHandStore - Stack Updates', () => {
 
     // Check initial stacks (after blinds)
     const initialPlayers = result.current.players;
-    const bbPlayer = initialPlayers.find(p => p.id === 'bb');
-    const sbPlayer = initialPlayers.find(p => p.id === 'sb');
-    
-    console.log('Initial players:', {
-      bb: bbPlayer,
-      sb: sbPlayer,
-      engineState: result.current.engineState?.currentState,
-    });
-    
+    const bbPlayer = initialPlayers.find((p) => p.id === 'bb');
+    const sbPlayer = initialPlayers.find((p) => p.id === 'sb');
+
+    // Check initial player states
+
     // SB should have posted 5, so stack should be 95
     expect(sbPlayer?.stackSize[0]).toBe(95);
     // BB should have posted big blind 10, so stack should be 90
@@ -67,9 +63,9 @@ describe('PokerHandStore - Stack Updates', () => {
 
     // Check stacks after SB calls
     const playersAfterSbCall = result.current.players;
-    const bbAfterSbCall = playersAfterSbCall.find(p => p.id === 'bb');
-    const sbAfterCall = playersAfterSbCall.find(p => p.id === 'sb');
-    
+    const bbAfterSbCall = playersAfterSbCall.find((p) => p.id === 'bb');
+    const sbAfterCall = playersAfterSbCall.find((p) => p.id === 'sb');
+
     // SB posted 5 initially, then called 5 more, so should have 90
     expect(sbAfterCall?.stackSize[0]).toBe(90);
     // BB stack should remain the same
@@ -86,9 +82,9 @@ describe('PokerHandStore - Stack Updates', () => {
 
     // Check final stacks
     const finalPlayers = result.current.players;
-    const bbFinal = finalPlayers.find(p => p.id === 'bb');
-    const sbFinal = finalPlayers.find(p => p.id === 'sb');
-    
+    const bbFinal = finalPlayers.find((p) => p.id === 'bb');
+    const sbFinal = finalPlayers.find((p) => p.id === 'sb');
+
     // BB should still have 90
     expect(bbFinal?.stackSize[0]).toBe(90);
     // SB should have 90
@@ -135,8 +131,8 @@ describe('PokerHandStore - Stack Updates', () => {
 
     // Check stacks after raise
     const playersAfterRaise = result.current.players;
-    const utgAfterRaise = playersAfterRaise.find(p => p.id === 'utg');
-    
+    const utgAfterRaise = playersAfterRaise.find((p) => p.id === 'utg');
+
     // UTG posted 10, then raised to 30 total, so spent 30 total
     expect(utgAfterRaise?.stackSize[0]).toBe(170);
   });
