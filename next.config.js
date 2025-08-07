@@ -5,6 +5,12 @@ const nextConfig = {
     ppr: false, // Disable partial prerendering for now
   },
 
+  // Production optimizations
+  reactStrictMode: true,
+  poweredByHeader: false,
+  compress: true,
+  productionBrowserSourceMaps: false,
+
   // Environment variables that will be available to the client
   env: {
     CUSTOM_KEY: 'value',

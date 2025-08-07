@@ -15,9 +15,18 @@ interface PlayerSeatDisplayProps {
 // Memoized component with custom comparison
 const PlayerSeatDisplayOptimized = React.memo<PlayerSeatDisplayProps>(
   ({ player, position, isToAct = false }) => {
+    // Render logging disabled for production build
+    // Enable only for debugging test failures by uncommenting:
+    // if (process.env.NODE_ENV === 'test') {
+    //   console.log('[PlayerSeat] Rendering', {
+    //     playerId: player.id,
+    //     stack: Array.isArray(player.stackSize) ? player.stackSize[0] : player.stackSize,
+    //     isToAct,
+    //   });
+    // }
     // Subscribe to engine state changes - this ensures re-render when state updates
-    const engineState = usePokerHandStore(state => state.engineState);
-    
+    const engineState = usePokerHandStore((state) => state.engineState);
+
     // Get the actual stack from engine state
     let stackValue = 0;
     if (engineState?.currentState?.players) {
@@ -29,23 +38,23 @@ const PlayerSeatDisplayOptimized = React.memo<PlayerSeatDisplayProps>(
         // It's a plain object from JSON
         enginePlayer = engineState.currentState.players[player.id];
       }
-      
+
       if (enginePlayer && typeof enginePlayer.stackSize === 'number') {
         stackValue = enginePlayer.stackSize;
       } else {
         // Fallback to player prop
-        stackValue = Array.isArray(player.stackSize) ? player.stackSize[0] : (player.stackSize || 0);
+        stackValue = Array.isArray(player.stackSize) ? player.stackSize[0] : player.stackSize || 0;
       }
     } else {
       // No engine state, use player prop
-      stackValue = Array.isArray(player.stackSize) ? player.stackSize[0] : (player.stackSize || 0);
+      stackValue = Array.isArray(player.stackSize) ? player.stackSize[0] : player.stackSize || 0;
     }
-    
+
     // Get player status and bet from engine
     let hasFolded = false;
     let isAllIn = false;
     let betAmount = 0;
-    
+
     if (engineState?.currentState?.players) {
       // Use the same enginePlayer we already fetched
       let enginePlayer;
@@ -54,7 +63,7 @@ const PlayerSeatDisplayOptimized = React.memo<PlayerSeatDisplayProps>(
       } else {
         enginePlayer = engineState.currentState.players[player.id];
       }
-      
+
       if (enginePlayer) {
         hasFolded = enginePlayer.status === 'folded';
         isAllIn = enginePlayer.status === 'allIn';
@@ -66,7 +75,7 @@ const PlayerSeatDisplayOptimized = React.memo<PlayerSeatDisplayProps>(
       isAllIn = (player as any).isAllIn || false;
       betAmount = (player as any).betAmount || 0;
     }
-    
+
     const shouldShowPosition =
       position && position.toLowerCase() !== 'unknown' && position.toLowerCase() !== '';
 
@@ -90,15 +99,8 @@ const PlayerSeatDisplayOptimized = React.memo<PlayerSeatDisplayProps>(
         >
           {player.name}
         </p>
-        <span
-          className={cn(
-            'text-xs mt-1',
-            hasFolded ? 'text-slate-600' : 'text-slate-400',
-          )}
-        >
-          {isAllIn
-            ? 'All-in'
-            : `$${stackValue}`}
+        <span className={cn('text-xs mt-1', hasFolded ? 'text-slate-600' : 'text-slate-400')}>
+          {isAllIn ? 'All-in' : `$${stackValue}`}
         </span>
         {shouldShowPosition && (
           <span className="text-xs text-emerald-400 font-medium absolute -bottom-5">
@@ -119,16 +121,31 @@ const PlayerSeatDisplayOptimized = React.memo<PlayerSeatDisplayProps>(
         {player.isHero && player.holeCards && player.holeCards.length > 0 && (
           <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 flex gap-1">
             {player.holeCards.map((card, index) => (
-              <CardFromString
-                key={index}
-                card={card}
-                size="xs"
-                className="shadow-lg"
-              />
+              <CardFromString key={index} card={card} size="xs" className="shadow-lg" />
             ))}
           </div>
         )}
       </div>
+    );
+  },
+  // Custom comparison function
+  (prevProps, nextProps) => {
+    const prevStack = Array.isArray(prevProps.player.stackSize)
+      ? prevProps.player.stackSize[0]
+      : prevProps.player.stackSize;
+    const nextStack = Array.isArray(nextProps.player.stackSize)
+      ? nextProps.player.stackSize[0]
+      : nextProps.player.stackSize;
+
+    // Return true if props are equal (skip re-render), false if different
+    return (
+      prevProps.player.id === nextProps.player.id &&
+      prevStack === nextStack &&
+      prevProps.isToAct === nextProps.isToAct &&
+      prevProps.position === nextProps.position &&
+      JSON.stringify(prevProps.player.holeCards) === JSON.stringify(nextProps.player.holeCards) &&
+      (prevProps.player as any).betAmount === (nextProps.player as any).betAmount &&
+      (prevProps.player as any).hasFolded === (nextProps.player as any).hasFolded
     );
   },
 );

@@ -72,7 +72,7 @@ describe('UTG vs SB Partial Hand Scenarios', () => {
       await processCommand(adapter, 'sb', ActionType.CALL);
 
       // Wait for automatic street transition
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Should move to flop
       await expectState(adapter, {
@@ -98,6 +98,9 @@ describe('UTG vs SB Partial Hand Scenarios', () => {
       // Complete preflop: UTG calls, SB calls
       await processCommand(adapter, 'utg', ActionType.CALL);
       await processCommand(adapter, 'sb', ActionType.CALL);
+
+      // Wait for automatic street transition
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       // Verify we're on flop
       await expectState(adapter, {

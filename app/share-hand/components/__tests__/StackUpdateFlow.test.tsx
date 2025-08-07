@@ -46,7 +46,7 @@ jest.mock('@/poker-engine/hooks/useHandBuilder', () => ({
 
 // Mock the lazy-loaded PokerTable to use store data
 jest.mock('../lazy-components', () => ({
-  LazyPokerTable: ({ pot }: { pot: number }) => {
+  LazyPokerTable: ({ pot, children }: { pot: number; children?: React.ReactNode }) => {
     // Get players from the store directly
     const storeModule = jest.requireMock<typeof import('@/stores/poker-hand-store')>(
       '@/stores/poker-hand-store',
@@ -65,7 +65,7 @@ jest.mock('../lazy-components', () => ({
             <span data-testid={`player-bet-${player.id}`}>Bet: ${player.betAmount || 0}</span>
           </div>
         ))}
-        {props.children}
+        {children}
       </div>
     );
   },
@@ -274,7 +274,7 @@ describe('Stack Update Flow', () => {
 
   it('updates stack sizes after a raise action', async () => {
     // Mock the processAction to update players with new stack
-    mockProcessAction.mockImplementation(async () => {
+    mockProcessAction.mockImplementation(async (slotId, action, amount) => {
       if (slotId === 'preflop-utg' && action === ActionType.RAISE && amount === 30) {
         // Update the store to reflect the raise
         mockStore.players = [

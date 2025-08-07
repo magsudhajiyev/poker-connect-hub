@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
 @tailwind base;
 @tailwind components;
@@ -76,7 +75,8 @@ html {
 
 /* Custom animations for player action indicators */
 @keyframes ring-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -87,11 +87,17 @@ html {
 }
 
 @keyframes glow-pulse {
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(16, 185, 129, 0.5), 0 0 10px rgba(16, 185, 129, 0.3);
+  0%,
+  100% {
+    box-shadow:
+      0 0 5px rgba(16, 185, 129, 0.5),
+      0 0 10px rgba(16, 185, 129, 0.3);
   }
   50% {
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.8), 0 0 20px rgba(16, 185, 129, 0.5), 0 0 30px rgba(16, 185, 129, 0.3);
+    box-shadow:
+      0 0 10px rgba(16, 185, 129, 0.8),
+      0 0 20px rgba(16, 185, 129, 0.5),
+      0 0 30px rgba(16, 185, 129, 0.3);
   }
 }
 
@@ -101,4 +107,75 @@ html {
 
 .glow-pulse {
   animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* Enhanced card animations for poker feel */
+@keyframes card-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes card-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  50% {
+    box-shadow:
+      0 10px 15px -3px rgba(59, 130, 246, 0.3),
+      0 4px 6px -2px rgba(59, 130, 246, 0.2),
+      0 0 0 1px rgba(59, 130, 246, 0.1);
+  }
+}
+
+/* Card felt texture effect */
+.card-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+  pointer-events: none;
+}
+
+.card-container:hover::before {
+  left: 100%;
+}
+
+/* Smooth card reveal animation */
+@keyframes card-reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0% 0 0);
+  }
+}
+
+/* Perspective for 3D card effects */
+.card-3d-container {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+/* Accessibility: respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .card-container::before,
+  .card-reveal,
+  .motion-safe\:animate-card-deal,
+  .motion-safe\:animate-gentle-pulse,
+  .motion-safe\:animate-card-hover-lift {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
 }

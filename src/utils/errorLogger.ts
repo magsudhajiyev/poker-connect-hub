@@ -80,10 +80,7 @@ class PokerConnectErrorLogger implements ErrorLogger {
 
     // Console log in development
     if (process.env.NODE_ENV === 'development') {
-      const logMethod =
-        entry.level === 'error'
-          ? console.error
-          : console.warn;
+      const logMethod = entry.level === 'error' ? console.error : console.warn;
 
       logMethod(
         `[${entry.level.toUpperCase()}] ${entry.context ? `${entry.context}: ` : ''}${entry.message}`,
@@ -100,16 +97,14 @@ class PokerConnectErrorLogger implements ErrorLogger {
     }
   }
 
-  private async sendToErrorService(entry: ErrorLogEntry): Promise<void> {
+  private async sendToErrorService(_entry: ErrorLogEntry): Promise<void> {
     try {
       // This is where you would integrate with services like:
       // - Sentry
       // - LogRocket
       // - DataDog
       // - Custom logging endpoint
-
-      console.warn('Error logging service not configured:', entry);
-
+      // console.warn('Error logging service not configured:', entry);
       // Example of sending to a custom endpoint:
       /*
       await fetch('/api/errors', {

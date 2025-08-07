@@ -13,21 +13,22 @@ describe('Action Flow Integration', () => {
 
   it('advances to next player after action', async () => {
     const { result } = renderHook(() => usePokerHandStore());
-    
+
     const players = [
       { id: 'utg', name: 'Player 1', position: 'utg', stackSize: [100], isHero: false },
       { id: 'sb', name: 'Player 2', position: 'sb', stackSize: [100], isHero: true },
     ];
-    
+
     const gameConfig = {
       gameType: GameType.NLH,
       gameFormat: GameFormat.CASH,
       blinds: { small: 5, big: 10 },
     };
-    
+
     // Mock event adapter
     const mockEventAdapter = {
-      rebuildState: jest.fn()
+      rebuildState: jest
+        .fn()
         .mockResolvedValueOnce({
           // Initial state - UTG to act
           currentState: {
@@ -61,7 +62,7 @@ describe('Action Flow Integration', () => {
       }),
       getEvents: jest.fn().mockResolvedValue([]),
     };
-    
+
     // Initialize game with event adapter
     act(() => {
       usePokerHandStore.setState({
@@ -71,9 +72,21 @@ describe('Action Flow Integration', () => {
         gameConfig,
         isEngineInitialized: true,
         currentStreet: 'preflop',
+        engineState: {
+          currentState: {
+            betting: { actionOn: 'utg', pot: 15, currentBet: 10 },
+            players: {
+              utg: { id: 'utg', stackSize: 100, status: 'active', currentBet: 0 },
+              sb: { id: 'sb', stackSize: 95, status: 'active', currentBet: 5 },
+            },
+            playerOrder: ['utg', 'sb'],
+            street: 'preflop',
+          },
+          events: [],
+        },
         streets: {
-          preflop: { 
-            communityCards: [], 
+          preflop: {
+            communityCards: [],
             actionSlots: [
               {
                 id: 'preflop-utg',
@@ -103,8 +116,8 @@ describe('Action Flow Integration', () => {
                 completed: false,
                 canEdit: false,
               },
-            ], 
-            isComplete: false, 
+            ],
+            isComplete: false,
             pot: 15,
           },
           flop: { communityCards: [], actionSlots: [], isComplete: false, pot: 0 },
@@ -113,37 +126,37 @@ describe('Action Flow Integration', () => {
         },
       });
     });
-    
+
     // Verify initial state - UTG is active
     expect(result.current.isPlayerToAct('utg')).toBe(true);
     expect(result.current.isPlayerToAct('sb')).toBe(false);
-    
+
     // Process UTG call
     let success;
     await act(async () => {
       success = await result.current.processAction('preflop-utg', ActionType.CALL, 10);
     });
-    
+
     expect(success).toBe(true);
-    
+
     // Verify action advanced to SB
     const preflopSlots = result.current.streets.preflop.actionSlots;
-    
+
     // UTG should be completed and inactive
-    const utgSlot = preflopSlots.find(s => s.playerId === 'utg');
+    const utgSlot = preflopSlots.find((s) => s.playerId === 'utg');
     expect(utgSlot).toMatchObject({
       action: ActionType.CALL,
       completed: true,
       isActive: false,
     });
-    
+
     // SB should now be active
-    const sbSlot = preflopSlots.find(s => s.playerId === 'sb');
+    const sbSlot = preflopSlots.find((s) => s.playerId === 'sb');
     expect(sbSlot).toMatchObject({
       isActive: true,
       completed: false,
     });
-    
+
     // Verify through isPlayerToAct
     expect(result.current.isPlayerToAct('utg')).toBe(false);
     expect(result.current.isPlayerToAct('sb')).toBe(true);
@@ -151,15 +164,16 @@ describe('Action Flow Integration', () => {
 
   it('updates pot correctly after action', async () => {
     const { result } = renderHook(() => usePokerHandStore());
-    
+
     const players = [
       { id: 'co', name: 'Player 1', position: 'co', stackSize: [200], isHero: false },
       { id: 'btn', name: 'Player 2', position: 'btn', stackSize: [200], isHero: true },
     ];
-    
+
     // Mock adapter with pot updates
     const mockEventAdapter = {
-      rebuildState: jest.fn()
+      rebuildState: jest
+        .fn()
         .mockResolvedValueOnce({
           currentState: {
             betting: { actionOn: 'co', pot: 0, currentBet: 0 },
@@ -188,7 +202,7 @@ describe('Action Flow Integration', () => {
       processCommand: jest.fn().mockResolvedValue({ success: true }),
       getEvents: jest.fn().mockResolvedValue([]),
     };
-    
+
     // Initialize
     act(() => {
       usePokerHandStore.setState({
@@ -203,8 +217,8 @@ describe('Action Flow Integration', () => {
         isEngineInitialized: true,
         currentStreet: 'preflop',
         streets: {
-          preflop: { 
-            communityCards: [], 
+          preflop: {
+            communityCards: [],
             actionSlots: [
               {
                 id: 'preflop-co',
@@ -234,8 +248,8 @@ describe('Action Flow Integration', () => {
                 completed: false,
                 canEdit: false,
               },
-            ], 
-            isComplete: false, 
+            ],
+            isComplete: false,
             pot: 0,
           },
           flop: { communityCards: [], actionSlots: [], isComplete: false, pot: 0 },
@@ -244,12 +258,12 @@ describe('Action Flow Integration', () => {
         },
       });
     });
-    
+
     // Process CO bet
     await act(async () => {
       await result.current.processAction('preflop-co', ActionType.BET, 6);
     });
-    
+
     // Verify pot was updated
     expect(result.current.streets.preflop.pot).toBe(6);
     expect(result.current.engineState?.currentState?.betting?.pot).toBe(6);

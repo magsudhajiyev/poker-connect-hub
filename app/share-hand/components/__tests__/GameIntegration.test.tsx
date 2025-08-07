@@ -292,7 +292,7 @@ describe('Game Integration Tests', () => {
     // Start with a non-zero pot so PotDisplay renders
     mockEngine.currentState.betting.pot = 15;
 
-    render(<TestGameFlow />);
+    const { rerender } = render(<TestGameFlow />);
 
     // Pot display might not render if pot is 0, so let's check for the debug info instead
     expect(screen.getByTestId('debug-info')).toBeInTheDocument();

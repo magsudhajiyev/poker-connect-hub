@@ -1,4 +1,3 @@
- 
 // src/poker-engine/core/rules.ts
 import { HandState, LegalAction } from './state';
 import { Position, Street, GameType, ActionType } from '@/types/poker';
@@ -13,16 +12,13 @@ export class PokerRules {
     if (!player || player.status !== 'active') {
       return [];
     }
-    
 
     const actions: LegalAction[] = [];
     const toCall = state.betting.currentBet - player.currentBet;
     const stack = player.stackSize;
 
-    // Fold - always available when facing a bet
-    if (toCall > 0) {
-      actions.push({ type: ActionType.FOLD });
-    }
+    // Fold - always available (player can voluntarily fold at any time)
+    actions.push({ type: ActionType.FOLD });
 
     // Check - available when no bet to call
     if (toCall === 0) {
@@ -67,19 +63,24 @@ export class PokerRules {
         // A player who has acted cannot raise if only facing an incomplete all-in
         const minRaiseTotal = this.calculateMinRaise(state);
         const minRaiseAmount = minRaiseTotal - player.currentBet;
-        
+
         // Check if player is facing an incomplete raise
-        // An incomplete raise is when someone went all-in but couldn't make a full raise
-        // This happens when the current bet increased by less than the last raise size
-        const lastRaiseSize = state.betting.lastRaiseSize || state.gameConfig.blinds.big;
-        const currentRaiseFromPlayerBet = state.betting.currentBet - player.currentBet;
-        const facingIncompleteRaise = player.hasActed && 
-          currentRaiseFromPlayerBet > 0 &&
-          currentRaiseFromPlayerBet < lastRaiseSize;
-        
-        
-        
-        if (stack >= minRaiseAmount && !facingIncompleteRaise) {
+        // POKER RULE: Incomplete Raise (All-in for less than minimum)
+        // When a player goes all-in but cannot make a full minimum raise:
+        // 1. It does NOT reopen the betting for players who have already acted
+        // 2. Players who haven't acted yet can still raise normally
+        // 3. Players who have acted can only call or fold (not raise)
+        // Example: Blinds $1/$2, Player A bets $10, Player B raises to $30 (raise of $20),
+        // Player C goes all-in for $35 (only $5 more, less than min raise of $20).
+        // Player A can only call $35 or fold, cannot re-raise.
+
+        // A player can raise unless:
+        // 1. They have already acted in this betting round AND
+        // 2. The action was NOT reopened by a complete raise
+        // The hasActed flag is reset when someone makes a complete raise,
+        // so if hasActed is true here, it means they're facing an incomplete raise
+
+        if (stack >= minRaiseAmount && !player.hasActed) {
           actions.push({
             type: ActionType.RAISE,
             minAmount: minRaiseTotal, // This should be the total amount, not the additional chips
@@ -102,17 +103,22 @@ export class PokerRules {
   }
 
   private calculateMinBet(state: HandState): number {
-    // Minimum bet is usually the big blind
+    // POKER RULE: Minimum Bet
+    // The minimum bet is typically one big blind
+    // In some games this could be different (e.g., pot-limit games)
     return state.gameConfig.blinds.big;
   }
 
   private calculateMinRaise(state: HandState): number {
-    // Use the minRaise from betting state if it's been set
-    // Otherwise calculate it as current bet + last raise size
+    // POKER RULE: Minimum Raise Amount
+    // The minimum raise must be at least the size of the last bet or raise
+    // Example: If current bet is $10 and last raise was from $4 to $10 (raise of $6),
+    // then minimum raise would be to $16 ($10 + $6)
+    // If no previous raise in this round, minimum raise is one big blind
     if (state.betting.minRaise > 0) {
       return state.betting.minRaise;
     }
-    
+
     const minRaiseSize =
       state.betting.lastRaiseSize > 0 ? state.betting.lastRaiseSize : state.gameConfig.blinds.big;
 
@@ -141,7 +147,10 @@ export class PokerRules {
       return true;
     }
 
-    // Special handling for heads-up
+    // POKER RULE: Heads-up Preflop Special Case
+    // In heads-up play, the button posts the small blind and acts first preflop
+    // The big blind acts last preflop (gets last action)
+    // Betting round is complete when both players have acted and matched bets
     if (activePlayers.length === 2 && state.street === Street.PREFLOP) {
       // In heads-up preflop, round is complete when:
       // 1. Both players have acted
@@ -150,19 +159,25 @@ export class PokerRules {
       const [p1, p2] = activePlayers;
       const bothActed = p1.hasActed && p2.hasActed;
       const sameBets = p1.currentBet === p2.currentBet;
-      
+
       if (bothActed && sameBets && p1.currentBet > 0) {
         const lastAction = state.actionHistory[state.actionHistory.length - 1];
-        if (lastAction && (lastAction.action === ActionType.CALL || 
-            (lastAction.action === ActionType.CHECK && state.betting.currentBet === state.gameConfig.blinds.big))) {
+        if (
+          lastAction &&
+          (lastAction.action === ActionType.CALL ||
+            (lastAction.action === ActionType.CHECK &&
+              state.betting.currentBet === state.gameConfig.blinds.big))
+        ) {
           return true;
         }
       }
     }
 
     // All active players must have acted and matched the current bet
-    const allActedAndMatched = activeNonAllIn.every((p) => p.hasActed && p.currentBet === state.betting.currentBet);
-    
+    const allActedAndMatched = activeNonAllIn.every(
+      (p) => p.hasActed && p.currentBet === state.betting.currentBet,
+    );
+
     return allActedAndMatched;
   }
 
@@ -201,50 +216,68 @@ export class PokerRules {
     players: Array<{ position: Position | string; id: string }>,
     street: Street,
   ): string[] {
-    // Special handling for heads-up
+    // POKER RULE: Heads-up Position Rules (Traditional)
+    // In traditional heads-up (BTN vs BB):
+    // - The button posts the small blind
+    // - The other player posts the big blind
+    // - Preflop: Button acts first, BB acts last
+    // - Postflop: BB acts first, Button acts last
+
+    // Special case ONLY for traditional heads-up (BTN vs BB)
     if (players.length === 2) {
-      const hasBtn = players.some(p => p.position === Position.BTN || p.position === 'BTN');
-      const hasBB = players.some(p => p.position === Position.BB || p.position === 'BB');
-      
+      const hasBtn = players.some((p) => p.position === Position.BTN || p.position === 'BTN');
+      const hasBB = players.some((p) => p.position === Position.BB || p.position === 'BB');
+
+      // ONLY apply special heads-up rules if it's actually BTN vs BB
       if (hasBtn && hasBB) {
-        // Heads-up: BTN is SB and acts first preflop, BB acts first postflop
         if (street === Street.PREFLOP) {
-          const btnPlayer = players.find(p => p.position === Position.BTN || p.position === 'BTN')!;
-          const bbPlayer = players.find(p => p.position === Position.BB || p.position === 'BB')!;
+          const btnPlayer = players.find(
+            (p) => p.position === Position.BTN || p.position === 'BTN',
+          )!;
+          const bbPlayer = players.find((p) => p.position === Position.BB || p.position === 'BB')!;
           return [btnPlayer.id, bbPlayer.id];
         } else {
           // Post-flop: BB acts first
-          const bbPlayer = players.find(p => p.position === Position.BB || p.position === 'BB')!;
-          const btnPlayer = players.find(p => p.position === Position.BTN || p.position === 'BTN')!;
+          const bbPlayer = players.find((p) => p.position === Position.BB || p.position === 'BB')!;
+          const btnPlayer = players.find(
+            (p) => p.position === Position.BTN || p.position === 'BTN',
+          )!;
           return [bbPlayer.id, btnPlayer.id];
         }
       }
+      // For all other 2-player combinations, fall through to standard position order
     }
+
+    // POKER RULE: Standard Position Order
+    // For all non-heads-up games and partial hands:
+    // Preflop: Action starts left of BB (UTG) and continues clockwise
+    // Postflop: Action starts with first active player left of button
+    // Position advantage: Button acts last on all postflop streets
 
     // Define position order for post-flop
     const postflopOrder: string[] = [
-      Position.SB,
-      Position.BB,
-      Position.UTG,
+      Position.SB, // Small blind acts first postflop
+      Position.BB, // Big blind acts second
+      Position.UTG, // Then continues clockwise
       Position.UTG1,
       Position.MP,
       Position.LJ,
       Position.HJ,
       Position.CO,
-      Position.BTN,
+      Position.BTN, // Button acts last (best position)
     ];
 
     // Define position order for preflop
     const preflopOrder: string[] = [
-      Position.UTG,
-      Position.UTG1,
-      Position.MP,
-      Position.LJ,
-      Position.HJ,
-      Position.CO,
-      Position.BTN,
-      Position.SB,
-      Position.BB,
+      Position.UTG, // "Under the gun" - first to act preflop
+      Position.UTG1, // Also called UTG+1 or EP (early position)
+      Position.MP, // Middle position
+      Position.LJ, // Lojack
+      Position.HJ, // Hijack
+      Position.CO, // Cutoff
+      Position.BTN, // Button/Dealer
+      Position.SB, // Small blind
+      Position.BB, // Big blind acts last preflop
     ];
 
     const orderToUse = street === Street.PREFLOP ? preflopOrder : postflopOrder;

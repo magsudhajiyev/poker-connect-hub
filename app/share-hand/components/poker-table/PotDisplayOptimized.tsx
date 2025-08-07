@@ -27,8 +27,8 @@ const PotDisplayOptimized = React.memo<PotDisplayOptimizedProps>(
     // Memoize side pots display
     const sidePotDisplays = useMemo(() => {
       if (!sidePots || sidePots.length === 0) {
-return null;
-}
+        return null;
+      }
 
       return sidePots.map((sidePot, index) => {
         const display = displayValues
@@ -44,12 +44,12 @@ return null;
     }, [sidePots, displayValues, getCurrencySymbol]);
 
     return (
-      <div className={cn('absolute top-[35%] left-1/2 transform -translate-x-1/2', className)}>
-        <div className="bg-slate-900/90 backdrop-blur-sm px-6 py-3 rounded-full border border-slate-700 shadow-lg">
-          <div className="flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-amber-400" />
+      <div className={cn('', className)}>
+        <div className="bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-slate-700 shadow-lg">
+          <div className="flex items-center gap-1.5">
+            <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400" />
             <div>
-              <p className="text-lg font-bold text-amber-400">{displayPot}</p>
+              <p className="text-sm sm:text-base font-bold text-amber-400">{displayPot}</p>
               {sidePotDisplays && (
                 <div className="text-xs text-slate-400 mt-1">
                   {sidePotDisplays.map((sidePot) => (

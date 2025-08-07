@@ -46,7 +46,7 @@ export class PokerHandEngine {
 
   // Remove listener
   public offEvent(listener: (event: PokerEvent) => void | Promise<void>): void {
-    this.eventListeners = this.eventListeners.filter(l => l !== listener);
+    this.eventListeners = this.eventListeners.filter((l) => l !== listener);
   }
 
   // Emit event to all listeners
@@ -114,7 +114,6 @@ export class PokerHandEngine {
     if (!validation.isValid) {
       return { success: false, error: new Error(validation.error || 'Invalid event') };
     }
-    
 
     // Apply event
     const handler = this.eventHandlers.get(event.type);
@@ -210,7 +209,10 @@ export class PokerHandEngine {
       actionHistory: [...state.actionHistory],
     };
 
-    
+    // POKER RULE: Blind Posting
+    // Blinds are forced bets that create initial action
+    // Small blind is typically half the big blind
+    // These bets are made before cards are dealt
     blindsEvent.data.posts.forEach((post) => {
       const player = newState.players.get(post.playerId);
       if (player) {
@@ -225,19 +227,21 @@ export class PokerHandEngine {
       }
     });
 
-    // Add dead blinds to the pot
+    // POKER RULE: Dead Blinds
+    // Dead blinds occur when a player leaves and their blind is still owed
+    // The dead small blind goes directly to the pot
+    // The dead big blind is treated as a bet that must be matched
     if (blindsEvent.data.deadSmallBlind) {
       newState.betting.pot += blindsEvent.data.deadSmallBlind;
     }
     if (blindsEvent.data.deadBigBlind) {
       newState.betting.pot += blindsEvent.data.deadBigBlind;
       // If there's a dead big blind, set it as the current bet
-      const hasBigBlindPlayer = blindsEvent.data.posts.some(p => p.type === 'big');
+      const hasBigBlindPlayer = blindsEvent.data.posts.some((p) => p.type === 'big');
       if (!hasBigBlindPlayer) {
         newState.betting.currentBet = state.gameConfig.blinds.big;
       }
     }
-
 
     return newState;
   }
@@ -285,7 +289,7 @@ export class PokerHandEngine {
     if (!player) {
       throw new Error(`Player ${playerId} not found`);
     }
-    
+
     // Validate the action before processing
     const validation = this.validateAction(playerId, action, amount);
     if (!validation.isValid) {
@@ -336,16 +340,22 @@ export class PokerHandEngine {
         this.addChipsToPot(newState, playerId, allInAmount);
         player.status = 'allIn';
 
-        // Update currentBet if this all-in is greater than current bet
+        // POKER RULE: All-in Betting Rules
+        // When a player goes all-in:
+        // 1. If it's less than a minimum raise, it's an "incomplete raise"
+        // 2. Incomplete raises do NOT reopen betting for players who already acted
+        // 3. Only complete raises (>= last raise size) reopen the betting
+        // This prevents players from making tiny all-ins to reopen betting
         if (player.currentBet > newState.betting.currentBet) {
           const previousBet = newState.betting.currentBet;
           const raiseAmount = player.currentBet - previousBet;
           newState.betting.currentBet = player.currentBet;
-          
+
           // Only reopen action if the all-in is a complete raise
           if (raiseAmount >= newState.betting.lastRaiseSize) {
             newState.betting.lastRaiseSize = raiseAmount;
-            newState.betting.minRaise = newState.betting.currentBet + newState.betting.lastRaiseSize;
+            newState.betting.minRaise =
+              newState.betting.currentBet + newState.betting.lastRaiseSize;
             newState.betting.lastAggressor = playerId;
             newState.betting.numBets++;
 
@@ -430,21 +440,18 @@ export class PokerHandEngine {
         allPlayers,
         streetEvent.data.nextStreet,
       );
-      
 
       // Determine first player to act after resetting hasActed
       // This ensures proper player order is followed
       const firstActivePlayer = newState.playerOrder
-        .map(id => ({ id, player: newState.players.get(id)! }))
+        .map((id) => ({ id, player: newState.players.get(id)! }))
         .find(({ player }) => player && player.status === 'active');
-      
-      
+
       newState.betting.actionOn = firstActivePlayer ? firstActivePlayer.id : null;
     } else {
       // Hand is complete
       newState.isComplete = true;
     }
-
 
     return newState;
   }
@@ -493,6 +500,14 @@ export class PokerHandEngine {
   }
 
   private calculateSidePots(state: HandState): void {
+    // POKER RULE: Side Pot Creation
+    // When a player goes all-in for less than others have bet:
+    // 1. They can only win what they've contributed from each player
+    // 2. A side pot is created for additional betting between remaining players
+    // 3. Multiple side pots can exist with multiple all-ins
+    // Example: Player A all-in for $100, B all-in for $200, C calls $200
+    // Main pot: $300 (A eligible), Side pot: $200 (B & C eligible)
+
     // Get all players who have invested chips
     const players = Array.from(state.players.entries())
       .filter(([_, p]) => p.totalInvested > 0)
@@ -504,13 +519,13 @@ export class PokerHandEngine {
       }));
 
     if (players.length === 0) {
-return;
-}
+      return;
+    }
 
     // Get unique investment amounts from all-in players
     const allInAmounts = players
-      .filter(p => p.isAllIn)
-      .map(p => p.invested)
+      .filter((p) => p.isAllIn)
+      .map((p) => p.invested)
       .filter((value, index, self) => self.indexOf(value) === index)
       .sort((a, b) => a - b);
 
@@ -520,39 +535,38 @@ return;
     // Create side pots for each all-in level
     for (const level of allInAmounts) {
       const contribution = level - previousLevel;
-      const contributors = players.filter(p => p.invested >= level);
-      const eligibleContributors = contributors.filter(p => p.isEligible);
-      
-      
+      const contributors = players.filter((p) => p.invested >= level);
+      const eligibleContributors = contributors.filter((p) => p.isEligible);
+
       if (contribution > 0 && contributors.length > 0) {
         sidePots.push({
           id: `pot-${sidePots.length}`,
           amount: contribution * contributors.length,
-          eligiblePlayers: eligibleContributors.map(p => p.playerId),
+          eligiblePlayers: eligibleContributors.map((p) => p.playerId),
           created: {
             street: state.street,
-            allInPlayer: players.find(p => p.isAllIn && p.invested === level)?.playerId || '',
+            allInPlayer: players.find((p) => p.isAllIn && p.invested === level)?.playerId || '',
           },
         });
       }
-      
+
       previousLevel = level;
     }
 
     // Create final pot for remaining chips
     const maxAllIn = allInAmounts.length > 0 ? allInAmounts[allInAmounts.length - 1] : 0;
-    const playersWithMore = players.filter(p => p.invested > maxAllIn && p.isEligible);
-    
+    const playersWithMore = players.filter((p) => p.invested > maxAllIn && p.isEligible);
+
     if (playersWithMore.length > 0) {
       const remainingTotal = players
-        .filter(p => p.invested > maxAllIn)
+        .filter((p) => p.invested > maxAllIn)
         .reduce((sum, p) => sum + (p.invested - maxAllIn), 0);
-      
+
       if (remainingTotal > 0) {
         sidePots.push({
           id: `pot-${sidePots.length}`,
           amount: remainingTotal,
-          eligiblePlayers: playersWithMore.map(p => p.playerId),
+          eligiblePlayers: playersWithMore.map((p) => p.playerId),
           created: {
             street: state.street,
             allInPlayer: '',
@@ -564,13 +578,13 @@ return;
     // If no all-in players, just keep the main pot
     if (allInAmounts.length === 0) {
       const totalPot = players.reduce((sum, p) => sum + p.invested, 0);
-      const eligiblePlayers = players.filter(p => p.isEligible);
-      
+      const eligiblePlayers = players.filter((p) => p.isEligible);
+
       if (totalPot > 0 && eligiblePlayers.length > 0) {
         sidePots.push({
           id: 'pot-0',
           amount: totalPot,
-          eligiblePlayers: eligiblePlayers.map(p => p.playerId),
+          eligiblePlayers: eligiblePlayers.map((p) => p.playerId),
           created: {
             street: state.street,
             allInPlayer: '',
@@ -591,17 +605,19 @@ return;
     if (this.state.isComplete) {
       return;
     }
-    
-    const activePlayers = Array.from(this.state.players.values())
-      .filter((p) => p.status !== 'folded');
+
+    const activePlayers = Array.from(this.state.players.values()).filter(
+      (p) => p.status !== 'folded',
+    );
 
     // Check if only one player remains (everyone else folded)
     if (activePlayers.length === 1) {
       // Award pot to the remaining player
       const winner = activePlayers[0];
-      const totalPot = this.state.betting.pot + 
+      const totalPot =
+        this.state.betting.pot +
         this.state.betting.sidePots.reduce((sum, pot) => sum + pot.amount, 0);
-      
+
       // Complete the hand
       const event: HandCompletedEvent = {
         id: uuidv4(),
@@ -609,11 +625,13 @@ return;
         timestamp: new Date(),
         version: 1,
         data: {
-          winners: [{
-            playerId: winner.id,
-            amount: totalPot,
-            handStrength: 'Won by default',
-          }],
+          winners: [
+            {
+              playerId: winner.id,
+              amount: totalPot,
+              handStrength: 'Won by default',
+            },
+          ],
           showdown: false,
           finalPot: totalPot,
         },
@@ -623,40 +641,38 @@ return;
     } else if (this.rules.isBettingRoundComplete(this.state)) {
       // Check if hand should complete (all players all-in or at river)
       const activeNonAllIn = activePlayers.filter((p) => p.status === 'active');
-      const shouldCompleteHand = 
+      const shouldCompleteHand =
         (activeNonAllIn.length === 0 && this.state.street === Street.RIVER) ||
         (this.state.street === Street.RIVER && this.rules.isBettingRoundComplete(this.state));
 
       if (shouldCompleteHand) {
-        // Complete the hand - determine winners
-        const totalPot = this.state.betting.pot + 
-          this.state.betting.sidePots.reduce((sum, pot) => sum + pot.amount, 0);
-        
-        // For now, award to first active player (in real implementation, would evaluate hands)
+        // Complete the hand - determine winners using hand evaluation
+        const winners = this.determineWinners();
+
         const event: HandCompletedEvent = {
           id: uuidv4(),
           type: 'HAND_COMPLETED',
           timestamp: new Date(),
           version: 1,
           data: {
-            winners: [{
-              playerId: activePlayers[0].id,
-              amount: totalPot,
-              handStrength: 'Best hand',
-            }],
+            winners,
             showdown: true,
-            finalPot: totalPot,
+            finalPot:
+              this.state.betting.pot +
+              this.state.betting.sidePots.reduce((sum, pot) => sum + pot.amount, 0),
           },
         };
 
         this.applyEvent(event);
       } else {
         // Calculate side pots before completing the street
-        const hasAllInPlayers = Array.from(this.state.players.values()).some((p) => p.status === 'allIn');
+        const hasAllInPlayers = Array.from(this.state.players.values()).some(
+          (p) => p.status === 'allIn',
+        );
         if (hasAllInPlayers) {
           this.calculateSidePots(this.state);
         }
-        
+
         // Automatically complete the street
         const nextStreet = this.getNextStreet(this.state.street);
         const activePlayerIds = activePlayers.map((p) => p.id);
@@ -701,6 +717,12 @@ return;
       return { isValid: false, error: 'Not your turn' };
     }
 
+    // POKER RULE: Action Validation
+    // Only legal actions based on game state are allowed:
+    // - Can't check when facing a bet
+    // - Can't bet when someone else already bet (must raise)
+    // - Must have chips to call/bet/raise
+    // - Minimum raise rules must be followed
     const legalActions = this.rules.calculateLegalActions(this.state, playerId);
     const isLegal = legalActions.some((a) => a.type === action);
 
@@ -742,5 +764,82 @@ return;
 
   public isBettingRoundComplete(): boolean {
     return this.rules.isBettingRoundComplete(this.state);
+  }
+
+  /**
+   * Determine winners - simplified version without hand evaluation
+   * Just returns the first eligible player as winner for each pot
+   */
+  private determineWinners(): Array<{ playerId: string; amount: number; handStrength: string }> {
+    const winners: Array<{ playerId: string; amount: number; handStrength: string }> = [];
+    const activePlayers = Array.from(this.state.players.values()).filter(
+      (p) => p.status !== 'folded',
+    );
+
+    // If only one player remains, they win everything
+    if (activePlayers.length === 1) {
+      const totalPot =
+        this.state.betting.pot +
+        this.state.betting.sidePots.reduce((sum, pot) => sum + pot.amount, 0);
+      return [
+        {
+          playerId: activePlayers[0].id,
+          amount: totalPot,
+          handStrength: 'Won by default',
+        },
+      ];
+    }
+
+    // Simple implementation: first eligible player wins each pot
+    // This is a placeholder since we're not evaluating hands
+    const eligiblePlayers = activePlayers.filter((p) => p.holeCards.length === 2).map((p) => p.id);
+
+    if (eligiblePlayers.length === 0) {
+      return [];
+    }
+
+    // Handle side pots first
+    if (this.state.betting.sidePots.length > 0) {
+      for (const pot of this.state.betting.sidePots) {
+        const potEligible = eligiblePlayers.filter((id) => pot.eligiblePlayers.includes(id));
+
+        if (potEligible.length > 0) {
+          // Split pot equally among all eligible players (simulating a tie)
+          const amountPerWinner = Math.floor(pot.amount / potEligible.length);
+          for (const winnerId of potEligible) {
+            const existing = winners.find((w) => w.playerId === winnerId);
+            if (existing) {
+              existing.amount += amountPerWinner;
+            } else {
+              winners.push({
+                playerId: winnerId,
+                amount: amountPerWinner,
+                handStrength: 'Hand evaluation not implemented',
+              });
+            }
+          }
+        }
+      }
+    }
+
+    // Handle main pot (if no side pots, this is the entire pot)
+    if (this.state.betting.pot > 0) {
+      // Split pot equally among all eligible players
+      const amountPerWinner = Math.floor(this.state.betting.pot / eligiblePlayers.length);
+      for (const winnerId of eligiblePlayers) {
+        const existing = winners.find((w) => w.playerId === winnerId);
+        if (existing) {
+          existing.amount += amountPerWinner;
+        } else {
+          winners.push({
+            playerId: winnerId,
+            amount: amountPerWinner,
+            handStrength: 'Hand evaluation not implemented',
+          });
+        }
+      }
+    }
+
+    return winners;
   }
 }

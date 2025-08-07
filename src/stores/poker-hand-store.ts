@@ -158,6 +158,7 @@ interface PokerHandState {
   ) => ActionSlot[];
   advanceToNextStreet: () => void;
   getSlotById: (slotId: string) => ActionSlot | null;
+  updateActionSlot: (slotId: string, updates: Partial<ActionSlot>) => void;
 }
 
 // =====================================================
@@ -175,7 +176,31 @@ const ensurePlayersMap = (playersData: any): Map<string, any> => {
 };
 
 const getActionOrder = (players: Player[], street: Street): Player[] => {
-  // Use the actual player positions from the engine rules
+  // Special case ONLY for traditional heads-up (BTN vs BB)
+  if (players.length === 2) {
+    const hasBtn = players.some((p) => p.position === Position.BTN);
+    const hasBB = players.some((p) => p.position === Position.BB);
+
+    // ONLY apply special heads-up rules if it's actually BTN vs BB
+    if (hasBtn && hasBB) {
+      if (street === Street.PREFLOP) {
+        // BTN acts first preflop in heads-up
+        return [
+          players.find((p) => p.position === Position.BTN)!,
+          players.find((p) => p.position === Position.BB)!,
+        ];
+      } else {
+        // BB acts first postflop in heads-up
+        return [
+          players.find((p) => p.position === Position.BB)!,
+          players.find((p) => p.position === Position.BTN)!,
+        ];
+      }
+    }
+    // For all other 2-player combinations, fall through to standard position order
+  }
+
+  // Use the actual player positions from the engine rules for multi-player
   const allPositions =
     street === Street.PREFLOP
       ? [
@@ -417,14 +442,14 @@ export const usePokerHandStore = create<PokerHandState>()(
             );
 
             if (!result.isValid) {
-              console.error('Failed to initialize hand:', result.error);
+              // console.error('Failed to initialize hand:', result.error);
               return;
             }
 
             // Post blinds
             const blindsResult = engine.postBlinds();
             if (!blindsResult.isValid) {
-              console.error('Failed to post blinds:', blindsResult.error);
+              // console.error('Failed to post blinds:', blindsResult.error);
               return;
             }
 
@@ -473,8 +498,8 @@ export const usePokerHandStore = create<PokerHandState>()(
               },
             });
           }
-        } catch (error) {
-          console.error('Error initializing game:', error);
+        } catch (_error) {
+          // console.error('Error initializing game:', error);
         }
       },
 
@@ -488,11 +513,11 @@ export const usePokerHandStore = create<PokerHandState>()(
           // Find the action slot
           const slot = state.streets[currentStreet].actionSlots.find((s) => s.id === slotId);
           if (!slot) {
-            console.error('Action slot not found:', {
-              slotId,
-              currentStreet,
-              availableSlots: state.streets[currentStreet].actionSlots.map((s) => s.id),
-            });
+            // console.warn('Action slot not found:', {
+            //   slotId,
+            //   currentStreet,
+            //   availableSlots: state.streets[currentStreet].actionSlots.map((s) => s.id),
+            // });
             return false;
           }
 
@@ -503,14 +528,14 @@ export const usePokerHandStore = create<PokerHandState>()(
           // Allow action if this is the active slot OR if the slot matches the active player
           const isCurrentPlayer = slot.playerId === currentPlayerId;
           if (!slot.isActive && !isCurrentPlayer) {
-            console.error('Action slot not active:', {
-              slotId,
-              slot,
-              slotStreet: currentStreet,
-              currentStreet: engineState.currentState.street,
-              activeSlot: state.streets[currentStreet].actionSlots.find((s) => s.isActive)?.id,
-              engineActionOn: currentPlayerId,
-            });
+            // console.error('Action slot not active:', {
+            //   slotId,
+            //   slot,
+            //   slotStreet: currentStreet,
+            //   currentStreet: engineState.currentState.street,
+            //   activeSlot: state.streets[currentStreet].actionSlots.find((s) => s.isActive)?.id,
+            //   engineActionOn: currentPlayerId,
+            // });
             return false;
           }
 
@@ -518,34 +543,191 @@ export const usePokerHandStore = create<PokerHandState>()(
           const result = await eventAdapter.processCommand(slot.playerId, action, amount);
 
           if (!result.success) {
-            console.error('Action failed:', result.error);
+            // console.error('Action failed:', result.error);
             return false;
           }
 
-          // Wait a bit for automatic events (like STREET_COMPLETED) to be persisted
-          await new Promise((resolve) => setTimeout(resolve, 150));
-
-          // Refetch events and rebuild state to get the latest data
+          // Immediately refetch events and rebuild state to get the latest data
           const events = await eventAdapter.getEvents();
           const newState = await eventAdapter.rebuildState();
 
-          // Update store with new state
-          set({
-            engineState: newState,
-            handEvents: events,
-          });
+          // Don't update store yet - process UI updates first to avoid race conditions
+          // We'll update the store after we've prepared all the UI state
 
           // Continue with UI updates below...
           const newEngineState = newState;
           const nextPlayerId = newEngineState?.currentState?.betting?.actionOn || null;
+          const engineStreet = newEngineState?.currentState?.street;
+          const isStreetComplete = engineStreet && engineStreet !== currentStreet;
 
-          // Update the action slot
+          // Update players array with new stack sizes and bet amounts FIRST (needed by both paths)
+          const updatedPlayers = state.players.map((player) => {
+            // Get player state, handling both Map and plain object cases
+            if (newEngineState?.currentState?.players) {
+              const playersMap = ensurePlayersMap(newEngineState.currentState.players);
+              const enginePlayer = playersMap.get(player.id);
+              if (enginePlayer) {
+                return {
+                  ...player,
+                  stackSize: [enginePlayer.stackSize],
+                  betAmount: enginePlayer.currentBet || 0,
+                  hasFolded: enginePlayer.status === 'folded',
+                  isAllIn: enginePlayer.status === 'allIn',
+                  holeCards: player.holeCards || enginePlayer.holeCards || [],
+                };
+              }
+            }
+            return player;
+          });
+
+          // Log for debugging if needed (only when DEBUG_POKER is set)
+          // Removed debug logging to prevent console noise in development
+
+          // If street changed, we need to handle the transition immediately
+          if (isStreetComplete) {
+            // Street completed, updating store state immediately
+
+            // Mark current street's action slots as completed
+            const completedSlots = state.streets[currentStreet].actionSlots.map((s) => {
+              const playersMap = ensurePlayersMap(newEngineState?.currentState?.players);
+              const playerState = playersMap.get(s.playerId);
+
+              if (s.id === slotId) {
+                // Mark the current slot as completed
+                return {
+                  ...s,
+                  action,
+                  amount,
+                  betAmount: amount?.toString() || '',
+                  completed: true,
+                  isActive: false,
+                  stackAfter: playerState?.stackSize || 0,
+                };
+              }
+              // Mark all other slots as inactive and update stacks
+              return {
+                ...s,
+                isActive: false,
+                stackAfter: playerState?.stackSize || s.stackAfter,
+              };
+            });
+
+            // Generate action slots for the new street immediately
+            const orderedPlayers = getActionOrder(state.players, engineStreet as Street);
+            const activePlayers = orderedPlayers.filter((player) => {
+              const playersMap = ensurePlayersMap(newEngineState.currentState?.players);
+              const playerState = playersMap.get(player.id);
+              return playerState && playerState.status === 'active';
+            });
+
+            const newStreetSlots = activePlayers.map((player) => {
+              const playersMap = ensurePlayersMap(newEngineState.currentState?.players);
+              const playerState = playersMap.get(player.id);
+
+              return {
+                id: generateSlotId(engineStreet as Street, player.id),
+                playerId: player.id,
+                playerName: player.name,
+                position: player.position as Position,
+                isHero: player.isHero || false,
+                stackBefore: playerState?.stackSize || player.stackSize[0],
+                stackAfter: playerState?.stackSize || player.stackSize[0],
+                action: undefined,
+                betAmount: '',
+                isActive: player.id === nextPlayerId,
+                completed: false,
+                canEdit: false,
+              };
+            });
+
+            // CRITICAL: Ensure exactly one slot is active based on engine state
+            if (nextPlayerId && newStreetSlots.length > 0) {
+              // First, mark all slots as inactive
+              newStreetSlots.forEach((slot) => {
+                slot.isActive = false;
+              });
+
+              // Then activate the correct player's slot
+              const currentPlayerSlot = newStreetSlots.find((s) => s.playerId === nextPlayerId);
+              if (currentPlayerSlot) {
+                currentPlayerSlot.isActive = true;
+              }
+            }
+
+            // Generated slots for new street
+
+            // Get community cards from engine state
+            let communityCards: string[] = [];
+            if ((newEngineState.currentState as any)?.board) {
+              communityCards = [...(newEngineState.currentState as any).board];
+            }
+
+            // Prepare form data updates
+            const formDataUpdate: any = {};
+            if (engineStreet === Street.FLOP && communityCards.length >= 3) {
+              formDataUpdate.flopCards = communityCards.slice(0, 3);
+            } else if (engineStreet === Street.TURN && communityCards.length >= 4) {
+              formDataUpdate.turnCard = [communityCards[3]];
+            } else if (engineStreet === Street.RIVER && communityCards.length >= 5) {
+              formDataUpdate.riverCard = [communityCards[4]];
+            }
+
+            const streetKey = `${currentStreet}Actions` as keyof typeof state.formData;
+            const newStreetKey = `${engineStreet}Actions` as keyof typeof state.formData;
+
+            // Update store with street transition - CRITICAL: Update currentStreet immediately
+
+            set((state) => ({
+              engineState: newEngineState,
+              handEvents: events, // Also update events
+              currentStreet: engineStreet as Street, // This must match engine state
+              isBettingRoundComplete: false,
+              players: updatedPlayers,
+              streets: {
+                ...state.streets,
+                [currentStreet]: {
+                  ...state.streets[currentStreet],
+                  actionSlots: completedSlots,
+                  isComplete: true,
+                  pot: newEngineState?.currentState?.betting?.pot || 0,
+                },
+                [engineStreet as Street]: {
+                  ...state.streets[engineStreet as Street],
+                  actionSlots: newStreetSlots,
+                  isComplete: false,
+                  pot: newEngineState?.currentState?.betting?.pot || 0,
+                  communityCards: communityCards.slice(
+                    0,
+                    engineStreet === Street.FLOP
+                      ? 3
+                      : engineStreet === Street.TURN
+                        ? 4
+                        : engineStreet === Street.RIVER
+                          ? 5
+                          : 0,
+                  ),
+                },
+              },
+              formData: {
+                ...state.formData,
+                [streetKey]: completedSlots,
+                [newStreetKey]: newStreetSlots,
+                ...formDataUpdate,
+                players: updatedPlayers,
+              },
+            }));
+
+            return true;
+          }
+
+          // Normal within-street action processing
           const updatedSlots = state.streets[currentStreet].actionSlots.map((s) => {
             // Get player state, handling both Map and plain object cases
             const playersMap = ensurePlayersMap(newEngineState?.currentState?.players);
             const playerState = playersMap.get(s.playerId);
 
             if (s.id === slotId) {
+              // Mark the current slot as completed
               return {
                 ...s,
                 action,
@@ -556,59 +738,29 @@ export const usePokerHandStore = create<PokerHandState>()(
                 stackAfter: playerState?.stackSize || 0,
               };
             }
-            // Update next player as active
-            if (s.playerId === nextPlayerId) {
-              return {
-                ...s,
-                isActive: true,
-                stackAfter: playerState?.stackSize || s.stackAfter,
-              };
-            }
+            // CRITICAL: Use engine state to determine which player should be active
             return {
               ...s,
-              isActive: false,
+              isActive: nextPlayerId === s.playerId,
               stackAfter: playerState?.stackSize || s.stackAfter,
             };
           });
 
-          // Check if street is complete
-          const engineStreet = newEngineState?.currentState?.street;
-          const isStreetComplete = engineStreet && engineStreet !== currentStreet;
+          // Players already updated at the beginning of processAction
 
           const streetKey = `${currentStreet}Actions` as keyof typeof state.formData;
 
-          // Update players array with new stack sizes and bet amounts
-          const updatedPlayers = state.players.map((player) => {
-            // Get player state, handling both Map and plain object cases
-            if (newEngineState?.currentState?.players) {
-              const playersMap = ensurePlayersMap(newEngineState.currentState.players);
-              const enginePlayer = playersMap.get(player.id);
-              if (enginePlayer) {
-                const updatedPlayer = {
-                  ...player,
-                  stackSize: [enginePlayer.stackSize],
-                  betAmount: enginePlayer.currentBet || 0,
-                  hasFolded: enginePlayer.status === 'folded',
-                  isAllIn: enginePlayer.status === 'allIn',
-                  holeCards: player.holeCards || enginePlayer.holeCards || [],
-                };
-
-                return updatedPlayer;
-              }
-            }
-            return player;
-          });
-
-          // Simple update - UI components read directly from engineState
+          // Simple update for within-street actions
           set((state) => ({
             engineState: newEngineState,
+            handEvents: events, // Also update events
             players: updatedPlayers,
             streets: {
               ...state.streets,
               [currentStreet]: {
                 ...state.streets[currentStreet],
                 actionSlots: updatedSlots,
-                isComplete: isStreetComplete,
+                isComplete: false, // Only complete when street actually changes
                 pot: newEngineState?.currentState?.betting?.pot || 0,
               },
             },
@@ -618,20 +770,6 @@ export const usePokerHandStore = create<PokerHandState>()(
               players: updatedPlayers,
             },
           }));
-
-          // Mark the street as ready to advance, but don't auto-advance
-          // The user must click "Next" to proceed to the next street
-          if (isStreetComplete) {
-            // Mark betting round as complete
-            set({ isBettingRoundComplete: true });
-
-            // In test environment, still advance synchronously for tests to pass
-            if (process.env.NODE_ENV === 'test') {
-              get().advanceToNextStreet();
-            }
-            // In production, just mark the betting round as complete
-            // The street will advance when user clicks Next
-          }
 
           return true;
         }
@@ -644,7 +782,7 @@ export const usePokerHandStore = create<PokerHandState>()(
         // Find the action slot
         const slot = state.streets[currentStreet].actionSlots.find((s) => s.id === slotId);
         if (!slot || !slot.isActive) {
-          console.error('Action slot not found or not active:', { slotId, slot, currentStreet });
+          // console.warn('Action slot not found or not active:', { slotId, slot, currentStreet });
           return false;
         }
 
@@ -652,7 +790,7 @@ export const usePokerHandStore = create<PokerHandState>()(
         const result = engine.processAction(slot.playerId, action, amount);
 
         if (!result.isValid) {
-          console.error('Invalid action:', result.error);
+          // console.error('Invalid action:', result.error);
           return false;
         }
 
@@ -801,14 +939,117 @@ export const usePokerHandStore = create<PokerHandState>()(
 
       // Generate Action Slots (Public method)
       generateActionSlots: (street) => {
-        const { players, engine } = get();
+        const { players, engine, eventAdapter, engineState } = get();
+
+        if (process.env.NODE_ENV === 'development') {
+          // DEBUG: console.log('[generateActionSlots] Starting slot generation:', {
+          //   street,
+          //   hasEventAdapter: Boolean(eventAdapter),
+          //   hasEngineState: Boolean(engineState),
+          //   currentPlayerId: engineState?.currentState?.betting?.actionOn,
+          // });
+        }
+
+        // For event sourcing mode, use engine state to generate slots
+        if (eventAdapter && engineState) {
+          const orderedPlayers = getActionOrder(players, street);
+          const currentPlayerId = engineState.currentState?.betting?.actionOn || null;
+
+          const activePlayers = orderedPlayers.filter((player) => {
+            const playersMap = ensurePlayersMap(engineState.currentState?.players);
+            const playerState = playersMap.get(player.id);
+            const isActive = playerState && playerState.status === 'active';
+
+            if (process.env.NODE_ENV === 'development') {
+              // DEBUG: console.log('[generateActionSlots] Player filter:', {
+              //   playerId: player.id,
+              //   playerStatus: playerState?.status,
+              //   isActive,
+              // });
+            }
+
+            return isActive;
+          });
+
+          const slots = activePlayers.map((player) => {
+            const playersMap = ensurePlayersMap(engineState.currentState?.players);
+            const playerState = playersMap.get(player.id);
+            const isCurrentPlayer = player.id === currentPlayerId;
+
+            return {
+              id: generateSlotId(street, player.id),
+              playerId: player.id,
+              playerName: player.name,
+              position: player.position as Position,
+              isHero: player.isHero || false,
+              stackBefore: playerState?.stackSize || player.stackSize[0],
+              stackAfter: playerState?.stackSize || player.stackSize[0],
+              action: undefined,
+              betAmount: '',
+              isActive: isCurrentPlayer,
+              completed: false,
+              canEdit: false,
+            };
+          });
+
+          // CRITICAL: Ensure exactly one slot is active for the current player
+          if (currentPlayerId && slots.length > 0) {
+            // First, mark all slots inactive
+            slots.forEach((slot) => {
+              slot.isActive = false;
+            });
+
+            // Then find and activate the current player's slot
+            const currentPlayerSlot = slots.find((s) => s.playerId === currentPlayerId);
+            if (currentPlayerSlot) {
+              currentPlayerSlot.isActive = true;
+              if (process.env.NODE_ENV === 'development') {
+                // DEBUG: console.log('[generateActionSlots] Set active slot:', currentPlayerSlot.id);
+              }
+            } else {
+              // console.error('[generateActionSlots] Current player not found in generated slots:', {
+              //   currentPlayerId,
+              //   availableSlots: slots.map(s => s.playerId),
+              // });
+            }
+          }
+
+          set((state) => ({
+            currentStreet: street, // CRITICAL: Update current street to match engine
+            streets: {
+              ...state.streets,
+              [street]: {
+                ...state.streets[street],
+                actionSlots: slots,
+              },
+            },
+          }));
+
+          if (process.env.NODE_ENV === 'development') {
+            // DEBUG: console.log('[generateActionSlots] Generated slots for event sourcing:', {
+            //   street,
+            //   slotsCount: slots.length,
+            //   activeSlot: slots.find(s => s.isActive)?.playerId,
+            //   currentPlayerId,
+            //   allSlots: slots.map(s => ({ id: s.playerId, active: s.isActive })),
+            // });
+          }
+
+          return;
+        }
+
+        // Legacy engine mode
         if (!engine) {
+          if (process.env.NODE_ENV === 'development') {
+            // DEBUG: console.log('[generateActionSlots] No engine available, cannot generate slots');
+          }
           return;
         }
 
         const slots = get().generateActionSlotsForStreet(players, street, engine);
 
         set((state) => ({
+          currentStreet: street, // Also update current street for legacy mode
           streets: {
             ...state.streets,
             [street]: {
@@ -817,22 +1058,52 @@ export const usePokerHandStore = create<PokerHandState>()(
             },
           },
         }));
+
+        if (process.env.NODE_ENV === 'development') {
+          // DEBUG: console.log('[generateActionSlots] Generated slots for legacy engine:', {
+          //   street,
+          //   slotsCount: slots.length,
+          // });
+        }
       },
 
       // Advance to Next Street
       advanceToNextStreet: () => {
         const { currentStreet, players, engine, eventAdapter, engineState } = get();
 
+        if (process.env.NODE_ENV === 'development') {
+          // DEBUG: console.log('[advanceToNextStreet] Starting street advancement:', {
+          //   storeCurrentStreet: currentStreet,
+          //   engineCurrentStreet: engineState?.currentState?.street,
+          //   hasEngine: Boolean(engine),
+          //   hasEventAdapter: Boolean(eventAdapter),
+          //   playersCount: players.length,
+          // });
+        }
+
         // We need either engine or event sourcing to advance
         if (!engine && !eventAdapter) {
+          if (process.env.NODE_ENV === 'development') {
+            // DEBUG: console.log('[advanceToNextStreet] No engine or event adapter available');
+          }
           return;
         }
 
         // If engineState has a street, use that as the target
         const targetStreet = engineState?.currentState?.street as Street;
         if (targetStreet && targetStreet !== currentStreet) {
+          if (process.env.NODE_ENV === 'development') {
+            // DEBUG: console.log('[advanceToNextStreet] Advancing to match engine state:', {
+            //   from: currentStreet,
+            //   to: targetStreet,
+            // });
+          }
+
           // We're advancing to match the engine state
           const nextStreet = targetStreet;
+
+          // Immediately update the current street
+          set({ currentStreet: nextStreet });
 
           // Generate action slots for next street
           let slots: ActionSlot[] = [];
@@ -842,11 +1113,27 @@ export const usePokerHandStore = create<PokerHandState>()(
             const orderedPlayers = getActionOrder(players, nextStreet);
             const currentPlayerId = engineState.currentState?.betting?.actionOn || null;
 
-            slots = orderedPlayers.map((player) => {
+            const activePlayers = orderedPlayers.filter((player) => {
+              // Only include active players (not folded)
+              const playersMap = ensurePlayersMap(engineState.currentState?.players);
+              const playerState = playersMap.get(player.id);
+              return playerState && playerState.status === 'active';
+            });
+
+            if (process.env.NODE_ENV === 'development') {
+              // DEBUG: console.log('[advanceToNextStreet] Active players for new street:', {
+              //   nextStreet,
+              //   activePlayers: activePlayers.map(p => p.id),
+              //   currentPlayerId,
+              //   allOrderedPlayers: orderedPlayers.map(p => p.id),
+              // });
+            }
+
+            slots = activePlayers.map((player) => {
               const playersMap = ensurePlayersMap(engineState.currentState?.players);
               const playerState = playersMap.get(player.id);
 
-              return {
+              const slot = {
                 id: generateSlotId(nextStreet, player.id),
                 playerId: player.id,
                 playerName: player.name,
@@ -860,7 +1147,40 @@ export const usePokerHandStore = create<PokerHandState>()(
                 completed: false,
                 canEdit: false,
               };
+
+              if (process.env.NODE_ENV === 'development') {
+                // DEBUG: console.log('[advanceToNextStreet] Created slot:', {
+                //   id: slot.id,
+                //   playerId: slot.playerId,
+                //   isActive: slot.isActive,
+                // });
+              }
+
+              return slot;
             });
+
+            // Ensure at least one slot is active if we have a current player
+            if (currentPlayerId && slots.length > 0 && !slots.some((s) => s.isActive)) {
+              if (process.env.NODE_ENV === 'development') {
+                // DEBUG: console.log('[advanceToNextStreet] No active slot found, setting current player as active');
+              }
+              const currentPlayerSlot = slots.find((s) => s.playerId === currentPlayerId);
+              if (currentPlayerSlot) {
+                currentPlayerSlot.isActive = true;
+                if (process.env.NODE_ENV === 'development') {
+                  // DEBUG: console.log('[advanceToNextStreet] Set slot active:', currentPlayerSlot.id);
+                }
+              } else if (process.env.NODE_ENV === 'development') {
+                // DEBUG: console.log('[advanceToNextStreet] WARNING: Current player slot not found in generated slots');
+              }
+            }
+
+            if (process.env.NODE_ENV === 'development') {
+              // DEBUG: console.log('[advanceToNextStreet] Final slots generated:', {
+              //   count: slots.length,
+              //   activeSlots: slots.filter(s => s.isActive).map(s => ({ id: s.id, playerId: s.playerId })),
+              // });
+            }
           } else if (engine) {
             // Legacy flow
             slots = get().generateActionSlotsForStreet(players, nextStreet, engine);
@@ -1109,31 +1429,80 @@ export const usePokerHandStore = create<PokerHandState>()(
       },
 
       getCurrentActionSlot: () => {
-        const { currentStreet, streets } = get();
-        const currentSlot = streets[currentStreet].actionSlots.find((s) => s.isActive) || null;
+        const { currentStreet, streets, engineState } = get();
 
-        return currentSlot;
+        // CRITICAL FIX: Always use engine state as the authoritative source
+        const currentPlayerId = engineState?.currentState?.betting?.actionOn;
+        const engineStreet = engineState?.currentState?.street as Street;
+
+        // Use engine street if available, otherwise fall back to store street
+        const actualStreet = engineStreet || currentStreet;
+
+        if (!currentPlayerId) {
+          // No player to act
+          return null;
+        }
+
+        // Try to find existing slot for the current player on the correct street
+        const streetSlots = streets[actualStreet]?.actionSlots || [];
+        const currentSlot = streetSlots.find((s) => s.playerId === currentPlayerId);
+
+        if (currentSlot) {
+          // Found the slot, ensure it's marked as active if it wasn't already
+          if (!currentSlot.isActive) {
+            // Synchronously update the slot to be active
+            get().updateActionSlot(currentSlot.id, { isActive: true });
+            return { ...currentSlot, isActive: true };
+          }
+          return currentSlot;
+        }
+
+        // No slot found - create a temporary slot immediately based on engine state
+        const player = get().players.find((p) => p.id === currentPlayerId);
+        if (player) {
+          // Also trigger async slot regeneration for next time
+          setTimeout(() => {
+            const state = get();
+            if (state.generateActionSlots && engineStreet) {
+              state.generateActionSlots(engineStreet);
+            }
+          }, 0);
+
+          return {
+            id: `temp-${actualStreet}-${currentPlayerId}`,
+            playerId: currentPlayerId,
+            playerName: player.name,
+            position: player.position as Position,
+            isHero: player.isHero || false,
+            stackBefore: player.stackSize[0],
+            stackAfter: player.stackSize[0],
+            action: undefined,
+            betAmount: '',
+            isActive: true,
+            completed: false,
+            canEdit: false,
+          };
+        }
+
+        return null;
       },
 
       isPlayerToAct: (playerId: string) => {
-        const { engineState, currentStreet, streets, isBettingRoundComplete } = get();
+        const { engineState, isBettingRoundComplete } = get();
 
         // If betting round is complete, no one is to act
         if (isBettingRoundComplete) {
           return false;
         }
 
-        // First check if we have engine state
+        // CRITICAL: Always use engine state as the authoritative source
         if (engineState && engineState.currentState) {
-          // The engine is the source of truth
-          const isActive = engineState?.currentState?.betting?.actionOn === playerId;
-          return isActive;
+          const engineActionOn = engineState.currentState.betting?.actionOn;
+          return engineActionOn === playerId;
         }
 
-        // Fallback to checking action slots
-        const slot = streets[currentStreet].actionSlots.find((s) => s.playerId === playerId);
-        const isActive = slot?.isActive || false;
-        return isActive;
+        // No engine state available - no one can act
+        return false;
       },
 
       isStreetComplete: (street) => {
@@ -1149,6 +1518,35 @@ export const usePokerHandStore = create<PokerHandState>()(
           }
         }
         return null;
+      },
+
+      updateActionSlot: (slotId: string, updates: Partial<ActionSlot>) => {
+        const { streets } = get();
+
+        // Find which street contains this slot
+        for (const [streetKey, streetState] of Object.entries(streets)) {
+          const slotIndex = streetState.actionSlots.findIndex((s) => s.id === slotId);
+          if (slotIndex !== -1) {
+            // Update the slot
+            const updatedSlots = [...streetState.actionSlots];
+            updatedSlots[slotIndex] = {
+              ...updatedSlots[slotIndex],
+              ...updates,
+            };
+
+            // Update the store
+            set((state) => ({
+              streets: {
+                ...state.streets,
+                [streetKey]: {
+                  ...state.streets[streetKey as Street],
+                  actionSlots: updatedSlots,
+                },
+              },
+            }));
+            return;
+          }
+        }
       },
 
       // Event Sourcing Methods
@@ -1208,16 +1606,13 @@ export const usePokerHandStore = create<PokerHandState>()(
           await get().initializeWithEventSourcing(handId);
 
           return handId;
-        } catch (error) {
-          console.error('Error creating hand with event sourcing:', error);
+        } catch (_error) {
+          // console.error('Error creating hand with event sourcing:', _error);
           return null;
         }
       },
 
       initializeWithEventSourcing: async (handId) => {
-        // Add a small delay to ensure events are fully persisted
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
         // Create a client-side adapter that makes API calls
         const clientAdapter: IEventSourcingAdapter = {
           processCommand: async (playerId: string, action: ActionType, amount?: number) => {
@@ -1245,7 +1640,21 @@ export const usePokerHandStore = create<PokerHandState>()(
               credentials: 'include',
             });
             const data = await response.json();
-            return data.validActions || [];
+
+            // Debug logging disabled for production
+            // if (process.env.NODE_ENV === 'development') {
+            //   console.log('[Store] Valid actions API response:', {
+            //     success: data.success,
+            //     validActions: data.data?.validActions,
+            //     currentPlayerId: data.data?.currentPlayerId,
+            //     currentBet: data.data?.currentBet,
+            //     pot: data.data?.pot,
+            //   });
+            // }
+
+            // Ensure we return the correct array
+            const actions = data.data?.validActions || data.validActions || [];
+            return Array.isArray(actions) ? actions : [];
           },
 
           rebuildState: async () => {
@@ -1303,8 +1712,8 @@ export const usePokerHandStore = create<PokerHandState>()(
             // No events found, retry after a delay
             await new Promise((resolve) => setTimeout(resolve, 1000));
             retries--;
-          } catch (error) {
-            console.error('Error loading events:', error);
+          } catch (_error) {
+            // console.error('Error loading events:', _error);
             retries--;
             if (retries > 0) {
               await new Promise((resolve) => setTimeout(resolve, 1000));

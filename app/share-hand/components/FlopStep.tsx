@@ -32,18 +32,29 @@ const FlopStep = ({
 }: FlopStepProps) => {
   // Get players from formData first
   const { players: managedPlayers } = usePlayerManagement(formData, setFormData);
-  
+
   // Try to get players from context if available
   let contextPlayers: any[] | undefined;
+  let processAction: any;
   try {
     const context = useShareHandContext();
     contextPlayers = context.players;
+    processAction = context.processAction;
   } catch {
     // Context not available (e.g., in tests)
   }
-  
+
   // Use context players if available and has data, otherwise use managed players
-  const players = (contextPlayers && contextPlayers.length > 0) ? contextPlayers : managedPlayers;
+  const players = contextPlayers && contextPlayers.length > 0 ? contextPlayers : managedPlayers;
+
+  // Create pokerActions object for compatibility
+  const pokerActions = processAction
+    ? {
+        executeAction: (playerId: string, action: string, amount?: number) => {
+          return processAction(playerId, action, amount);
+        },
+      }
+    : undefined;
 
   const handleUpdatePlayer = (_newPlayer: any) => {
     // Do nothing - players are locked after positions step
@@ -84,12 +95,13 @@ const FlopStep = ({
           onUpdatePlayer={handleUpdatePlayer}
           onRemovePlayer={handleRemovePlayer}
           availablePositions={getAvailablePositions(players, '')}
-          currentStreet="flopActions"
+          currentStreet="flop"
           formData={formData}
           getAvailableActions={getAvailableActions}
           updateAction={updateAction}
           handleBetSizeSelect={handleBetSizeSelect}
           pot={pot}
+          pokerActions={pokerActions}
         />
       </div>
 

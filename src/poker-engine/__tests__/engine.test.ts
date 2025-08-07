@@ -63,7 +63,7 @@ describe('PokerHandEngine', () => {
       if (!result.success) {
         console.error('Event failed:', result.error);
       }
-      
+
       expect(result.success).toBe(true);
       const state = engine.getCurrentState();
       expect(state.players.size).toBe(3);
@@ -387,10 +387,10 @@ describe('PokerHandEngine', () => {
 
       // Now betting round should be complete and street should advance
       state = engine.getCurrentState();
-      
+
       // The pot should have all the money
       expect(state.betting.pot).toBe(201);
-      
+
       // Side pots should be created when street completes
       if (state.street === Street.FLOP) {
         expect(state.betting.sidePots.length).toBeGreaterThan(0);
@@ -566,9 +566,10 @@ describe('PokerHandEngine', () => {
       expect(actionTypes).toContain(ActionType.RAISE);
       expect(actionTypes).toContain(ActionType.ALL_IN);
 
-      // BB should NOT have CALL or FOLD when no one raised
+      // BB should NOT have CALL when no one raised
       expect(actionTypes).not.toContain(ActionType.CALL);
-      expect(actionTypes).not.toContain(ActionType.FOLD);
+      // FOLD is now always available (player can voluntarily fold)
+      expect(actionTypes).toContain(ActionType.FOLD);
     });
 
     it('should handle UTG shove, CO call, BB raise scenario', () => {
@@ -868,7 +869,8 @@ describe('PokerHandEngine', () => {
       expect(bbFlopActionTypes).toContain(ActionType.CHECK);
       expect(bbFlopActionTypes).toContain(ActionType.BET);
       expect(bbFlopActionTypes).not.toContain(ActionType.CALL);
-      expect(bbFlopActionTypes).not.toContain(ActionType.FOLD);
+      // FOLD is now always available (player can voluntarily fold)
+      expect(bbFlopActionTypes).toContain(ActionType.FOLD);
 
       // BB checks
       engine.applyEvent({

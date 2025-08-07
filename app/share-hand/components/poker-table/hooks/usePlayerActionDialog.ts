@@ -23,6 +23,9 @@ export const usePlayerActionDialog = ({
   const [selectedAction, setSelectedAction] = useState<string>('');
   const [betAmount, setBetAmount] = useState<string>('');
 
+  // Get store early so it's available throughout the hook
+  const store = usePokerHandStore();
+
   // Get current action step for this player
   const getCurrentActionIndex = () => {
     if (!formData || !currentStreet) {
@@ -80,10 +83,14 @@ export const usePlayerActionDialog = ({
         availableActions = ['fold', 'call', 'raise', 'all-in'];
       }
     } else {
-      // Post-flop: check if there's a bet
-      const hasBet = actions.some(
+      // Post-flop: check if there's a bet from engine state first, then fallback to checking actions
+      const engineCurrentBet = store.engineState?.currentState?.betting?.currentBet || 0;
+      const hasBetInActions = actions.some(
         (action: any) => action.completed && (action.action === 'bet' || action.action === 'raise'),
       );
+
+      // If engine shows a current bet OR actions show a bet, player must call/fold/raise
+      const hasBet = engineCurrentBet > 0 || hasBetInActions;
 
       if (hasBet) {
         availableActions = ['fold', 'call', 'raise', 'all-in'];
@@ -93,14 +100,13 @@ export const usePlayerActionDialog = ({
     }
   }
 
-  // Get pot size from store/engine state
-  const store = usePokerHandStore();
+  // Get pot size from store/engine state (store already defined above)
   const enginePot = store.engineState?.currentState?.betting?.pot || 0;
   const streetPot = store.streets[store.currentStreet]?.pot || 0;
-  
+
   // Use engine pot if available, otherwise use street pot, otherwise calculate from blinds
   const potSize =
-    enginePot || 
+    enginePot ||
     streetPot ||
     pokerActions?.pot ||
     (formData ? parseFloat(formData.smallBlind || '1') + parseFloat(formData.bigBlind || '2') : 3);
@@ -108,9 +114,10 @@ export const usePlayerActionDialog = ({
   // Get current stack size from engine state
   const getCurrentStackSize = () => {
     if (store.engineState?.currentState?.players) {
-      const playersMap = store.engineState.currentState.players instanceof Map 
-        ? store.engineState.currentState.players 
-        : new Map(Object.entries(store.engineState.currentState.players));
+      const playersMap =
+        store.engineState.currentState.players instanceof Map
+          ? store.engineState.currentState.players
+          : new Map(Object.entries(store.engineState.currentState.players));
       const enginePlayer = playersMap.get(player.id) as any;
       if (enginePlayer && typeof enginePlayer.stackSize === 'number') {
         return enginePlayer.stackSize;

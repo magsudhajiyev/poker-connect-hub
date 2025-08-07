@@ -42,18 +42,29 @@ const RiverStep = ({
 }: RiverStepProps) => {
   // Get players from formData first
   const { players: managedPlayers } = usePlayerManagement(formData, setFormData);
-  
+
   // Try to get players from context if available
   let contextPlayers: any[] | undefined;
+  let processAction: any;
   try {
     const context = useShareHandContext();
     contextPlayers = context.players;
+    processAction = context.processAction;
   } catch {
     // Context not available (e.g., in tests)
   }
-  
+
   // Use context players if available and has data, otherwise use managed players
-  const players = (contextPlayers && contextPlayers.length > 0) ? contextPlayers : managedPlayers;
+  const players = contextPlayers && contextPlayers.length > 0 ? contextPlayers : managedPlayers;
+
+  // Create pokerActions object for compatibility
+  const pokerActions = processAction
+    ? {
+        executeAction: (playerId: string, action: string, amount?: number) => {
+          return processAction(playerId, action, amount);
+        },
+      }
+    : undefined;
 
   // Don't allow player updates in action steps - players should be locked
   const handleUpdatePlayer = (_newPlayer: any) => {
@@ -97,13 +108,14 @@ const RiverStep = ({
           onUpdatePlayer={handleUpdatePlayer}
           onRemovePlayer={handleRemovePlayer}
           availablePositions={getAvailablePositions(players, '')}
-          currentStreet="riverActions"
+          currentStreet="river"
           formData={formData}
           getAvailableActions={getAvailableActions}
           updateAction={updateAction}
           handleBetSizeSelect={handleBetSizeSelect}
           isPositionsStep={false}
           pot={pot}
+          pokerActions={pokerActions}
         />
       </div>
 
